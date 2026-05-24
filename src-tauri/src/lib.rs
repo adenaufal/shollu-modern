@@ -13,6 +13,9 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use tauri::{Emitter, Manager};
 
+const FLOATING_BAR_WEBVIEW_URL: &str = "index.html?window=floating-bar";
+const DROP_ZONE_WEBVIEW_URL: &str = "index.html?window=drop-zone";
+
 // Shared path helpers
 fn get_app_paths(app: &tauri::AppHandle) -> (PathBuf, PathBuf, PathBuf) {
     let app_dir = app
@@ -213,7 +216,7 @@ fn toggle_floating_bar(app: tauri::AppHandle, show: bool) -> Result<(), String> 
             let _win = tauri::WebviewWindowBuilder::new(
                 &app,
                 "floating-bar",
-                tauri::WebviewUrl::App("index.html".into())
+                tauri::WebviewUrl::App(FLOATING_BAR_WEBVIEW_URL.into())
             )
             .title("Shollu Floating Bar")
             .inner_size(800.0, 40.0)
@@ -242,7 +245,7 @@ fn toggle_drop_zone(app: tauri::AppHandle, show: bool) -> Result<(), String> {
             let _win = tauri::WebviewWindowBuilder::new(
                 &app,
                 "drop-zone",
-                tauri::WebviewUrl::App("index.html".into())
+                tauri::WebviewUrl::App(DROP_ZONE_WEBVIEW_URL.into())
             )
             .title("Shollu Drop Zone")
             .inner_size(180.0, 48.0)
@@ -282,7 +285,7 @@ pub fn run() {
                     let _ = tauri::WebviewWindowBuilder::new(
                         app,
                         "floating-bar",
-                        tauri::WebviewUrl::App("index.html".into()),
+                        tauri::WebviewUrl::App(FLOATING_BAR_WEBVIEW_URL.into()),
                     )
                     .title("Shollu Floating Bar")
                     .inner_size(800.0, 40.0)
@@ -298,7 +301,7 @@ pub fn run() {
                     let _ = tauri::WebviewWindowBuilder::new(
                         app,
                         "drop-zone",
-                        tauri::WebviewUrl::App("index.html".into()),
+                        tauri::WebviewUrl::App(DROP_ZONE_WEBVIEW_URL.into()),
                     )
                     .title("Shollu Drop Zone")
                     .inner_size(180.0, 48.0)
