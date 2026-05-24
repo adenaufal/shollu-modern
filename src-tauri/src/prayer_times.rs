@@ -75,6 +75,7 @@ impl Method {
 #[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
 pub struct Adjustments {
     pub fajr: i32,
+    pub sunrise: i32,
     pub dhuhr: i32,
     pub asr: i32,
     pub maghrib: i32,
@@ -149,7 +150,7 @@ pub fn compute(
     const ONE_MINUTE_AS_HOURS: f64 = 1.0 / 60.0;
     PrayerTimes {
         fajr: z - v_d + adjustments.fajr as f64 * ONE_MINUTE_AS_HOURS,
-        sunrise: z - u,
+        sunrise: z - u + adjustments.sunrise as f64 * ONE_MINUTE_AS_HOURS,
         dhuhr: z + adjustments.dhuhr as f64 * ONE_MINUTE_AS_HOURS,
         asr: z + w + adjustments.asr as f64 * ONE_MINUTE_AS_HOURS,
         maghrib: z + u + adjustments.maghrib as f64 * ONE_MINUTE_AS_HOURS,
