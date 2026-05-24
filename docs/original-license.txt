@@ -1,0 +1,30 @@
+Shollu
+copyrights (c)2004-2012 by Ebta Setiawan
+All rights reserved
+
+Assalamu'alaikum Warahmatullaahi Wabarakaatuh
+
+DESCRIPTION
+
+Shollu is prayer times reminder for moslem. The main aims of this program is to show warning or message to the user that prayer times is arrived or will arrived in a few minutes. so user can prepare immediately to pray ( Sholaah ).
+Also included other features.
+
+Different with version 2.15 and bellow that only support indonesian places / city, From version 3.00 sholu support international places. The required parameter is Latitude, Longitude, Altitude of the places. See the program for details.
+User only set the setting once, after that shollu automatic update the prayer times. Also included major cities in Indonesia ( approx. 400 cities) and Major cities in the world ( 2.341 cities ). For other places can be downloaded from the web.
+
+For other features just try and see the program.
+I hope that this software can give benefit for moslem every where.
+
+Wassalamu'alaikum warahmatullahi wabarokatuh
+
+LICENSE
+
+This software is provided 'as-is', without any express or implied warranty. In no event will the authors be held liable for any damages arising from the use of this software.
+
+Permission is granted to anyone to use, copy, distribute this software in any form freely except for commercial purpose, subject to the following restrictions:
+
+1. The origin of this software must not be misrepresented;
+2. You must not claim that you wrote the software.
+3. This notice may not be removed or altered from any distribution.
+
+Since version 3.09, Shollu become Open Source software, for more information please visit https://code.google.com/p/shollu or http://ebsoft.web.id or contact me by email.

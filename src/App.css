@@ -1,0 +1,27 @@
+@import "tailwindcss";
+
+@theme {
+  --color-shollu-50: oklch(0.98 0.01 200);
+  --color-shollu-500: oklch(0.62 0.14 200);
+  --color-shollu-900: oklch(0.25 0.06 200);
+  --font-display: "Inter Tight", "Inter", system-ui, sans-serif;
+  --font-numeric: "Inter", system-ui, sans-serif;
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    font-family: var(--font-display);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
