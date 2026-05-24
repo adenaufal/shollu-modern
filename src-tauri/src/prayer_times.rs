@@ -12,7 +12,7 @@
 
 #![allow(dead_code)]
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::f64::consts::PI;
 
 #[derive(Debug, Clone, Copy, Serialize)]
@@ -72,7 +72,7 @@ impl Method {
     }
 }
 
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
 pub struct Adjustments {
     pub fajr: i32,
     pub dhuhr: i32,

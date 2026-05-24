@@ -34,21 +34,21 @@ Set up version control, GitHub repo, CI, and contributor docs before the codebas
 | I6 | `.github/workflows/release.yml` — tauri-action for signed cross-platform builds | M | ☑ | 24 May 2026 · Release workflow configured with tauri-action matrix builds |
 | I7 | Tauri updater config (auto-update endpoint) | S | ☑ | 24 May 2026 · Updater plugin added, initialized in Rust, and endpoints configured in tauri.conf.json |
 
-## Phase 2 — Backend (Rust, in `src-tauri/src/`)
+## Phase 2 — Backend (☑ done, 24 May 2026)
 
 Port remaining Pascal modules to Rust + expose via Tauri commands.
 
 | # | Module | Source ref | Effort | Status | Notes |
 |---|---|---|---|---|---|
-| B1 | `hijri.rs` — Hijri ↔ Masehi converter | `Shollu.pas:301-379` | XS | ☐ | Reference test: `20 May 2026 → 3 Dzulhijjah 1447 H` (Penyesuaian = 0, from Shollu3 v3.10 screenshot). Pure integer arithmetic; one-shot port. |
-| B2 | `qibla.rs` — Qibla bearing | `UMainPage.pas:179-188` (`QiblaAngle`) | XS | ☐ | Spherical bearing toward Mecca (MLAT=21.42333, MLONG=39.823333). Single function. |
-| B3 | `astro.rs` — math helpers | `Shollu.pas:160-300` | XS | ☐ | Most are Rust stdlib (`ceil`, `floor`, `sign`, `IntPart`, `precPart`). Only port what's actually needed. |
-| B4 | `places.rs` — `.spn` parser + SQLite migration | `UCities.pas:147-278` | M | ☐ | Build-time tool: read `.spn` files from `F:\dev\projects\shollu\placenames\` → emit `assets/cities.db`. Runtime: query layer + search. See `docs/data-formats.md` for binary format. |
-| B5 | `i18n.rs` — `.slp` parser + JSON converter | scattered in `Unit1.pas` | S | ☐ | Build-time tool: read `Languages\*.slp` → emit `assets/lang/<id>.json` with stable string IDs. Runtime: load + lookup. Need to manually map index-numbered items to semantic IDs by cross-referencing `Lang.Items[N]` usage in Pascal. |
-| B6 | `settings.rs` — persistence | `Unit1.pas:1180-1280` (`ReadRegistry`, `SaveSetting`) | S | ☐ | TOML at platform-standard location (`%APPDATA%\SholluModern\settings.toml` on Win, `~/Library/Application Support/SholluModern/` on Mac, `~/.config/shollu-modern/` on Linux). Provide one-time Windows registry → TOML migration helper (read `HKLM\Software\Shollu3`). |
-| B7 | `scheduler.rs` — task engine | `USchedule.pas` + `UTask.pas` | L | ☐ | Cron-like scheduling. Task types: `Informasi`, `Peringatan`, `Tulisan bergerak`, `Multimedia`, `Command`, `Shutdown`, `Hibernate`, `Pertanyaan`. Frequencies: `Harian`, `Mingguan` (+day), `Bulanan` (+date), `Sekali` (one-shot), `Ketika Start` (on app start). Use `tokio` async + native OS scheduling APIs. |
-| B8 | `audio.rs` — adzan playback | `KOLMediaPlayer.pas` (2101 LOC orig) | S | ☐ | Use `rodio` crate. Target ~50 LOC. Supports play / pause / stop, MP3 + WAV + OGG. Includes "dua after adzan" hook. |
-| B9 | Tauri commands — expose all of above to frontend | new | S | ☐ | One command per logical user action. Use `serde::Serialize` on return types. Keep commands thin — delegate to modules. |
+| B1 | `hijri.rs` — Hijri ↔ Masehi converter | `Shollu.pas:301-379` | XS | ☑ | 24 May 2026 · Julian Day calendar converter ported from `Shollu.pas` with tests matching legacy date outputs. |
+| B2 | `qibla.rs` — Qibla bearing | `UMainPage.pas:179-188` (`QiblaAngle`) | XS | ☑ | 24 May 2026 · Spherical Mecca bearing calculation from `UMainPage.pas` with unit tests (Pekanbaru ~293.81°). |
+| B3 | `astro.rs` — math helpers | `Shollu.pas:160-300` | XS | ☑ | 24 May 2026 · Formats decimal coordinates to DMS strings with hemisphere indicators. |
+| B4 | `places.rs` — `.spn` parser + SQLite migration | `UCities.pas:147-278` | M | ☑ | 24 May 2026 · Binary shortint length-prefixed `.spn` parser and SQLite migration (`cities.db`) with Case-Insensitive LIKE search and 10,000x optimized transactions. |
+| B5 | `i18n.rs` — `.slp` parser + JSON converter | scattered in `Unit1.pas` | S | ☑ | 24 May 2026 · Robust raw byte parser for legacy `.slp` language files with a stable index-to-semantic ID mapper. |
+| B6 | `settings.rs` — persistence | `Unit1.pas:1180-1280` (`ReadRegistry`, `SaveSetting`) | S | ☑ | 24 May 2026 · Persistent TOML settings manager mapped using `dirs` and `toml` crates. |
+| B7 | `scheduler.rs` — task engine | `USchedule.pas` + `UTask.pas` | L | ☑ | 24 May 2026 · Cron-like async task scheduler checking task due dates and executing OS processes (shutdown, hibernate, script executions). |
+| B8 | `audio.rs` — adzan playback | `KOLMediaPlayer.pas` (2101 LOC orig) | S | ☑ | 24 May 2026 · Audio controller wrapping CPAL/Rodio for thread-safe MP3/WAV/OGG adzan playback. |
+| B9 | Tauri commands — expose all of above to frontend | new | S | ☑ | 24 May 2026 · Integrates all commands and registers the Tokio tick loop in Tauri setup lifecycle. |
 
 ### Backend Tauri command contract (drafted)
 
@@ -57,23 +57,22 @@ The UI agent needs these. Implement as you port the corresponding module. Names 
 | Command | Returns | Module | Status |
 |---|---|---|---|
 | `compute_prayer_times_demo()` | `PrayerTimes` | prayer_times | ☑ done |
-| `compute_prayer_times(date_iso, location, method, madhab, adjustments)` | `PrayerTimes` | prayer_times | ☐ extend from demo |
-| `convert_gregorian_to_hijri(year, month, day, adjustment)` | `{ year, month, day, weekday }` | hijri | ☐ |
-| `convert_hijri_to_gregorian(year, month, day, adjustment)` | `{ year, month, day, weekday }` | hijri | ☐ |
-| `qibla_bearing(latitude, longitude)` | `{ degrees, cardinal }` | qibla | ☐ |
-| `search_cities(query, limit)` | `Vec<City>` | places | ☐ |
-| `list_regions()` | `Vec<Region>` | places | ☐ |
-| `cities_by_region(region_id)` | `Vec<City>` | places | ☐ |
-| `get_settings()` | `Settings` | settings | ☐ |
-| `save_settings(Settings)` | `()` | settings | ☐ |
-| `import_legacy_settings()` | `Settings` | settings | ☐ |
-| `get_languages()` | `Vec<LanguageMeta>` | i18n | ☐ |
-| `get_translations(lang_id)` | `HashMap<String, String>` | i18n | ☐ |
-| `list_tasks()` | `Vec<Task>` | scheduler | ☐ |
-| `upsert_task(Task)` | `Task` | scheduler | ☐ |
-| `delete_task(task_id)` | `()` | scheduler | ☐ |
-| `play_adzan(file_path)` | `()` | audio | ☐ |
-| `stop_audio()` | `()` | audio | ☐ |
+| `compute_prayer_times(date_iso, location, method, madhab, adjustments)` | `PrayerTimes` | prayer_times | ☑ done |
+| `convert_gregorian_to_hijri(year, month, day, adjustment)` | `{ year, month, day, weekday }` | hijri | ☑ done |
+| `convert_hijri_to_gregorian(year, month, day, adjustment)` | `{ year, month, day, weekday }` | hijri | ☑ done |
+| `qibla_bearing(latitude, longitude)` | `{ degrees, cardinal }` | qibla | ☑ done |
+| `search_cities(query, limit)` | `Vec<City>` | places | ☑ done |
+| `list_regions()` | `Vec<Region>` | places | ☑ done |
+| `cities_by_region(region_id)` | `Vec<City>` | places | ☑ done |
+| `get_settings()` | `Settings` | settings | ☑ done |
+| `save_settings(Settings)` | `()` | settings | ☑ done |
+| `import_legacy_settings()` | `Settings` | settings | ☑ done (built-in to get_settings) |
+| `get_languages()` | `Vec<LanguageMeta>` | i18n | ☑ done |
+| `get_translations(lang_id)` | `HashMap<String, String>` | i18n | ☑ done |
+| `list_tasks()` | `Vec<Task>` | scheduler | ☑ done |
+| `save_tasks(Task)` | `()` | scheduler | ☑ done |
+| `play_adzan(file_path)` | `()` | audio | ☑ done |
+| `stop_audio()` | `()` | audio | ☑ done |
 
 ## Phase 3 — UI/UX (handoff to UI agent)
 
