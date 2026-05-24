@@ -84,15 +84,22 @@ pub fn load_settings() -> AppSettings {
 
     let mut file = match File::open(&path) {
         Ok(f) => f,
-        Err(_) => return AppSettings::default(),
+        Err(e) => {
+            eprintln!("Failed to open settings file '{}': {}", path.display(), e);
+            return AppSettings::default();
+        }
     };
 
     let mut contents = String::new();
-    if file.read_to_string(&mut contents).is_err() {
+    if let Err(e) = file.read_to_string(&mut contents) {
+        eprintln!("Failed to read settings file '{}': {}", path.display(), e);
         return AppSettings::default();
     }
 
-    toml::from_str(&contents).unwrap_or_else(|_| AppSettings::default())
+    toml::from_str(&contents).unwrap_or_else(|e| {
+        eprintln!("Failed to parse settings file '{}': {}", path.display(), e);
+        AppSettings::default()
+    })
 }
 
 /// Save settings to TOML file
@@ -101,17 +108,17 @@ pub fn save_settings(settings: &AppSettings) -> Result<(), String> {
     
     // Create directories if they do not exist
     if let Some(parent) = path.parent() {
-        create_dir_all(parent).map_err(|e| format!("Failed to create settings directory: {}", e))?;
+        create_dir_all(parent).map_err(|e| format!("Failed to create settings directory '{}': {}", parent.display(), e))?;
     }
 
     let toml_string = toml::to_string_pretty(settings)
         .map_err(|e| format!("Failed to serialize settings: {}", e))?;
 
     let mut file = File::create(&path)
-        .map_err(|e| format!("Failed to create settings file: {}", e))?;
+        .map_err(|e| format!("Failed to create settings file '{}': {}", path.display(), e))?;
 
     file.write_all(toml_string.as_bytes())
-        .map_err(|e| format!("Failed to write settings: {}", e))?;
+        .map_err(|e| format!("Failed to write settings to '{}': {}", path.display(), e))?;
 
     Ok(())
 }
