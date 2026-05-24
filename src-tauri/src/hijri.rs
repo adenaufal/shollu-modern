@@ -49,7 +49,8 @@ pub fn gregorian_to_hijri(year: i32, month: u32, day: u32, adjustment: i8) -> Da
     // Weekday calculation: jd % 7 gives 0 = Monday, 1 = Tuesday, ..., 5 = Saturday, 6 = Sunday.
     // Map to 1 = Sunday, 2 = Monday, ..., 7 = Saturday
     let weekday_map = [2, 3, 4, 5, 6, 7, 1]; // 0 (Mon)->2, 1 (Tue)->3, ..., 5 (Sat)->7, 6 (Sun)->1
-    let weekday = weekday_map[(jd % 7).unsigned_abs() as usize];
+    let index = (jd % 7).unsigned_abs() as usize;
+    let weekday = *weekday_map.get(index).unwrap_or(&0);
 
     DateResult {
         year: ry,
@@ -99,7 +100,8 @@ pub fn hijri_to_gregorian(year: i32, month: u32, day: u32, adjustment: i8) -> Da
     // Weekday calculation: jd % 7 gives 0 = Monday, 1 = Tuesday, ..., 5 = Saturday, 6 = Sunday.
     // Map to 1 = Sunday, 2 = Monday, ..., 7 = Saturday
     let weekday_map = [2, 3, 4, 5, 6, 7, 1];
-    let weekday = weekday_map[(jd % 7).unsigned_abs() as usize];
+    let index = (jd % 7).unsigned_abs() as usize;
+    let weekday = *weekday_map.get(index).unwrap_or(&0);
 
     DateResult {
         year: ry,
