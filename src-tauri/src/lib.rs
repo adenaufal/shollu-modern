@@ -1,12 +1,12 @@
-mod astro;
-mod audio;
-mod hijri;
-mod i18n;
-mod places;
 mod prayer_times;
+mod hijri;
 mod qibla;
-mod scheduler;
+mod astro;
+mod places;
+mod i18n;
 mod settings;
+mod scheduler;
+mod audio;
 
 use chrono::{Datelike, Local, NaiveDate};
 use std::collections::HashMap;
@@ -22,10 +22,7 @@ fn get_app_paths(app: &tauri::AppHandle) -> (PathBuf, PathBuf, PathBuf) {
     let _ = std::fs::create_dir_all(&app_dir);
     let db_path = app_dir.join("cities.db");
 
-    let resource_dir = app
-        .path()
-        .resource_dir()
-        .unwrap_or_else(|_| PathBuf::from("."));
+    let resource_dir = app.path().resource_dir().unwrap_or_else(|_| PathBuf::from("."));
 
     // SPN Directory resolution
     let mut spn_dir = resource_dir.join("placenames");
@@ -142,11 +139,7 @@ fn format_lon_dms(longitude: f64) -> String {
 }
 
 #[tauri::command]
-fn search_cities(
-    app: tauri::AppHandle,
-    query: String,
-    limit: usize,
-) -> Result<Vec<places::City>, String> {
+fn search_cities(app: tauri::AppHandle, query: String, limit: usize) -> Result<Vec<places::City>, String> {
     let (db_path, _, _) = get_app_paths(&app);
     places::search_cities(&db_path, &query, limit)
 }
@@ -170,10 +163,7 @@ fn get_languages(app: tauri::AppHandle) -> Result<Vec<i18n::LanguageMeta>, Strin
 }
 
 #[tauri::command]
-fn get_translations(
-    app: tauri::AppHandle,
-    lang_id: String,
-) -> Result<HashMap<String, String>, String> {
+fn get_translations(app: tauri::AppHandle, lang_id: String) -> Result<HashMap<String, String>, String> {
     let (_, _, lang_dir) = get_app_paths(&app);
     i18n::get_translations(&lang_dir, &lang_id)
 }
@@ -223,7 +213,7 @@ fn toggle_floating_bar(app: tauri::AppHandle, show: bool) -> Result<(), String> 
             let _win = tauri::WebviewWindowBuilder::new(
                 &app,
                 "floating-bar",
-                tauri::WebviewUrl::App("index.html".into()),
+                tauri::WebviewUrl::App("index.html".into())
             )
             .title("Shollu Floating Bar")
             .inner_size(800.0, 40.0)
@@ -252,7 +242,7 @@ fn toggle_drop_zone(app: tauri::AppHandle, show: bool) -> Result<(), String> {
             let _win = tauri::WebviewWindowBuilder::new(
                 &app,
                 "drop-zone",
-                tauri::WebviewUrl::App("index.html".into()),
+                tauri::WebviewUrl::App("index.html".into())
             )
             .title("Shollu Drop Zone")
             .inner_size(180.0, 48.0)

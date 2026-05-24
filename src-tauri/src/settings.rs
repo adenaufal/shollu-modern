@@ -28,13 +28,13 @@ pub struct AppSettings {
     pub method: i32, // 1 to 5, default 2 (ISNA)
     pub madhab: i32, // 1 = Shafii/Maliki/Hanbali, 2 = Hanafi, default 1
     pub adjustments: Adjustments,
-    pub pembulatan: i8,            // 0 = floor, 1 = ceil, 2 = normal, default 0
-    pub language: String,          // default "Indonesia"
-    pub skin: String,              // default "default"
+    pub pembulatan: i8, // 0 = floor, 1 = ceil, 2 = normal, default 0
+    pub language: String, // default "Indonesia"
+    pub skin: String, // default "default"
     pub adzan_sound_enabled: bool, // default true
-    pub adzan_file_path: String,   // default ""
-    pub always_on_top: bool,       // default false
-    pub autostart: bool,           // default false
+    pub adzan_file_path: String, // default ""
+    pub always_on_top: bool, // default false
+    pub autostart: bool, // default false
     #[serde(default)]
     pub floating_bar_visible: bool, // default false
     #[serde(default)]
@@ -98,18 +98,17 @@ pub fn load_settings() -> AppSettings {
 /// Save settings to TOML file
 pub fn save_settings(settings: &AppSettings) -> Result<(), String> {
     let path = get_settings_path();
-
+    
     // Create directories if they do not exist
     if let Some(parent) = path.parent() {
-        create_dir_all(parent)
-            .map_err(|e| format!("Failed to create settings directory: {}", e))?;
+        create_dir_all(parent).map_err(|e| format!("Failed to create settings directory: {}", e))?;
     }
 
     let toml_string = toml::to_string_pretty(settings)
         .map_err(|e| format!("Failed to serialize settings: {}", e))?;
 
-    let mut file =
-        File::create(&path).map_err(|e| format!("Failed to create settings file: {}", e))?;
+    let mut file = File::create(&path)
+        .map_err(|e| format!("Failed to create settings file: {}", e))?;
 
     file.write_all(toml_string.as_bytes())
         .map_err(|e| format!("Failed to write settings: {}", e))?;

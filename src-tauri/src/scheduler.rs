@@ -1,8 +1,8 @@
-use chrono::{Datelike, Local, NaiveTime, Timelike};
 use serde::{Deserialize, Serialize};
 use std::fs::{create_dir_all, File};
 use std::io::{Read, Write};
 use std::path::PathBuf;
+use chrono::{Datelike, Local, NaiveTime, Timelike};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ScheduledTask {
@@ -13,7 +13,7 @@ pub struct ScheduledTask {
     pub time: String,      // "HH:mm"
     pub day_of_week: Option<u32>, // 1 = Sunday, 2 = Monday, ..., 7 = Saturday
     pub day_of_month: Option<u32>, // 1..31
-    pub month: Option<u32>, // 1..12
+    pub month: Option<u32>,        // 1..12
     pub message: String,
     pub file_path: Option<String>,
     pub enabled: bool,
@@ -58,8 +58,8 @@ pub fn save_tasks(tasks: &[ScheduledTask]) -> Result<(), String> {
     let json_string = serde_json::to_string_pretty(tasks)
         .map_err(|e| format!("Failed to serialize tasks: {}", e))?;
 
-    let mut file =
-        File::create(&path).map_err(|e| format!("Failed to create tasks file: {}", e))?;
+    let mut file = File::create(&path)
+        .map_err(|e| format!("Failed to create tasks file: {}", e))?;
 
     file.write_all(json_string.as_bytes())
         .map_err(|e| format!("Failed to write tasks: {}", e))?;
@@ -100,8 +100,13 @@ pub fn is_task_due(task: &ScheduledTask, now: chrono::DateTime<Local>) -> bool {
             };
             task.day_of_week == Some(current_weekday_1)
         }
-        "Monthly" => task.day_of_month == Some(now.day()),
-        "Once" => task.day_of_month == Some(now.day()) && task.month == Some(now.month()),
+        "Monthly" => {
+            task.day_of_month == Some(now.day())
+        }
+        "Once" => {
+            task.day_of_month == Some(now.day())
+                && task.month == Some(now.month())
+        }
         "Start" => false, // Handled separately on application startup
         _ => false,
     }
@@ -113,10 +118,14 @@ pub fn execute_task_action(task: &ScheduledTask) {
         "Command" => {
             if let Some(cmd) = &task.file_path {
                 #[cfg(target_os = "windows")]
-                let _ = std::process::Command::new("cmd").args(["/C", cmd]).spawn();
-
+                let _ = std::process::Command::new("cmd")
+                    .args(["/C", cmd])
+                    .spawn();
+                
                 #[cfg(not(target_os = "windows"))]
-                let _ = std::process::Command::new("sh").args(["-c", cmd]).spawn();
+                let _ = std::process::Command::new("sh")
+                    .args(["-c", cmd])
+                    .spawn();
             }
         }
         "Shutdown" => {
@@ -131,11 +140,15 @@ pub fn execute_task_action(task: &ScheduledTask) {
                 .spawn();
 
             #[cfg(target_os = "linux")]
-            let _ = std::process::Command::new("shutdown").args(["now"]).spawn();
+            let _ = std::process::Command::new("shutdown")
+                .args(["now"])
+                .spawn();
         }
         "Hibernate" => {
             #[cfg(target_os = "windows")]
-            let _ = std::process::Command::new("shutdown").args(["/h"]).spawn();
+            let _ = std::process::Command::new("shutdown")
+                .args(["/h"])
+                .spawn();
 
             #[cfg(target_os = "linux")]
             let _ = std::process::Command::new("systemctl")
