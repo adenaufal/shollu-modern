@@ -1,0 +1,71 @@
+name: Bug Report
+description: Create a report to help us improve Shollu Modern.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ### Thank you for taking the time to report a bug!
+        Please fill out as much information as possible to help us identify and resolve the issue.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is.
+      placeholder: Describe the problem...
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Shollu Modern Version
+      description: E.g., v0.1.0-alpha, or commit hash.
+      placeholder: E.g., v0.1.0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      description: Select the OS you are running the app on.
+      options:
+        - Windows 11
+        - Windows 10
+        - macOS (Apple Silicon)
+        - macOS (Intel)
+        - Linux (Ubuntu/Debian)
+        - Linux (Other)
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: What steps did you take that led to this bug?
+      placeholder: |
+        1. Open the app
+        2. Click on settings
+        3. See the error...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+      placeholder: I expected the app to...
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / Screenshots
+      description: Attach any relevant log output or screenshots if applicable.
+      placeholder: Drag and drop files or paste text here...
