@@ -20,7 +20,7 @@ Phased action plan with effort estimates and status. Update statuses as you comp
 | 0.6 | Validate vs Shollu3.exe (Pekanbaru May 20 2026; max delta 11s) | ☑ |
 | 0.7 | Write `docs/` reference docs (algorithm, data formats, module survey, UI design) | ☑ |
 
-## Phase 1 — Infrastructure (◐ in progress)
+## Phase 1 — Infrastructure (☑ done, 24 May 2026)
 
 Set up version control, GitHub repo, CI, and contributor docs before the codebase grows.
 
@@ -30,9 +30,9 @@ Set up version control, GitHub repo, CI, and contributor docs before the codebas
 | I2 | `gh repo create adenaufal/shollu-modern --public` + push | XS | ☑ | 24 May 2026 · Created repo on GitHub & pushed `main` |
 | I3 | `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1) | XS | ☑ | 24 May 2026 · Added standard Contributor Covenant 2.1 |
 | I4 | `.github/workflows/ci.yml` — cargo test + pnpm build on Win/Mac/Linux matrix | S | ☑ | 24 May 2026 · CI setup completed with matrix builds and caching |
-| I5 | `.github/ISSUE_TEMPLATE/` + `PULL_REQUEST_TEMPLATE.md` | XS | ☐ | Bug + Feature templates |
-| I6 | `.github/workflows/release.yml` — tauri-action for signed cross-platform builds | M | ☐ | Defer until first feature MVP. Needs code-signing certs (later). |
-| I7 | Tauri updater config (auto-update endpoint) | S | ☐ | Optional, post-MVP |
+| I5 | `.github/ISSUE_TEMPLATE/` + `PULL_REQUEST_TEMPLATE.md` | XS | ☑ | 24 May 2026 · Created YAML bug/feature forms, config.yml, and PR template |
+| I6 | `.github/workflows/release.yml` — tauri-action for signed cross-platform builds | M | ☑ | 24 May 2026 · Release workflow configured with tauri-action matrix builds |
+| I7 | Tauri updater config (auto-update endpoint) | S | ☑ | 24 May 2026 · Updater plugin added, initialized in Rust, and endpoints configured in tauri.conf.json |
 
 ## Phase 2 — Backend (Rust, in `src-tauri/src/`)
 
