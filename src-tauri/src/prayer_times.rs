@@ -99,7 +99,7 @@ pub fn compute(
     let (fajr_angle, isha_angle) = method.angles();
     let sh = madhab.shadow_factor();
 
-    let b = location.latitude;
+    let b = location.latitude.clamp(-89.99, 89.99);
     let l = location.longitude;
     let tz = location.tz_hours;
     let h = location.altitude as f64;
@@ -128,23 +128,30 @@ pub fn compute(
     let d_rad = d.to_radians();
     let b_rad = b.to_radians();
 
+    // Compute the shared denominator once.  Latitude is already clamped to
+    // ±89.99° so this is never zero, but the ratio can still exceed ±1 at
+    // polar latitudes (midnight-sun / polar-night).  Clamping to [-1, 1]
+    // before passing to acos prevents NaN propagation in those edge cases.
+    let denom = d_rad.cos() * b_rad.cos();
+    let sin_prod = d_rad.sin() * b_rad.sin();
+
     let altitude_term = (-0.8333 - 0.0347 * h.signum() * h.abs().sqrt()).to_radians();
     let u = (180.0 / (15.0 * PI))
-        * ((altitude_term.sin() - d_rad.sin() * b_rad.sin()) / (d_rad.cos() * b_rad.cos())).acos();
+        * ((altitude_term.sin() - sin_prod) / denom).clamp(-1.0, 1.0).acos();
 
     let v_d = (180.0 / (15.0 * PI))
-        * ((-fajr_angle.to_radians().sin() - d_rad.sin() * b_rad.sin())
-            / (d_rad.cos() * b_rad.cos()))
-        .acos();
+        * ((-fajr_angle.to_radians().sin() - sin_prod) / denom)
+            .clamp(-1.0, 1.0)
+            .acos();
 
     let v_n = (180.0 / (15.0 * PI))
-        * ((-isha_angle.to_radians().sin() - d_rad.sin() * b_rad.sin())
-            / (d_rad.cos() * b_rad.cos()))
-        .acos();
+        * ((-isha_angle.to_radians().sin() - sin_prod) / denom)
+            .clamp(-1.0, 1.0)
+            .acos();
 
     let asr_altitude = (1.0 / (sh + ((b - d).abs().to_radians()).tan())).atan();
     let w = (180.0 / (15.0 * PI))
-        * ((asr_altitude.sin() - d_rad.sin() * b_rad.sin()) / (d_rad.cos() * b_rad.cos())).acos();
+        * ((asr_altitude.sin() - sin_prod) / denom).clamp(-1.0, 1.0).acos();
 
     const ONE_MINUTE_AS_HOURS: f64 = 1.0 / 60.0;
     PrayerTimes {
@@ -201,6 +208,25 @@ mod tests {
         assert!(times.dhuhr < times.asr);
         assert!(times.asr < times.maghrib);
         assert!(times.maghrib < times.isha);
+    }
+
+    #[test]
+    fn no_panic_at_poles() {
+        for &lat in &[90.0_f64, -90.0_f64] {
+            let times = compute(
+                172,
+                Location { latitude: lat, longitude: 0.0, altitude: 0, tz_hours: 0.0 },
+                Method::Isna,
+                Madhab::Shafii,
+                Adjustments::default(),
+            );
+            assert!(times.fajr.is_finite(), "fajr should be finite at latitude {lat}");
+            assert!(times.sunrise.is_finite(), "sunrise should be finite at latitude {lat}");
+            assert!(times.dhuhr.is_finite(), "dhuhr should be finite at latitude {lat}");
+            assert!(times.asr.is_finite(), "asr should be finite at latitude {lat}");
+            assert!(times.maghrib.is_finite(), "maghrib should be finite at latitude {lat}");
+            assert!(times.isha.is_finite(), "isha should be finite at latitude {lat}");
+        }
     }
 
     #[test]
