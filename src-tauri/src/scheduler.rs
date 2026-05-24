@@ -104,9 +104,8 @@ pub fn is_task_due(task: &ScheduledTask, now: chrono::DateTime<Local>) -> bool {
             task.day_of_month == Some(now.day())
         }
         "Once" => {
-            let matches_date = task.day_of_month == Some(now.day())
-                && task.month == Some(now.month());
-            matches_date
+            task.day_of_month == Some(now.day())
+                && task.month == Some(now.month())
         }
         "Start" => false, // Handled separately on application startup
         _ => false,

@@ -58,6 +58,28 @@ export function SettingsPage(props: SettingsPageProps) {
   const [alwaysOnTop, setAlwaysOnTop] = createSignal<boolean>(false);
   const [autostart, setAutostart] = createSignal<boolean>(false);
   const [pembulatan, setPembulatan] = createSignal<number>(0);
+  const [floatingBar, setFloatingBar] = createSignal<boolean>(false);
+  const [dropZone, setDropZone] = createSignal<boolean>(false);
+
+  const handleToggleFloatingBar = async () => {
+    const nextVal = !floatingBar();
+    try {
+      await invoke("toggle_floating_bar", { show: nextVal });
+      setFloatingBar(nextVal);
+    } catch (e) {
+      console.error("Failed to toggle floating bar:", e);
+    }
+  };
+
+  const handleToggleDropZone = async () => {
+    const nextVal = !dropZone();
+    try {
+      await invoke("toggle_drop_zone", { show: nextVal });
+      setDropZone(nextVal);
+    } catch (e) {
+      console.error("Failed to toggle drop zone:", e);
+    }
+  };
 
   // Load settings on mount
   const loadSettings = async () => {
@@ -249,6 +271,34 @@ export function SettingsPage(props: SettingsPageProps) {
           <div
             onClick={() => setAlwaysOnTop(!alwaysOnTop())}
             class={`toggle-pill cursor-pointer ${alwaysOnTop() ? "active" : ""}`}
+          >
+            <div class="toggle-knob" />
+          </div>
+        </div>
+
+        {/* Floating Bar Toggle */}
+        <div class="settings-row select-none">
+          <div>
+            <div class="settings-row-label select-none">{props.lang === "Indonesia" ? "Bilah Melayang" : "Floating Bar Widget"}</div>
+            <div class="settings-row-sub select-none">{props.lang === "Indonesia" ? "Tampilkan strip info waktu sholat horizontal melayang" : "Show compact floating horizontal info bar"}</div>
+          </div>
+          <div
+            onClick={handleToggleFloatingBar}
+            class={`toggle-pill cursor-pointer ${floatingBar() ? "active" : ""}`}
+          >
+            <div class="toggle-knob" />
+          </div>
+        </div>
+
+        {/* Drop Zone Toggle */}
+        <div class="settings-row select-none">
+          <div>
+            <div class="settings-row-label select-none">{props.lang === "Indonesia" ? "Zona Tarik (Drop Zone)" : "Drop Zone Widget"}</div>
+            <div class="settings-row-sub select-none">{props.lang === "Indonesia" ? "Tampilkan widget kecil penghitung mundur melayang" : "Show small floating countdown overlay zone"}</div>
+          </div>
+          <div
+            onClick={handleToggleDropZone}
+            class={`toggle-pill cursor-pointer ${dropZone() ? "active" : ""}`}
           >
             <div class="toggle-knob" />
           </div>

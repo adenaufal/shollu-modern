@@ -93,8 +93,8 @@ Full high-fidelity SolidJS + Tailwind v4 + Tauri 2 frontend implementation.
 | U8 | `<ScheduleView>` — date range + export | `USchedule.pas` | M | ☑ | prayer_times |
 | U9 | `<TaskEditor>` — list + form (Pesan tambahan style) | `UTask.pas` | L | ☑ | B7 |
 | U10 | `<MessageDialog>` — modal reminder/azan | `UMessage.pas` + `UDialog.pas` | M | ☑ | B7, B8 |
-| U11 | `<FloatingBar>` — countdown strip window | `UBar.pas` | S | ◐ | prayer_times |
-| U12 | `<DropZone>` — mini always-on-top widget | `UDropZone.pas` | M | ◐ | prayer_times |
+| U11 | `<FloatingBar>` — countdown strip window | `UBar.pas` | S | ☑ | 24 May 2026 · Implemented draggable horizontal overlay bar |
+| U12 | `<DropZone>` — mini always-on-top widget | `UDropZone.pas` | M | ☑ | 24 May 2026 · Implemented draggable edge-snapping overlay widget |
 | U13 | i18n integration — Solid context + ID/EN switch | `Languages/*.slp` | S | ☑ | B5 |
 | U14 | `<Tray>` — system tray icon + popup | `Unit1.pas` tray | S | ☑ | tauri-plugin-tray |
 | U15 | a11y pass — keyboard nav, ARIA, contrast | new | S | ☑ | none |

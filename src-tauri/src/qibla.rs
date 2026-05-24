@@ -24,15 +24,13 @@ pub fn calculate_qibla(latitude: f64, longitude: f64) -> QiblaResult {
     let mut degrees = (x1 / (y1 - y2)).atan() * 180.0 / std::f64::consts::PI;
 
     if degrees < 0.0 {
-        degrees = 360.0 + degrees;
+        degrees += 360.0;
     }
 
     // West or East from Mecca, the limit is MLONG - 180
     // Original Pascal: if (Lon < MLONG) and (Lon > (MLONG-180)) then if Angle > 180 then Angle := Angle - 180;
-    if longitude < MLONG && longitude > (MLONG - 180.0) {
-        if degrees > 180.0 {
-            degrees -= 180.0;
-        }
+    if longitude < MLONG && longitude > (MLONG - 180.0) && degrees > 180.0 {
+        degrees -= 180.0;
     }
 
     if degrees > 360.0 {

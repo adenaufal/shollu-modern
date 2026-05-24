@@ -249,7 +249,7 @@ pub fn parse_slp_file(file_path: &Path) -> Result<HashMap<String, String>, Strin
 
     for line_bytes in bytes.split(|&b| b == b'\n') {
         let mut line_bytes = line_bytes;
-        if line_bytes.ends_with(&[b'\r']) {
+        if line_bytes.ends_with(b"\r") {
             line_bytes = &line_bytes[..line_bytes.len() - 1];
         }
 

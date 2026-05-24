@@ -246,12 +246,7 @@ pub fn search_cities(db_path: &Path, query: &str, limit: usize) -> Result<Vec<Ci
         })
         .map_err(|e| format!("Query failed: {}", e))?;
 
-    let mut results = Vec::new();
-    for row in rows {
-        if let Ok(city) = row {
-            results.push(city);
-        }
-    }
+    let results: Vec<City> = rows.flatten().collect();
     Ok(results)
 }
 
@@ -271,12 +266,7 @@ pub fn list_regions(db_path: &Path) -> Result<Vec<Region>, String> {
         })
         .map_err(|e| format!("Query failed: {}", e))?;
 
-    let mut results = Vec::new();
-    for row in rows {
-        if let Ok(region) = row {
-            results.push(region);
-        }
-    }
+    let results: Vec<Region> = rows.flatten().collect();
     Ok(results)
 }
 
@@ -306,12 +296,7 @@ pub fn cities_by_region(db_path: &Path, region_id: i32) -> Result<Vec<City>, Str
         })
         .map_err(|e| format!("Query failed: {}", e))?;
 
-    let mut results = Vec::new();
-    for row in rows {
-        if let Ok(city) = row {
-            results.push(city);
-        }
-    }
+    let results: Vec<City> = rows.flatten().collect();
     Ok(results)
 }
 

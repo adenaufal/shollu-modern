@@ -278,6 +278,7 @@ mod tests {
 
     #[test]
     fn print_reference_table() {
+        #[allow(clippy::type_complexity)]
         let cases: &[(&str, u16, f64, f64, i32, f64, Method, Madhab)] = &[
             ("Jakarta  May 20 (doy=140)  ISNA Shafii", 140, -6.2088, 106.8456, 7, 7.0, Method::Isna, Madhab::Shafii),
             ("Mecca    May 20 (doy=140)  UmmAlQura Shafii", 140, 21.4225, 39.8262, 277, 3.0, Method::UmmAlQura, Madhab::Shafii),

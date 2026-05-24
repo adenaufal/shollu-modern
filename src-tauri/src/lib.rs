@@ -50,6 +50,7 @@ fn get_app_paths(app: &tauri::AppHandle) -> (PathBuf, PathBuf, PathBuf) {
 // ==========================================
 
 #[tauri::command]
+#[allow(clippy::too_many_arguments)]
 fn compute_prayer_times(
     date_iso: String, // "YYYY-MM-DD"
     latitude: f64,
@@ -202,6 +203,64 @@ fn set_volume(volume: f32) {
     audio::set_volume(volume);
 }
 
+#[tauri::command]
+fn toggle_floating_bar(app: tauri::AppHandle, show: bool) -> Result<(), String> {
+    if show {
+        if let Some(win) = app.get_webview_window("floating-bar") {
+            let _ = win.show();
+            let _ = win.set_focus();
+        } else {
+            let _win = tauri::WebviewWindowBuilder::new(
+                &app,
+                "floating-bar",
+                tauri::WebviewUrl::App("index.html".into())
+            )
+            .title("Shollu Floating Bar")
+            .inner_size(800.0, 40.0)
+            .decorations(false)
+            .transparent(true)
+            .always_on_top(true)
+            .resizable(false)
+            .build()
+            .map_err(|e| e.to_string())?;
+        }
+    } else {
+        if let Some(win) = app.get_webview_window("floating-bar") {
+            let _ = win.hide();
+        }
+    }
+    Ok(())
+}
+
+#[tauri::command]
+fn toggle_drop_zone(app: tauri::AppHandle, show: bool) -> Result<(), String> {
+    if show {
+        if let Some(win) = app.get_webview_window("drop-zone") {
+            let _ = win.show();
+            let _ = win.set_focus();
+        } else {
+            let _win = tauri::WebviewWindowBuilder::new(
+                &app,
+                "drop-zone",
+                tauri::WebviewUrl::App("index.html".into())
+            )
+            .title("Shollu Drop Zone")
+            .inner_size(180.0, 48.0)
+            .decorations(false)
+            .transparent(true)
+            .always_on_top(true)
+            .resizable(false)
+            .build()
+            .map_err(|e| e.to_string())?;
+        }
+    } else {
+        if let Some(win) = app.get_webview_window("drop-zone") {
+            let _ = win.hide();
+        }
+    }
+    Ok(())
+}
+
 // ==========================================
 // App Startup Registration
 // ==========================================
@@ -264,7 +323,9 @@ pub fn run() {
             save_tasks,
             play_adzan,
             stop_audio,
-            set_volume
+            set_volume,
+            toggle_floating_bar,
+            toggle_drop_zone
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

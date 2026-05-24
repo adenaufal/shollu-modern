@@ -12,7 +12,7 @@ pub struct LocationSettings {
     pub timezone: f64,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct Adjustments {
     pub fajr: i32,
     pub sunrise: i32,
@@ -20,19 +20,6 @@ pub struct Adjustments {
     pub asr: i32,
     pub maghrib: i32,
     pub isha: i32,
-}
-
-impl Default for Adjustments {
-    fn default() -> Self {
-        Self {
-            fajr: 0,
-            sunrise: 0,
-            dhuhr: 0,
-            asr: 0,
-            maghrib: 0,
-            isha: 0,
-        }
-    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
