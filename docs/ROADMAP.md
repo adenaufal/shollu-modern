@@ -29,7 +29,7 @@ Set up version control, GitHub repo, CI, and contributor docs before the codebas
 | I1 | `git init` + `.gitattributes` + initial commit | XS | ☑ | 24 May 2026 · Initial commit captures Phase 0 |
 | I2 | `gh repo create adenaufal/shollu-modern --public` + push | XS | ☑ | 24 May 2026 · Created repo on GitHub & pushed `main` |
 | I3 | `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1) | XS | ☑ | 24 May 2026 · Added standard Contributor Covenant 2.1 |
-| I4 | `.github/workflows/ci.yml` — cargo test + pnpm build on Win/Mac/Linux matrix | S | ☐ | Linux needs `libwebkit2gtk-4.1-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev libsoup-3.0-dev libjavascriptcoregtk-4.1-dev` |
+| I4 | `.github/workflows/ci.yml` — cargo test + pnpm build on Win/Mac/Linux matrix | S | ☑ | 24 May 2026 · CI setup completed with matrix builds and caching |
 | I5 | `.github/ISSUE_TEMPLATE/` + `PULL_REQUEST_TEMPLATE.md` | XS | ☐ | Bug + Feature templates |
 | I6 | `.github/workflows/release.yml` — tauri-action for signed cross-platform builds | M | ☐ | Defer until first feature MVP. Needs code-signing certs (later). |
 | I7 | Tauri updater config (auto-update endpoint) | S | ☐ | Optional, post-MVP |
