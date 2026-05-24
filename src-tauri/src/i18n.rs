@@ -8,8 +8,8 @@ pub struct LanguageMeta {
 }
 
 /// Convert legacy language pack index to stable semantic string ID
-pub fn get_key_for_index(index: usize) -> &'static str {
-    match index {
+pub fn get_key_for_index(index: usize) -> Option<&'static str> {
+    let key = match index {
         0 => "prayer.fajr",
         1 => "prayer.sunrise",
         2 => "prayer.dhuhr",
@@ -235,8 +235,9 @@ pub fn get_key_for_index(index: usize) -> &'static str {
         223 => "setting.always_on_top",
         224 => "setting.hijri_correction",
         225 => "setting.remaining_time",
-        _ => "unknown",
-    }
+        _ => return None,
+    };
+    Some(key)
 }
 
 /// Parse a legacy `.slp` language pack file
@@ -267,8 +268,7 @@ pub fn parse_slp_file(file_path: &Path) -> Result<HashMap<String, String>, Strin
             continue;
         }
 
-        let key = get_key_for_index(index);
-        if key != "unknown" {
+        if let Some(key) = get_key_for_index(index) {
             map.insert(key.to_string(), trimmed.to_string());
         }
         index += 1;
@@ -350,5 +350,15 @@ mod tests {
         assert_eq!(map.get("prayer.fajr").map(|s| s.as_str()), Some("Shubuh"));
         assert_eq!(map.get("day.sunday").map(|s| s.as_str()), Some("Ahad"));
         assert_eq!(map.get("month.gregorian.january").map(|s| s.as_str()), Some("Januari"));
+    }
+
+    #[test]
+    fn test_get_key_for_index_out_of_range() {
+        assert_eq!(get_key_for_index(226), None);
+    }
+
+    #[test]
+    fn test_get_key_for_index_in_range() {
+        assert_eq!(get_key_for_index(0), Some("prayer.fajr"));
     }
 }
