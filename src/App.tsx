@@ -48,7 +48,6 @@ export function App() {
   const [accent, setAccentState] = createSignal<string>("teal");
   const [collapsed, setCollapsed] = createSignal<boolean>(false);
   const [lang, setLangState] = createSignal<string>("Indonesia");
-  const [showTrayIcon, setShowTrayIcon] = createSignal<boolean>(true);
   const [windowLabel, setWindowLabel] = createSignal<string>("main");
 
   // Sync translation functions based on active language pack
@@ -241,16 +240,6 @@ export function App() {
           </nav>
 
           <div class="sidebar-footer py-2 px-1">
-            <div class="tray-row flex items-center justify-between px-3 py-2">
-              {!collapsed() && <span>{lang() === "Indonesia" ? "Tray Sistem" : "System Tray"}</span>}
-              <div
-                onClick={() => setShowTrayIcon(!showTrayIcon())}
-                class={`toggle-pill cursor-pointer ${showTrayIcon() ? "active" : ""}`}
-              >
-                <div class="toggle-knob" />
-              </div>
-            </div>
-
             {!collapsed() ? (
               <button
                 onClick={() => setCollapsed(true)}
