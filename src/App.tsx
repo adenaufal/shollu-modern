@@ -42,8 +42,15 @@ interface ScheduledTask {
   enabled: boolean;
 }
 
+type PageId = "main" | "location" | "schedule" | "tasks" | "convert" | "settings" | "about";
+type NavigationLabelKey = `nav.${PageId}`;
+type TitleKey = `title.${PageId}`;
+type TranslationKey = NavigationLabelKey | TitleKey;
+type Language = "Indonesia" | "English";
+type TranslationDictionary = Record<Language, Record<TranslationKey, string>>;
+
 export function App() {
-  const [page, setPage] = createSignal<string>("main");
+  const [page, setPage] = createSignal<PageId>("main");
   const [theme, setThemeState] = createSignal<string>("light");
   const [accent, setAccentState] = createSignal<string>("teal");
   const [collapsed, setCollapsed] = createSignal<boolean>(false);
@@ -52,9 +59,9 @@ export function App() {
   const [windowLabel, setWindowLabel] = createSignal<string>("main");
 
   // Sync translation functions based on active language pack
-  const t = (key: string, fallback: string): string => {
+  const t = (key: TranslationKey, fallback: string): string => {
     // Basic reactive dictionary mapping fallbacks inside the client
-    const dict: Record<string, Record<string, string>> = {
+    const dict: TranslationDictionary = {
       Indonesia: {
         "nav.main": "Utama",
         "nav.location": "Lokasi",
@@ -88,7 +95,7 @@ export function App() {
         "title.about": "About Shollu"
       }
     };
-    const activeDict = dict[lang()] || dict["English"];
+    const activeDict = lang() in dict ? dict[lang() as Language] : dict.English;
     return activeDict[key] || fallback;
   };
 
@@ -183,7 +190,7 @@ export function App() {
     }
   };
 
-  const navItems = [
+  const navItems: Array<{ id: PageId; labelKey: NavigationLabelKey; fallback: string; Icon: typeof ClockIcon }> = [
     { id: "main", labelKey: "nav.main", fallback: "Main", Icon: ClockIcon },
     { id: "location", labelKey: "nav.location", fallback: "Location", Icon: MapPinIcon },
     { id: "schedule", labelKey: "nav.schedule", fallback: "Schedule", Icon: CalendarIcon },
@@ -274,7 +281,7 @@ export function App() {
         <div class="content-area">
           <div class="content-header">
             <div class="content-header-title">
-              {t(`title.${page()}`, "Shollu Modern")}
+              {t(`title.${page()}` as TitleKey, "Shollu Modern")}
             </div>
           </div>
 
