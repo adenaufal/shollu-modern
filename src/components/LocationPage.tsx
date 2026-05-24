@@ -117,14 +117,39 @@ export function LocationPage(props: LocationPageProps) {
     const currSettings = settings();
     if (!currSettings) return;
 
+    const lat = latitude();
+    const lng = longitude();
+    const alt = altitude();
+    const tz = timezone();
+
+    if (!Number.isFinite(lat) || lat < -90 || lat > 90) {
+      alert(props.lang === "Indonesia" ? "Lintang harus berada di antara -90 dan 90." : "Latitude must be between -90 and 90.");
+      return;
+    }
+
+    if (!Number.isFinite(lng) || lng < -180 || lng > 180) {
+      alert(props.lang === "Indonesia" ? "Bujur harus berada di antara -180 dan 180." : "Longitude must be between -180 and 180.");
+      return;
+    }
+
+    if (!Number.isFinite(tz) || tz < -12 || tz > 14) {
+      alert(props.lang === "Indonesia" ? "Zona waktu harus berada di antara -12 dan 14." : "Timezone offset must be between -12 and 14.");
+      return;
+    }
+
+    if (!Number.isFinite(alt) || alt < 0) {
+      alert(props.lang === "Indonesia" ? "Ketinggian tidak boleh negatif." : "Altitude must be zero or greater.");
+      return;
+    }
+
     const updated: AppSettings = {
       ...currSettings,
       location: {
         name: areaName().trim(),
-        latitude: latitude(),
-        longitude: longitude(),
-        altitude: altitude(),
-        timezone: timezone()
+        latitude: lat,
+        longitude: lng,
+        altitude: alt,
+        timezone: tz
       },
       method: method(),
       madhab: madhab(),
