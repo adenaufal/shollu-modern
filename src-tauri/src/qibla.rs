@@ -8,13 +8,13 @@ pub struct QiblaResult {
 /// Calculate Qibla bearing and direction from latitude and longitude
 /// Ported from `UMainPage.pas:179-188` (QiblaAngle)
 pub fn calculate_qibla(latitude: f64, longitude: f64) -> QiblaResult {
-    const MLONG: f64 = 39.823333; // Mecca longitude
-    const MLAT: f64 = 21.42333;  // Mecca latitude
+    const MECCA_LNG: f64 = 39.826206; // Mecca (Ka'bah) longitude
+    const MECCA_LAT: f64 = 21.422487; // Mecca (Ka'bah) latitude
 
     // Convert to radians
     let lat_rad = latitude * std::f64::consts::PI / 180.0;
-    let mlat_rad = MLAT * std::f64::consts::PI / 180.0;
-    let diff_lon_rad = (-longitude + MLONG) * std::f64::consts::PI / 180.0;
+    let mlat_rad = MECCA_LAT * std::f64::consts::PI / 180.0;
+    let diff_lon_rad = (-longitude + MECCA_LNG) * std::f64::consts::PI / 180.0;
 
     let x1 = diff_lon_rad.sin();
     let y1 = lat_rad.cos() * mlat_rad.tan();
@@ -29,7 +29,7 @@ pub fn calculate_qibla(latitude: f64, longitude: f64) -> QiblaResult {
 
     // West or East from Mecca, the limit is MLONG - 180
     // Original Pascal: if (Lon < MLONG) and (Lon > (MLONG-180)) then if Angle > 180 then Angle := Angle - 180;
-    if longitude < MLONG && longitude > (MLONG - 180.0) && degrees > 180.0 {
+    if longitude < MECCA_LNG && longitude > (MECCA_LNG - 180.0) && degrees > 180.0 {
         degrees -= 180.0;
     }
 
