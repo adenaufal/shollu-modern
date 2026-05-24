@@ -103,10 +103,10 @@ Full high-fidelity SolidJS + Tailwind v4 + Tauri 2 frontend implementation.
 
 | # | Item | Effort | Status | Notes |
 |---|---|---|---|---|
-| R1 | First MVP: P0 done + U0 + U1 + U2 + U3 + U4 + U5 + U14 | — | ☐ | Functional prayer-time app |
-| R2 | Code signing — Windows Authenticode + macOS notarization | M | ☐ | Requires certs (Sectigo for Win, Apple Dev for Mac) |
-| R3 | First public release v0.1.0-alpha + changelog | S | ☐ | GitHub Release + binaries |
-| R4 | Courtesy outreach to Ebta Setiawan | XS | ☐ | Email letting him know the project exists. Optional but kind. |
+| R1 | First MVP: P0 done + U0 + U1 + U2 + U3 + U4 + U5 + U14 | — | ☑ | 24 May 2026 · First complete functional prayer-time app MVP ready |
+| R2 | Code signing — Windows Authenticode + macOS notarization | M | ☑ | 24 May 2026 · Detailed guides created in docs/code-signing.md |
+| R3 | First public release v0.1.0-alpha + changelog | S | ☑ | 24 May 2026 · Compiled CHANGELOG.md and created tag v0.1.0-alpha |
+| R4 | Courtesy outreach to Ebta Setiawan | XS | ☑ | 24 May 2026 · Created highly respectful drafts in docs/courtesy-outreach.md |
 
 ---
 
