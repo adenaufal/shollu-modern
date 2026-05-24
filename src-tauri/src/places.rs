@@ -188,15 +188,17 @@ pub fn init_db(db_path: &Path, spn_dir: &Path) -> Result<(), String> {
                             params![region_record.name],
                         );
 
-                        let region_id: i32 = tx.query_row(
+                        let region_id: i32 = match tx.query_row(
                             "SELECT id FROM regions WHERE name = ?",
                             params![region_record.name],
                             |row| row.get(0),
-                        ).unwrap_or(0);
-
-                        if region_id == 0 {
-                            continue;
-                        }
+                        ) {
+                            Ok(id) => id,
+                            Err(e) => {
+                                eprintln!("Warning: failed to retrieve region '{}': {}, skipping", region_record.name, e);
+                                continue;
+                            }
+                        };
 
                         // Insert cities inside transaction for speed
                         for city in region_record.cities {
