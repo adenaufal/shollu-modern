@@ -1,4 +1,4 @@
-import { createSignal, onMount, onCleanup, createEffect, Show } from "solid-js";
+import { createSignal, onMount, onCleanup, Show } from "solid-js";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
@@ -47,7 +47,6 @@ export function App() {
   const [theme, setThemeState] = createSignal<string>("light");
   const [accent, setAccentState] = createSignal<string>("teal");
   const [collapsed, setCollapsed] = createSignal<boolean>(false);
-  const [tweaksOpen, setTweaksOpen] = createSignal<boolean>(false);
   const [lang, setLangState] = createSignal<string>("Indonesia");
   const [showTrayIcon, setShowTrayIcon] = createSignal<boolean>(true);
   const [windowLabel, setWindowLabel] = createSignal<string>("main");
@@ -203,36 +202,36 @@ export function App() {
         </Show>
       }
     >
-      <div class="app-window select-none text-slate-800 dark:text-slate-200">
+      <div class="app-window select-none">
         {/* Sidebar Navigation */}
-        <div class={`sidebar select-none ${collapsed() ? "collapsed" : ""}`}>
-          <div class="sidebar-logo select-none border-b border-slate-200 dark:border-slate-800/40">
-            <img src="src-tauri/icons/icon-32.png" alt="Shollu Modern" />
+        <div class={`sidebar ${collapsed() ? "collapsed" : ""}`}>
+          <div class="sidebar-logo">
+            <img src="/icon-32.png" alt="Shollu Modern" />
             {!collapsed() && (
-              <div class="sidebar-logo-text select-none text-left">
-                <div class="sidebar-logo-name font-bold tracking-tight text-slate-800 dark:text-slate-200">
+              <div class="sidebar-logo-text">
+                <div class="sidebar-logo-name">
                   Shollu
                 </div>
-                <div class="sidebar-logo-sub text-[10px] text-slate-400 dark:text-slate-500 font-medium">
+                <div class="sidebar-logo-sub">
                   Modern
                 </div>
               </div>
             )}
           </div>
 
-          <nav class="select-none flex-1 py-4 space-y-1">
+          <nav class="flex-1 py-4 space-y-1">
             <For each={navItems}>
               {(item) => (
                 <button
                   onClick={() => setPage(item.id)}
-                  class={`nav-item select-none ${page() === item.id ? "active bg-teal-50 dark:bg-teal-950/20 font-bold text-teal-600 dark:text-teal-400" : ""}`}
+                  class={`nav-item ${page() === item.id ? "active" : ""}`}
                   title={collapsed() ? t(item.labelKey, item.fallback) : undefined}
                 >
-                  <div class="nav-icon text-slate-500 dark:text-slate-400">
+                  <div class="nav-icon">
                     <item.Icon size={16} />
                   </div>
                   {!collapsed() && (
-                    <span class="text-sm font-semibold select-none">
+                    <span>
                       {t(item.labelKey, item.fallback)}
                     </span>
                   )}
@@ -241,8 +240,8 @@ export function App() {
             </For>
           </nav>
 
-          <div class="sidebar-footer select-none border-t border-slate-200 dark:border-slate-800/40 py-2 px-1">
-            <div class="tray-row select-none flex items-center justify-between px-3 py-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+          <div class="sidebar-footer py-2 px-1">
+            <div class="tray-row flex items-center justify-between px-3 py-2">
               {!collapsed() && <span>{lang() === "Indonesia" ? "Tray Sistem" : "System Tray"}</span>}
               <div
                 onClick={() => setShowTrayIcon(!showTrayIcon())}
@@ -255,7 +254,7 @@ export function App() {
             {!collapsed() ? (
               <button
                 onClick={() => setCollapsed(true)}
-                class="nav-item select-none text-xs text-slate-400 font-semibold px-3 py-2 flex items-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-800/40 w-full"
+                class="nav-item text-xs px-3 py-2 flex items-center gap-2 w-full"
               >
                 <ChevronLeftIcon size={14} />
                 <span>{lang() === "Indonesia" ? "Sembunyikan" : "Collapse"}</span>
@@ -263,7 +262,7 @@ export function App() {
             ) : (
               <button
                 onClick={() => setCollapsed(false)}
-                class="nav-item select-none justify-center py-2 hover:bg-slate-50 dark:hover:bg-slate-800/40 w-full"
+                class="nav-item justify-center py-2 w-full"
               >
                 <ChevronRightIcon size={14} />
               </button>
@@ -272,82 +271,17 @@ export function App() {
         </div>
 
         {/* Main Content Area */}
-        <div class="content-area select-none flex-1 flex flex-col bg-slate-50 dark:bg-slate-950">
-          <div class="content-header select-none flex items-center justify-between border-b border-slate-200 dark:border-slate-800/40 bg-white dark:bg-slate-900 px-6 py-2 select-none h-12 flex-shrink-0">
-            <div class="content-header-title text-sm font-bold text-slate-800 dark:text-slate-200 select-none">
+        <div class="content-area">
+          <div class="content-header">
+            <div class="content-header-title">
               {t(`title.${page()}`, "Shollu Modern")}
             </div>
-            <button
-              onClick={() => setTweaksOpen(!tweaksOpen())}
-              class="btn btn-ghost select-none text-[11px] font-bold px-3 py-1 select-none border border-slate-200 dark:border-slate-800"
-            >
-              Tweaks
-            </button>
           </div>
 
           <div class="content-scroll flex-grow overflow-y-auto p-6">
             {renderPage()}
           </div>
         </div>
-
-        {/* Dynamic Slide Tweaks Panel */}
-        <Show when={tweaksOpen()}>
-          <div class="tweaks-panel select-none border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl p-4 shadow-lg absolute bottom-4 right-4 z-50">
-            <div class="tweaks-header select-none flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800/40 font-bold text-xs uppercase tracking-wider text-slate-400 dark:text-slate-500">
-              <span>Appearance Tweaks</span>
-              <button onClick={() => setTweaksOpen(false)} class="tweaks-close hover:text-slate-700 dark:hover:text-slate-300 font-bold">
-                ✕
-              </button>
-            </div>
-            <div class="tweaks-body select-none pt-3 space-y-4">
-              <div class="space-y-1">
-                <span class="tweak-label text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">
-                  Select Theme
-                </span>
-                <div class="theme-btns flex gap-1 select-none">
-                  <button onClick={() => setTheme("light")} class={`theme-btn text-[10px] flex-1 py-1 ${theme() === "light" ? "active" : ""}`}>
-                    Light
-                  </button>
-                  <button onClick={() => setTheme("dark")} class={`theme-btn text-[10px] flex-1 py-1 ${theme() === "dark" ? "active" : ""}`}>
-                    Dark
-                  </button>
-                  <button onClick={() => setTheme("sepia")} class={`theme-btn text-[10px] flex-1 py-1 ${theme() === "sepia" ? "active" : ""}`}>
-                    Sepia
-                  </button>
-                </div>
-              </div>
-
-              <div class="space-y-1 select-none">
-                <span class="tweak-label text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">
-                  Select Accent
-                </span>
-                <div class="flex gap-2 justify-center select-none pt-1">
-                  {(
-                    [
-                      { id: "teal", color: "oklch(0.72 0.17 208)" },
-                      { id: "indigo", color: "oklch(0.67 0.18 270)" },
-                      { id: "emerald", color: "oklch(0.72 0.17 155)" },
-                      { id: "rose", color: "oklch(0.70 0.18 10)" },
-                      { id: "slate", color: "oklch(0.567 0.028 210)" }
-                    ] as const
-                  ).map((a) => (
-                    <button
-                      onClick={() => setAccent(a.id)}
-                      style={{
-                        width: "18px",
-                        height: "18px",
-                        "border-radius": "50%",
-                        background: a.color,
-                        border: accent() === a.id ? "2.5px solid var(--fg)" : "2px solid transparent",
-                        cursor: "pointer"
-                      }}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </Show>
       </div>
     </Show>
   );

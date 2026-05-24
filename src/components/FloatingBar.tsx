@@ -177,7 +177,7 @@ export function FloatingBar() {
     >
       {/* Brand & Location */}
       <div data-tauri-drag-region class="flex items-center gap-2">
-        <img data-tauri-drag-region src="src-tauri/icons/icon-32.png" alt="" class="w-5 h-5 rounded" />
+        <img data-tauri-drag-region src="/icon-32.png" alt="" class="w-5 h-5 rounded" />
         <span data-tauri-drag-region class="text-xs font-bold tracking-tight">
           Shollu · <span class="text-teal-600 dark:text-teal-400">{settings()?.location.name ?? "Pekanbaru"}</span>
         </span>

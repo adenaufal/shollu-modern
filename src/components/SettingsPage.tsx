@@ -1,5 +1,7 @@
 import { createSignal, onMount, For } from "solid-js";
 import { invoke } from "@tauri-apps/api/core";
+import { ACCENTS } from "../helpers";
+import type { AppSettings } from "../helpers";
 
 interface SettingsPageProps {
   lang: string;
@@ -9,45 +11,6 @@ interface SettingsPageProps {
   accent: string;
   setAccent: (a: string) => void;
 }
-
-interface LocationSettings {
-  name: string;
-  latitude: number;
-  longitude: number;
-  altitude: number;
-  timezone: number;
-}
-
-interface Adjustments {
-  fajr: number;
-  sunrise: number;
-  dhuhr: number;
-  asr: number;
-  maghrib: number;
-  isha: number;
-}
-
-interface AppSettings {
-  location: LocationSettings;
-  method: number;
-  madhab: number;
-  adjustments: Adjustments;
-  pembulatan: number;
-  language: string;
-  skin: string;
-  adzan_sound_enabled: boolean;
-  adzan_file_path: string;
-  always_on_top: bool;
-  autostart: bool;
-}
-
-const ACCENTS = [
-  { id: "teal", color: "oklch(0.72 0.17 208)", label: "Teal" },
-  { id: "indigo", color: "oklch(0.67 0.18 270)", label: "Indigo" },
-  { id: "emerald", color: "oklch(0.72 0.17 155)", label: "Emerald" },
-  { id: "rose", color: "oklch(0.70 0.18 10)", label: "Rose" },
-  { id: "slate", color: "oklch(0.567 0.028 210)", label: "Slate" }
-];
 
 export function SettingsPage(props: SettingsPageProps) {
   const [settings, setSettings] = createSignal<AppSettings | null>(null);
@@ -66,6 +29,11 @@ export function SettingsPage(props: SettingsPageProps) {
     try {
       await invoke("toggle_floating_bar", { show: nextVal });
       setFloatingBar(nextVal);
+      // Persist to settings
+      const curr = settings();
+      if (curr) {
+        await invoke("save_settings", { settings: { ...curr, floating_bar_visible: nextVal } });
+      }
     } catch (e) {
       console.error("Failed to toggle floating bar:", e);
     }
@@ -76,6 +44,11 @@ export function SettingsPage(props: SettingsPageProps) {
     try {
       await invoke("toggle_drop_zone", { show: nextVal });
       setDropZone(nextVal);
+      // Persist to settings
+      const curr = settings();
+      if (curr) {
+        await invoke("save_settings", { settings: { ...curr, drop_zone_visible: nextVal } });
+      }
     } catch (e) {
       console.error("Failed to toggle drop zone:", e);
     }
@@ -91,6 +64,8 @@ export function SettingsPage(props: SettingsPageProps) {
       setAlwaysOnTop(res.always_on_top);
       setAutostart(res.autostart);
       setPembulatan(res.pembulatan);
+      setFloatingBar(res.floating_bar_visible);
+      setDropZone(res.drop_zone_visible);
 
       // Parse theme and accent from Rust `skin` field (formatted as "{theme}-{accent}")
       if (res.skin && res.skin !== "default") {
@@ -125,6 +100,8 @@ export function SettingsPage(props: SettingsPageProps) {
       adzan_file_path: adzanPath().trim(),
       always_on_top: alwaysOnTop(),
       autostart: autostart(),
+      floating_bar_visible: floatingBar(),
+      drop_zone_visible: dropZone(),
       pembulatan: pembulatan()
     };
 
@@ -306,7 +283,12 @@ export function SettingsPage(props: SettingsPageProps) {
       </div>
 
       {/* Save Settings Button */}
-      <div class="flex justify-end pt-2 select-none pb-8">
+      <div class="settings-save-bar flex items-center justify-between pt-4 pb-8">
+        <span class="text-[11px] text-slate-400 dark:text-slate-500 italic">
+          {props.lang === "Indonesia"
+            ? "Perubahan tema & bahasa diterapkan langsung"
+            : "Theme & language changes apply instantly"}
+        </span>
         <button
           onClick={handleSaveSettings}
           class="btn btn-primary select-none text-xs font-semibold px-6 py-2 shadow"

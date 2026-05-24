@@ -51,5 +51,10 @@ yarn-error.log*
 coverage/
 .nyc_output/
 
+# TypeScript build info
+*.tsbuildinfo
+
 # OS
 *.icloud
+
+# pnpm-lock.yaml is intentionally NOT ignored — commit it for reproducible installs

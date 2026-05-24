@@ -9,7 +9,7 @@ export function AboutPage(props: AboutPageProps) {
       {/* Branding Hero */}
       <div class="about-hero select-none">
         <div class="about-icon bg-white p-2 rounded-2xl shadow-md border border-slate-200 dark:border-slate-800 inline-block">
-          <img src="src-tauri/icons/icon-128.png" alt="Shollu Modern" class="w-16 h-16 object-contain" />
+          <img src="/icon-128.png" alt="Shollu Modern" class="w-16 h-16 object-contain" />
         </div>
         <h2 class="about-title mt-4 text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
           Shollu Modern

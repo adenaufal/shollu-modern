@@ -275,6 +275,41 @@ pub fn run() {
             let (db_path, spn_dir, _) = get_app_paths(app.handle());
             let _ = places::init_db(&db_path, &spn_dir);
 
+            // Restore floating bar and drop zone windows from saved settings
+            let restored_settings = settings::load_settings();
+            if restored_settings.floating_bar_visible {
+                if app.get_webview_window("floating-bar").is_none() {
+                    let _ = tauri::WebviewWindowBuilder::new(
+                        app,
+                        "floating-bar",
+                        tauri::WebviewUrl::App("index.html".into()),
+                    )
+                    .title("Shollu Floating Bar")
+                    .inner_size(800.0, 40.0)
+                    .decorations(false)
+                    .transparent(true)
+                    .always_on_top(true)
+                    .resizable(false)
+                    .build();
+                }
+            }
+            if restored_settings.drop_zone_visible {
+                if app.get_webview_window("drop-zone").is_none() {
+                    let _ = tauri::WebviewWindowBuilder::new(
+                        app,
+                        "drop-zone",
+                        tauri::WebviewUrl::App("index.html".into()),
+                    )
+                    .title("Shollu Drop Zone")
+                    .inner_size(180.0, 48.0)
+                    .decorations(false)
+                    .transparent(true)
+                    .always_on_top(true)
+                    .resizable(false)
+                    .build();
+                }
+            }
+
             // Active Loop for scheduled tasks (runs once a second)
             let app_handle = app.handle().clone();
             tauri::async_runtime::spawn(async move {

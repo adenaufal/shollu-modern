@@ -697,6 +697,8 @@ nav {
 .hero-prayer { font-family: 'Inter Tight', sans-serif; font-size: 24px; font-weight: 700; color: var(--fg); letter-spacing: -0.02em; flex-shrink: 0; }
 .hero-countdown { font-family: 'Inter', sans-serif; font-size: 28px; font-weight: 700; color: var(--accent-500); font-variant-numeric: tabular-nums; letter-spacing: -0.03em; white-space: nowrap; }
 .hero-time { font-size: 13px; color: var(--fg-muted); font-variant-numeric: tabular-nums; margin-top: 3px; }
+.hero-current-prayer { color: var(--fg); font-weight: 700; }
+.hero-prayer { font-family: 'Inter Tight', sans-serif; font-size: 24px; font-weight: 700; color: var(--fg); letter-spacing: -0.02em; flex-shrink: 0; }
 .hero-gold-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--gold-500); display: inline-block; margin-left: 4px; animation: goldpulse 2s ease-in-out infinite; }
 @keyframes goldpulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
 @media (prefers-reduced-motion: reduce) { .hero-gold-dot { animation: none; } }
@@ -813,38 +815,7 @@ nav {
 }
 .toggle-pill.active .toggle-knob { transform: translateX(14px); }
 
-/* Tweaks panel */
-.tweaks-panel {
-  position: fixed;
-  bottom: 16px;
-  right: 16px;
-  width: 220px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  box-shadow: var(--shadow-lg);
-  z-index: 100;
-  font-size: 12px;
-  overflow: hidden;
-  animation: slideIn 250ms var(--easing-out);
-}
-@keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
-.tweaks-header {
-  padding: 10px 12px;
-  border-bottom: 1px solid var(--border);
-  font-weight: 700;
-  font-size: 11px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--fg-muted);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.tweaks-close { background: none; border: none; cursor: pointer; color: var(--fg-muted); font-size: 14px; line-height: 1; }
-.tweaks-body { padding: 10px 12px; display: flex; flex-direction: column; gap: 10px; }
-.tweak-label { font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--fg-muted); margin-bottom: 4px; text-align: left; }
+/* Theme buttons (used in Settings page) */
 .theme-btns { display: flex; gap: 4px; width: 100%; }
 .theme-btn {
   flex: 1;
@@ -900,3 +871,15 @@ nav {
 .badge-warning { background: oklch(0.93 0.06 25); color: oklch(0.40 0.18 25); }
 
 svg { overflow: visible; }
+
+/* Page transition animation */
+.animate-fade-in {
+  animation: fadeIn var(--motion-transition) var(--easing-out);
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in { animation: none; }
+}

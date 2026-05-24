@@ -1,39 +1,9 @@
 import { createSignal, onMount, For, Show } from "solid-js";
 import { invoke } from "@tauri-apps/api/core";
+import type { AppSettings } from "../helpers";
 
 interface LocationPageProps {
   lang: string;
-}
-
-interface LocationSettings {
-  name: string;
-  latitude: number;
-  longitude: number;
-  altitude: number;
-  timezone: number;
-}
-
-interface Adjustments {
-  fajr: number;
-  sunrise: number;
-  dhuhr: number;
-  asr: number;
-  maghrib: number;
-  isha: number;
-}
-
-interface AppSettings {
-  location: LocationSettings;
-  method: number;
-  madhab: number;
-  adjustments: Adjustments;
-  pembulatan: number;
-  language: string;
-  skin: string;
-  adzan_sound_enabled: boolean;
-  adzan_file_path: string;
-  always_on_top: boolean;
-  autostart: boolean;
 }
 
 interface City {

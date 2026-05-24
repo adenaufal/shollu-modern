@@ -1,53 +1,15 @@
-import { createSignal, createEffect, For, Show } from "solid-js";
+import { createSignal, createEffect, onMount, For, Show } from "solid-js";
 import { invoke } from "@tauri-apps/api/core";
+import { formatHours } from "../helpers";
+import type { AppSettings, PrayerTimes } from "../helpers";
 
 interface SchedulePageProps {
   lang: string;
 }
 
-interface LocationSettings {
-  name: string;
-  latitude: number;
-  longitude: number;
-  altitude: number;
-  timezone: number;
-}
-
-interface Adjustments {
-  fajr: number;
-  sunrise: number;
-  dhuhr: number;
-  asr: number;
-  maghrib: number;
-  isha: number;
-}
-
-interface AppSettings {
-  location: LocationSettings;
-  method: number;
-  madhab: number;
-  adjustments: Adjustments;
-}
-
-interface PrayerTimes {
-  fajr: number;
-  sunrise: number;
-  dhuhr: number;
-  asr: number;
-  maghrib: number;
-  isha: number;
-}
-
 interface DayPrayerTimes {
   dateIso: string;
   times: PrayerTimes;
-}
-
-function formatHours(hours: number): string {
-  if (!Number.isFinite(hours)) return "--:--";
-  const h = Math.floor(hours);
-  const m = Math.floor((hours - h) * 60);
-  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
 
 export function SchedulePage(props: SchedulePageProps) {
@@ -119,9 +81,18 @@ export function SchedulePage(props: SchedulePageProps) {
     }
   };
 
-  createEffect(async () => {
+  // Load settings on mount, then generate initial schedule
+  onMount(async () => {
     await fetchSettings();
     generateSchedule();
+  });
+
+  // Re-generate when dates change (after settings are loaded)
+  createEffect(() => {
+    startDate(); endDate();
+    if (settings()) {
+      generateSchedule();
+    }
   });
 
   // Export Monthly Schedule as CSV

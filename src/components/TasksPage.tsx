@@ -1,22 +1,9 @@
 import { createSignal, createEffect, For, Show } from "solid-js";
 import { invoke } from "@tauri-apps/api/core";
+import type { ScheduledTask } from "../helpers";
 
 interface TasksPageProps {
   lang: string;
-}
-
-interface ScheduledTask {
-  id: string;
-  name: string;
-  task_type: string; // "Info", "Warning", "MovingText", "Command", "Shutdown", "Hibernate", "Multimedia"
-  frequency: string; // "Daily", "Weekly", "Monthly", "Once", "Start"
-  time: string;      // "HH:mm"
-  day_of_week: number | null; // 1 = Sunday, 2 = Monday, ..., 7 = Saturday
-  day_of_month: number | null; // 1..31
-  month: number | null;        // 1..12
-  message: string;
-  file_path: string | null;
-  enabled: bool;
 }
 
 export function TasksPage(props: TasksPageProps) {

@@ -1,90 +1,24 @@
-import { createSignal, onMount, onCleanup, createEffect, For, Show } from "solid-js";
+import { createSignal, onMount, onCleanup, Show } from "solid-js";
 import { invoke } from "@tauri-apps/api/core";
 import { QiblaCompass } from "./QiblaCompass";
+import {
+  formatHours,
+  H_MONTHS_ID, H_MONTHS_EN,
+  WEEKDAYS_ID, WEEKDAYS_EN,
+  G_DAYS_ID, G_DAYS_EN,
+  G_MONTHS_ID, G_MONTHS_EN,
+  PRAYER_NAMES,
+  getMethodName
+} from "../helpers";
+import type { AppSettings, PrayerTimes, HijriDate } from "../helpers";
 
 interface MainPageProps {
   lang: string;
 }
 
-interface LocationSettings {
-  name: string;
-  latitude: number;
-  longitude: number;
-  altitude: number;
-  timezone: number;
-}
-
-interface Adjustments {
-  fajr: number;
-  sunrise: number;
-  dhuhr: number;
-  asr: number;
-  maghrib: number;
-  isha: number;
-}
-
-interface AppSettings {
-  location: LocationSettings;
-  method: number;
-  madhab: number;
-  adjustments: Adjustments;
-  pembulatan: number;
-  language: string;
-  skin: string;
-}
-
-interface PrayerTimes {
-  fajr: number;
-  sunrise: number;
-  dhuhr: number;
-  asr: number;
-  maghrib: number;
-  isha: number;
-}
-
-interface HijriDate {
-  year: number;
-  month: number;
-  day: number;
-  weekday: number;
-}
-
-const H_MONTHS_ID = [
-  "Muharram", "Safar", "Rabi'ul Awal", "Rabi'ul Akhir", "Jumadil Awal", "Jumadil Akhir",
-  "Rajab", "Sya'ban", "Ramadhan", "Syawal", "Dzulqa'dah", "Dzulhijjah"
-];
-
-const H_MONTHS_EN = [
-  "Muharram", "Safar", "Rabi' al-Awwal", "Rabi' al-Thani", "Jumada al-Awwal", "Jumada al-Thani",
-  "Rajab", "Sha'ban", "Ramadan", "Shawwal", "Dhu al-Qi'dah", "Dhu al-Hijjah"
-];
-
-const WEEKDAYS_ID = ["Ahad", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
-const WEEKDAYS_EN = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-
-const G_DAYS_ID = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
-const G_DAYS_EN = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
-const G_MONTHS_ID = [
-  "Jan", "Feb", "Mar", "Apr", "Mei", "Jun",
-  "Jul", "Agt", "Sep", "Okt", "Nov", "Des"
-];
-
-const G_MONTHS_EN = [
-  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-];
-
-function formatHours(hours: number): string {
-  if (!Number.isFinite(hours)) return "--:--";
-  const h = Math.floor(hours);
-  const m = Math.floor((hours - h) * 60);
-  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
-}
-
 export function MainPage(props: MainPageProps) {
   const [settings, setSettings] = createSignal<AppSettings | null>(null);
-  
+
   // 3-Day prayer times records
   const [yesterdayTimes, setYesterdayTimes] = createSignal<PrayerTimes | null>(null);
   const [todayTimes, setTodayTimes] = createSignal<PrayerTimes | null>(null);
@@ -100,11 +34,15 @@ export function MainPage(props: MainPageProps) {
   const [countdownString, setCountdownString] = createSignal<string>("--:--:--");
   const [currentPrayerName, setCurrentPrayerName] = createSignal<string>("Dhuhr");
 
-  let tickerInterval: any;
+  // Loading state
+  const [loading, setLoading] = createSignal<boolean>(true);
+
+  let tickerInterval: ReturnType<typeof setInterval> | undefined;
 
   // Initialize and load everything
   const initMainPageData = async () => {
     try {
+      setLoading(true);
       const activeSettings = await invoke<AppSettings>("get_settings");
       setSettings(activeSettings);
 
@@ -160,6 +98,8 @@ export function MainPage(props: MainPageProps) {
       startCountdownTicker(currToday, tomorrow);
     } catch (e) {
       console.error("Main page data initialization failed:", e);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -172,7 +112,6 @@ export function MainPage(props: MainPageProps) {
       const currentDecimalHours = now.getHours() + now.getMinutes() / 60 + now.getSeconds() / 3600;
 
       // Map today's prayer times as decimal hours
-      const prayerNames = ["Fajr", "Sunrise", "Dhuhr", "Asr", "Maghrib", "Isha"];
       const todayHours = [todayT.fajr, todayT.sunrise, todayT.dhuhr, todayT.asr, todayT.maghrib, todayT.isha];
       const tomorrowHours = [tomorrowT.fajr, tomorrowT.sunrise, tomorrowT.dhuhr, tomorrowT.asr, tomorrowT.maghrib, tomorrowT.isha];
 
@@ -193,7 +132,7 @@ export function MainPage(props: MainPageProps) {
         isTomorrow = true;
       }
 
-      const targetName = prayerNames[targetPrayerIdx];
+      const targetName = PRAYER_NAMES[targetPrayerIdx];
       setNextPrayerName(targetName);
 
       // Determine active current prayer (the last one whose time passed)
@@ -208,7 +147,7 @@ export function MainPage(props: MainPageProps) {
         // If before Fajr today, current active is Isha yesterday
         setCurrentPrayerName("Isha");
       } else {
-        setCurrentPrayerName(prayerNames[currentIdx]);
+        setCurrentPrayerName(PRAYER_NAMES[currentIdx]);
       }
 
       // Calculate time difference in absolute seconds
@@ -260,122 +199,127 @@ export function MainPage(props: MainPageProps) {
     return `${h.day} ${monName} ${h.year} H`;
   };
 
-  const getMethodName = (id: number) => {
-    switch (id) {
-      case 1: return "Karachi";
-      case 2: return "ISNA";
-      case 3: return "MWL";
-      case 4: return "Umm Al-Qura";
-      case 5: return "Egypt";
-      default: return "ISNA";
-    }
-  };
-
   return (
     <div class="animate-fade-in space-y-4">
-      
+
       {/* Top Location strip */}
-      <div class="location-strip select-none flex justify-between items-start border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl p-4 shadow-sm">
-        <div class="select-none text-left">
+      <div class="location-strip flex justify-between items-start border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl p-4 shadow-sm">
+        <div class="text-left">
           <div class="location-name text-sm font-bold text-slate-800 dark:text-slate-200">
-            {settings()?.location.name ?? "Jakarta"}, Indonesia
+            {settings()?.location.name ?? (props.lang === "Indonesia" ? "Lokasi tidak tersedia" : "Location unavailable")}
           </div>
-          <div class="location-coords text-[11px] font-medium text-slate-400 dark:text-slate-500 mt-1 select-none">
-            {settings()?.location.latitude.toFixed(4)}°, {settings()?.location.longitude.toFixed(4)}° 
-            {" · "}{settings()?.location.altitude} m · UTC+{settings()?.location.timezone.toFixed(0)}
+          <div class="location-coords text-[11px] font-medium text-slate-400 dark:text-slate-500 mt-1">
+            {settings()
+              ? `${settings()!.location.latitude.toFixed(4)}°, ${settings()!.location.longitude.toFixed(4)}° · ${settings()!.location.altitude} m · UTC+${settings()!.location.timezone.toFixed(0)}`
+              : (props.lang === "Indonesia" ? "Memuat..." : "Loading...")}
           </div>
         </div>
-        <div class="date-display select-none text-right">
+        <div class="date-display text-right">
           <div class="date-greg text-sm font-bold text-slate-800 dark:text-slate-200">
             {getFormattedGregDate()}
           </div>
-          <div class="date-hijri text-[11px] font-medium text-slate-400 dark:text-slate-500 mt-1 select-none">
+          <div class="date-hijri text-[11px] font-medium text-slate-400 dark:text-slate-500 mt-1">
             {getFormattedHijriDate()}
           </div>
         </div>
       </div>
 
-      {/* Hero Countdown Panel */}
-      <div class="hero-section select-none rounded-xl border border-slate-200 dark:border-slate-800 p-6 flex justify-between items-center shadow">
-        <div class="text-left select-none space-y-1">
-          <div class="hero-eyebrow select-none text-[10px] font-bold tracking-wider text-teal-600 dark:text-teal-400 uppercase flex items-center gap-1.5">
-            {props.lang === "Indonesia" ? "Waktu Sholat Berikutnya" : "Next Prayer"}
-            <span class="hero-gold-dot" />
+      {/* Loading skeleton */}
+      <Show when={loading()}>
+        <div class="space-y-4 animate-pulse">
+          <div class="rounded-xl border border-slate-200 dark:border-slate-800 p-6 bg-white dark:bg-slate-900">
+            <div class="h-4 w-32 bg-slate-200 dark:bg-slate-700 rounded mb-4" />
+            <div class="h-8 w-64 bg-slate-200 dark:bg-slate-700 rounded mb-2" />
+            <div class="h-3 w-48 bg-slate-200 dark:bg-slate-700 rounded" />
           </div>
-          <div class="hero-main select-none flex items-baseline gap-3">
-            <span class="hero-prayer text-2xl font-bold tracking-tight text-slate-800 dark:text-slate-100">
-              {nextPrayerName()}
-            </span>
-            <span class="hero-countdown text-3xl font-extrabold text-teal-500 tabular select-none">
-              {countdownString()}
-            </span>
-          </div>
-          <div class="hero-time text-xs font-semibold text-slate-400 dark:text-slate-500 select-none">
-            {props.lang === "Indonesia" ? "Aktif saat ini:" : "Current prayer:"} <span class="text-slate-600 dark:text-slate-300 font-bold">{currentPrayerName()}</span>
-            {" · "}{getMethodName(settings()?.method ?? 2)} · {settings()?.madhab === 2 ? "Hanafi" : "Shafi'i"}
+          <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+            <div class="h-8 bg-slate-100 dark:bg-slate-800 rounded-t-xl" />
+            {Array.from({ length: 6 }).map(() => (
+              <div class="h-12 border-t border-slate-100 dark:border-slate-800" />
+            ))}
           </div>
         </div>
+      </Show>
 
-        {/* Qibla mini compass */}
-        <div class="qibla-mini select-none flex flex-col items-center gap-1">
-          <span class="qibla-label text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider select-none">
-            {props.lang === "Indonesia" ? "Kiblat" : "Qibla"}
-          </span>
-          <QiblaCompass deg={qiblaAngle()} size={52} />
-          <span class="qibla-deg text-xs font-bold text-slate-800 dark:text-slate-200 select-none">
-            {qiblaAngle().toFixed(1)}° {qiblaCardinal()}
-          </span>
+      {/* Hero Countdown Panel */}
+      <Show when={!loading()}>
+        <div class="hero-section rounded-xl border border-slate-200 dark:border-slate-800 p-6 flex justify-between items-center shadow-sm">
+          <div class="text-left space-y-1">
+            <div class="hero-eyebrow flex items-center gap-1.5">
+              {props.lang === "Indonesia" ? "Waktu Sholat Berikutnya" : "Next Prayer"}
+              <span class="hero-gold-dot" />
+            </div>
+            <div class="hero-main flex items-baseline gap-3">
+              <span class="hero-prayer">
+                {nextPrayerName()}
+              </span>
+              <span class="hero-countdown tabular">
+                {countdownString()}
+              </span>
+            </div>
+            <div class="hero-time text-xs font-semibold text-slate-400 dark:text-slate-500">
+              {props.lang === "Indonesia" ? "Aktif saat ini:" : "Current prayer:"} <span class="hero-current-prayer">{currentPrayerName()}</span>
+              {" · "}{getMethodName(settings()?.method ?? 2)} · {settings()?.madhab === 2 ? "Hanafi" : "Shafi'i"}
+            </div>
+          </div>
+
+          {/* Qibla mini compass */}
+          <div class="qibla-mini flex flex-col items-center gap-1">
+            <span class="qibla-label">
+              {props.lang === "Indonesia" ? "Kiblat" : "Qibla"}
+            </span>
+            <QiblaCompass deg={qiblaAngle()} size={52} />
+            <span class="qibla-deg">
+              {qiblaAngle().toFixed(1)}° {qiblaCardinal()}
+            </span>
+          </div>
         </div>
-      </div>
+      </Show>
 
       {/* Grid of prayer times */}
       <Show when={todayTimes()}>
         <div class="prayer-grid border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm bg-white dark:bg-slate-900">
-          <div class="prayer-grid-header grid text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase bg-slate-50 dark:bg-slate-950/20 border-bottom border-slate-200 dark:border-slate-800 select-none">
+          <div class="prayer-grid-header grid text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase bg-slate-50 dark:bg-slate-950/20 border-bottom border-slate-200 dark:border-slate-800">
             <div class="gh-cell">{props.lang === "Indonesia" ? "Sholat" : "Prayer"}</div>
             <div class="gh-cell">{props.lang === "Indonesia" ? "Kemarin" : "Yesterday"}</div>
             <div class="gh-cell today">{props.lang === "Indonesia" ? "Hari Ini" : "Today"}</div>
             <div class="gh-cell">{props.lang === "Indonesia" ? "Besok" : "Tomorrow"}</div>
           </div>
 
-          <div class="divide-y divide-slate-100 dark:divide-slate-800 select-none">
-            {(
-              [
-                ["Fajr", yesterdayTimes()?.fajr, todayTimes()?.fajr, tomorrowTimes()?.fajr],
-                ["Sunrise", yesterdayTimes()?.sunrise, todayTimes()?.sunrise, tomorrowTimes()?.sunrise],
-                ["Dhuhr", yesterdayTimes()?.dhuhr, todayTimes()?.dhuhr, tomorrowTimes()?.dhuhr],
-                ["Asr", yesterdayTimes()?.asr, todayTimes()?.asr, tomorrowTimes()?.asr],
-                ["Maghrib", yesterdayTimes()?.maghrib, todayTimes()?.maghrib, tomorrowTimes()?.maghrib],
-                ["Isha", yesterdayTimes()?.isha, todayTimes()?.isha, tomorrowTimes()?.isha]
-              ] as const
-            ).map(([name, yest, tod, tmrw]) => {
+          <div class="divide-y divide-slate-100 dark:divide-slate-800">
+            {(PRAYER_NAMES as readonly string[]).map((name) => {
+              const idx = PRAYER_NAMES.indexOf(name);
+              const timeKeys = ["fajr", "sunrise", "dhuhr", "asr", "maghrib", "isha"] as const;
+              const key = timeKeys[idx];
+              const yest = yesterdayTimes()?.[key];
+              const tod = todayTimes()?.[key];
+              const tmrw = tomorrowTimes()?.[key];
+
               const isNext = () => nextPrayerName() === name;
               const isDone = () => {
-                // If it is Sunrise, Sunrise is technically done if current active is Dhuhr or later
-                if (currentPrayerName() === name) return false; // currently active
-                const prayerNames = ["Fajr", "Sunrise", "Dhuhr", "Asr", "Maghrib", "Isha"];
-                const currIdx = prayerNames.indexOf(currentPrayerName());
-                const nameIdx = prayerNames.indexOf(name);
+                if (currentPrayerName() === name) return false;
+                const currIdx = PRAYER_NAMES.indexOf(currentPrayerName());
+                const nameIdx = PRAYER_NAMES.indexOf(name);
                 return currIdx > nameIdx;
               };
 
               return (
-                <div class={`prayer-row grid text-slate-800 dark:text-slate-200 select-none ${isNext() ? "is-next" : ""}`}>
+                <div class={`prayer-row grid text-slate-800 dark:text-slate-200 ${isNext() ? "is-next" : ""}`}>
                   <div class="gr-cell name font-semibold text-slate-500 dark:text-slate-400">
-                    {name}
+                    {name === "Sunrise" && props.lang === "Indonesia" ? "Syuruq" : name}
                   </div>
-                  <div class="gr-cell text-slate-400 dark:text-slate-500 select-none">
-                    {yest ? formatHours(yest) : "--:--"}
+                  <div class="gr-cell text-slate-400 dark:text-slate-500">
+                    {yest != null ? formatHours(yest) : "--:--"}
                   </div>
-                  <div class="gr-cell select-none">
+                  <div class="gr-cell">
                     {isNext() && <span class="next-dot animate-pulse" />}
-                    <span class={isNext() ? "next-time text-teal-600 dark:text-teal-400 font-bold" : ""}>
-                      {tod ? formatHours(tod) : "--:--"}
+                    <span class={isNext() ? "next-time" : ""}>
+                      {tod != null ? formatHours(tod) : "--:--"}
                     </span>
-                    {isDone() && <span class="done-check text-slate-400 font-semibold select-none">✓</span>}
+                    {isDone() && <span class="done-check text-slate-400 font-semibold">✓</span>}
                   </div>
-                  <div class="gr-cell text-slate-400 dark:text-slate-500 select-none">
-                    {tmrw ? formatHours(tmrw) : "--:--"}
+                  <div class="gr-cell text-slate-400 dark:text-slate-500">
+                    {tmrw != null ? formatHours(tmrw) : "--:--"}
                   </div>
                 </div>
               );

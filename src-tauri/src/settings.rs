@@ -35,6 +35,10 @@ pub struct AppSettings {
     pub adzan_file_path: String, // default ""
     pub always_on_top: bool, // default false
     pub autostart: bool, // default false
+    #[serde(default)]
+    pub floating_bar_visible: bool, // default false
+    #[serde(default)]
+    pub drop_zone_visible: bool, // default false
 }
 
 impl Default for AppSettings {
@@ -57,6 +61,8 @@ impl Default for AppSettings {
             adzan_file_path: "".to_string(),
             always_on_top: false,
             autostart: false,
+            floating_bar_visible: false,
+            drop_zone_visible: false,
         }
     }
 }

@@ -1,39 +1,15 @@
 import { createSignal, createEffect, For } from "solid-js";
 import { invoke } from "@tauri-apps/api/core";
+import {
+  G_MONTHS_FULL_ID, G_MONTHS_FULL_EN,
+  H_MONTHS_ID, H_MONTHS_EN,
+  WEEKDAYS_ID, WEEKDAYS_EN
+} from "../helpers";
+import type { DateResult } from "../helpers";
 
 interface ConvertPageProps {
   lang: string;
 }
-
-interface DateResult {
-  year: number;
-  month: number;
-  day: number;
-  weekday: number;
-}
-
-const G_MONTHS_ID = [
-  "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-  "Juli", "Agustus", "September", "Oktober", "November", "Desember"
-];
-
-const G_MONTHS_EN = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December"
-];
-
-const H_MONTHS_ID = [
-  "Muharram", "Safar", "Rabi'ul Awal", "Rabi'ul Akhir", "Jumadil Awal", "Jumadil Akhir",
-  "Rajab", "Sya'ban", "Ramadhan", "Syawal", "Dzulqa'dah", "Dzulhijjah"
-];
-
-const H_MONTHS_EN = [
-  "Muharram", "Safar", "Rabi' al-Awwal", "Rabi' al-Thani", "Jumada al-Awwal", "Jumada al-Thani",
-  "Rajab", "Sha'ban", "Ramadan", "Shawwal", "Dhu al-Qi'dah", "Dhu al-Hijjah"
-];
-
-const WEEKDAYS_ID = ["Ahad", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
-const WEEKDAYS_EN = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 export function ConvertPage(props: ConvertPageProps) {
   // Current Gregorian input values
@@ -92,14 +68,10 @@ export function ConvertPage(props: ConvertPageProps) {
     }
   };
 
-  // Run initial conversion on mount
+  // Initial conversion on mount + re-run when Gregorian inputs or offset change
   createEffect(() => {
-    convertGregToHijri();
-  });
-
-  // Re-trigger conversions if offset shifts
-  createEffect(() => {
-    offset();
+    // Track these signals so the effect re-runs on change
+    gDay(); gMonth(); gYear(); offset();
     convertGregToHijri();
   });
 
@@ -126,7 +98,7 @@ export function ConvertPage(props: ConvertPageProps) {
   const hijriYearsArray = Array.from({ length: 150 }, (_, i) => 1350 + i);
 
   const getGMonthName = (idx: number) => {
-    return props.lang === "Indonesia" ? G_MONTHS_ID[idx - 1] : G_MONTHS_EN[idx - 1];
+    return props.lang === "Indonesia" ? G_MONTHS_FULL_ID[idx - 1] : G_MONTHS_FULL_EN[idx - 1];
   };
 
   const getHMonthName = (idx: number) => {
