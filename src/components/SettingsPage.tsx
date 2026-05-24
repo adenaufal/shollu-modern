@@ -24,15 +24,34 @@ export function SettingsPage(props: SettingsPageProps) {
   const [floatingBar, setFloatingBar] = createSignal<boolean>(false);
   const [dropZone, setDropZone] = createSignal<boolean>(false);
 
+  // Build a complete AppSettings object from the current UI state.
+  // Using this in every save path ensures no field is silently dropped.
+  const buildCurrentSettings = (): AppSettings | null => {
+    const currSettings = settings();
+    if (!currSettings) return null;
+    return {
+      ...currSettings,
+      language: props.lang,
+      skin: `${props.theme}-${props.accent}`,
+      adzan_sound_enabled: soundEnabled(),
+      adzan_file_path: adzanPath().trim(),
+      always_on_top: alwaysOnTop(),
+      autostart: autostart(),
+      floating_bar_visible: floatingBar(),
+      drop_zone_visible: dropZone(),
+      pembulatan: pembulatan()
+    };
+  };
+
   const handleToggleFloatingBar = async () => {
     const nextVal = !floatingBar();
     try {
       await invoke("toggle_floating_bar", { show: nextVal });
       setFloatingBar(nextVal);
-      // Persist to settings
-      const curr = settings();
-      if (curr) {
-        await invoke("save_settings", { settings: { ...curr, floating_bar_visible: nextVal } });
+      // Persist full current state so no pending UI changes are overwritten
+      const updated = buildCurrentSettings();
+      if (updated) {
+        await invoke("save_settings", { settings: updated });
       }
     } catch (e) {
       console.error("Failed to toggle floating bar:", e);
@@ -44,10 +63,10 @@ export function SettingsPage(props: SettingsPageProps) {
     try {
       await invoke("toggle_drop_zone", { show: nextVal });
       setDropZone(nextVal);
-      // Persist to settings
-      const curr = settings();
-      if (curr) {
-        await invoke("save_settings", { settings: { ...curr, drop_zone_visible: nextVal } });
+      // Persist full current state so no pending UI changes are overwritten
+      const updated = buildCurrentSettings();
+      if (updated) {
+        await invoke("save_settings", { settings: updated });
       }
     } catch (e) {
       console.error("Failed to toggle drop zone:", e);
@@ -67,6 +86,9 @@ export function SettingsPage(props: SettingsPageProps) {
       setFloatingBar(res.floating_bar_visible);
       setDropZone(res.drop_zone_visible);
 
+      // Sync language from backend (consistent with theme and accent sync below)
+      props.setLang(res.language);
+
       // Parse theme and accent from Rust `skin` field (formatted as "{theme}-{accent}")
       if (res.skin && res.skin !== "default") {
         const parts = res.skin.split("-");
@@ -84,26 +106,10 @@ export function SettingsPage(props: SettingsPageProps) {
     loadSettings();
   });
 
-  // Save modified settings back to Rust backend
+  // Save all settings fields back to Rust backend
   const handleSaveSettings = async () => {
-    const currSettings = settings();
-    if (!currSettings) return;
-
-    // Package current theme and accent as `skin` field
-    const skinValue = `${props.theme}-${props.accent}`;
-
-    const updated: AppSettings = {
-      ...currSettings,
-      language: props.lang,
-      skin: skinValue,
-      adzan_sound_enabled: soundEnabled(),
-      adzan_file_path: adzanPath().trim(),
-      always_on_top: alwaysOnTop(),
-      autostart: autostart(),
-      floating_bar_visible: floatingBar(),
-      drop_zone_visible: dropZone(),
-      pembulatan: pembulatan()
-    };
+    const updated = buildCurrentSettings();
+    if (!updated) return;
 
     try {
       await invoke("save_settings", { settings: updated });
