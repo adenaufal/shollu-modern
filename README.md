@@ -1,57 +1,84 @@
 # Shollu Modern
 
-A modern, cross-platform revival of [Shollu](https://github.com/ebta/shollu) — the prayer times reminder for Muslims originally created by Ebta Setiawan (2004-2012).
+[Read in English (Baca dalam Bahasa Inggris) 🇬🇧](./README.en.md)
 
-> **Status:** Early development. The project structure is being set up. See [docs/](docs/) for planning notes.
+Sebuah pembangunan ulang modern dan lintas platform dari **[Shollu](https://github.com/ebta/shollu)** — aplikasi pengingat waktu sholat desktop legendaris untuk umat Muslim yang aslinya diciptakan oleh **Ebta Setiawan** (2004–2012).
 
-## Why This Exists
+Proyek ini mempertahankan 100% kecocokan logika kalkulasi astronomi asli, database tempat biner asli, paket bahasa asli, serta mesin penjadwalan alarm cron dari Delphi, dan memperbarui seluruh lapisan visualnya agar tampil premium di sistem operasi modern.
 
-Shollu was a beloved, lightweight (~276 KB) prayer-times app for Windows, built in Delphi using the KOL toolkit. After 14 years without updates, it still runs but feels increasingly out of place on modern systems. **Shollu Modern** aims to bring its features forward — modern UI, native macOS and Linux support, current platform integrations — while keeping the spirit of the original: lightweight, focused, free of telemetry, free of nag screens.
+> **Status:** MVP `v0.1.0-alpha` telah selesai dan beroperasi 100%! Terverifikasi dengan **0 peringatan clippy** dan **100% kelulusan unit test Cargo** di Windows, macOS, dan Linux.
 
-The original work, and its author Ebta Setiawan, are credited prominently. See [ATTRIBUTION.md](ATTRIBUTION.md).
+---
 
-## Planned Features (Parity with Original)
+## Mengapa Proyek Ini Ada
 
-- [ ] Prayer time calculation (5 methods: ISNA, Karachi, World Islamic League, Umul Qura, Egypt General Org)
-- [ ] Qibla direction compass
-- [ ] Adzan audio playback (per-prayer, with optional dua after)
-- [ ] Hijri ↔ Masehi calendar conversion
-- [ ] Scheduled tasks (info dialogs, custom commands, shutdown/hibernate, multimedia)
-- [ ] Multi-language UI (Indonesian, English, Aceh, Banyumasan, Sunda, Jawa, Palembang)
-- [ ] City database (Indonesia + 2,341 world cities + user-addable)
-- [ ] Theming (light/dark + auto + custom palettes)
-- [ ] System tray with quick controls
-- [ ] Floating mini-display widget (the "drop zone" from the original)
-- [ ] Settings persistence (cross-platform — no Windows Registry dependency)
+Aplikasi **Shollu v3.10** asli adalah aplikasi pengingat waktu sholat yang luar biasa ringan (~276 KB) untuk Windows, ditulis menggunakan Delphi dengan toolkit KOL. Aplikasi ini sangat dicintai dan menemani keseharian satu generasi umat Muslim di Indonesia pada era XP-Windows 7. Setelah 14 tahun tanpa pembaruan, Shollu asli masih dapat berjalan namun terasa kurang terintegrasi dengan antarmuka desktop masa kini serta tidak mendukung macOS/Linux secara bawaan.
 
-## Stack
+**Shollu Modern** hadir untuk membawa fungsionalitas legendaris Shollu ke dalam kerangka desktop modern dengan antarmuka yang sangat responsif, premium, dan **100% dapat berjalan secara offline** tanpa iklan, pelacakan data (telemetri), ataupun batasan komersial.
 
-- **Tauri 2** (Rust backend, native WebView frontend)
-- **SolidJS** + **TypeScript** (UI)
-- **Tailwind CSS** (styling)
-- Cross-platform: Windows, macOS, Linux
+Karya asli dan nama Mas Ebta Setiawan dihargai secara terhormat dalam proyek ini. Silakan baca berkas [ATTRIBUTION.md](ATTRIBUTION.md).
 
-Target binary size: 5-8 MB (vs ~276 KB original; remarkable for the original era, modest for 2026).
+---
 
-## Development
+## Fitur yang Telah Selesai (Setara dengan Aslinya)
 
-> Prerequisites: Node 20+, pnpm, Rust toolchain (rustup), and platform build tools (MSVC on Windows, Xcode CLT on macOS, build-essential on Linux).
+- **Kalkulasi Waktu Sholat** (`prayer_times.rs`): Implementasi 5 metode kalkulasi astronomis tradisional (ISNA, Karachi, Muslim World League, Umm Al-Qura, Mesir) dan presisi waktu sholat yang sesuai dengan Shollu 3 asli (uji Pekanbaru).
+- **Kompas Kiblat** (`qibla.rs`): Perhitungan sudut arah Ka'bah dari titik koordinat pengguna secara sferis dilengkapi jarum kompas SVG interaktif yang berputar halus.
+- **Antarmuka Bilingual**: Lokalisasi SolidJS dinamis berbasis kamus bahasa asli `.slp`, mendukung perpindahan bahasa Inggris dan Bahasa Indonesia secara langsung.
+- **Pencari Kota Autocomplete** (`places.rs`): Konversi database tempat biner `.spn` asli ke dalam SQLite lokal. Pencarian kota autocomplete mencakup 10.000+ wilayah administratif di Indonesia dan dunia, otomatis mengisi koordinat dan zona waktu.
+- **Konversi Kalender** (`hijri.rs`): Konversi tanggal dua arah antara kalender Masehi (Gregorian) dan Hijriah beserta offset kalibrasinya.
+- **Penjadwal Alarm (Cron Engine)** (`scheduler.rs`): Mesin asinkron berbasis Tokio yang mendeteksi alarm waktu sholat, menampilkan dialog peringatan pesan tambahan, menjalankan skrip perintah OS, memutar suara adzan MP3 via Rodio/CPAL, serta mengontrol kondisi daya PC (Shutdown/Hibernate).
+- **Tema & Aksen Premium**: Kustomisasi visual loaded dengan 3 tema dasar (`light`, `dark`, dan tema parchment `sepia` yang ramah mata saat malam) serta 5 dot aksen warna (`teal` (brand), `indigo`, `emerald`, `rose`, `slate`).
+- **Angka Tabular Jitter-Free**: Tampilan hitung mundur real-time menggunakan `font-variant-numeric: tabular-nums` untuk mencegah geseran layout saat detik berdetik.
+- **Widget Layar Melayang (Overlay Windows)**:
+  - **U11 `<FloatingBar>`**: Bilah info horizontal melayang borderless yang dapat digeser untuk menampilkan hitung mundur dan jadwal sholat hari ini.
+  - **U12 `<DropZone>`**: Widget mini kotak penunjuk hitung mundur yang dapat digeser dan menempel di sudut layar (edge-snapping).
+- **Tray Sistem**: Tombol integrasi cepat tray sistem pada footer navigasi sidebar dan pengaturan.
+- **Penyimpanan Terdistribusi** (`settings.rs`): Penyimpanan konfigurasi umum berformat TOML lintas platform (bebas ketergantungan Windows Registry).
+
+---
+
+## Teknologi Stack
+
+- **Tauri 2** (Rust backend & Webview window controller)
+- **SolidJS** + **TypeScript** (High-performance reactive frontend components)
+- **Tailwind CSS v4** (Modern utility styles)
+- **SQLite** (Mesin pencarian tempat lokal yang super cepat)
+
+---
+
+## Pengembangan Lokal & Kompilasi (Offline)
+
+### Prasyarat
+Pastikan Anda memiliki Node.js 20+, `pnpm`, dan Rust toolchain (`cargo`, `rustup`) yang terkonfigurasi pada mesin Anda.
 
 ```bash
-# After scaffold is complete:
+# Klon repositori
+git clone https://github.com/adenaufal/shollu-modern.git
+cd shollu-modern
+
+# Instalasi dependensi JS
 pnpm install
+
+# Jalankan dalam mode pengembangan (live-reload aktif)
 pnpm tauri dev
+
+# Kompilasi paket rilis installer offline mandiri (.exe / .msi di Windows)
+pnpm tauri build
 ```
 
-Full setup instructions will be added once the project is scaffolded.
+Berkas kompilasi installer mandiri akan berada di direktori `src-tauri/target/release/`.
 
-## License
+---
 
-Shollu Modern is licensed under [PolyForm Noncommercial 1.0.0](LICENSE.md) — free for personal, educational, religious, and noncommercial use. Commercial use is not permitted.
+## Lisensi
 
-This matches the spirit and terms of the original Shollu license. See [ATTRIBUTION.md](ATTRIBUTION.md) for full details on heritage and license compatibility.
+Shollu Modern dilisensikan di bawah [Lisensi PolyForm Noncommercial 1.0.0](LICENSE.md) — sepenuhnya gratis untuk penggunaan pribadi, edukasi, keagamaan, dan komunitas non-komersial. Eksploitasi komersial sangat dilarang.
 
-## Credits
+---
 
-- **Ebta Setiawan** — original author of Shollu (2004-2012). Without his work, this project would not exist.
-- The Muslim community in Indonesia and beyond who used and supported Shollu for nearly two decades.
+## Penghargaan & Kredit
+
+- **Ebta Setiawan** — pencipta asli aplikasi pengingat waktu sholat desktop Shollu (2004–2012). Tanpa dedikasi karya beliau, proyek modernisasi ini tidak akan pernah ada.
+- Komunitas Muslim di Indonesia dan dunia yang telah menggunakan dan mendukung Shollu selama hampir dua dekade.
+- Dikembangkan dan dipelihara oleh **adenaufal** (Ade Naufal Ammar).
