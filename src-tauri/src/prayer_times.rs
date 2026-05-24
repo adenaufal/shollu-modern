@@ -102,7 +102,7 @@ pub fn compute(
     let b = location.latitude;
     let l = location.longitude;
     let tz = location.tz_hours;
-    let h = location.altitude as f64;
+    let h = (location.altitude as f64).max(0.0);
 
     let bt = (2.0 * PI * day_of_year as f64) / 365.0;
 
@@ -274,6 +274,38 @@ mod tests {
             max_delta_sec <= 60.0,
             "Rust port differs from Shollu3 by more than 1 minute somewhere"
         );
+    }
+
+    #[test]
+    fn negative_altitude_clamps_to_sea_level() {
+        // Negative altitude (e.g. below sea level) should be treated as sea level (0 m).
+        // Both calls must produce finite, ordered prayer times and agree exactly.
+        let base = compute(
+            140,
+            Location { latitude: -6.2088, longitude: 106.8456, altitude: 0, tz_hours: 7.0 },
+            Method::Isna,
+            Madhab::Shafii,
+            Adjustments::default(),
+        );
+        let negative = compute(
+            140,
+            Location { latitude: -6.2088, longitude: 106.8456, altitude: -500, tz_hours: 7.0 },
+            Method::Isna,
+            Madhab::Shafii,
+            Adjustments::default(),
+        );
+        assert!(negative.fajr.is_finite(), "fajr must be finite with negative altitude");
+        assert!(negative.sunrise.is_finite(), "sunrise must be finite");
+        assert!(negative.dhuhr.is_finite(), "dhuhr must be finite");
+        assert!(negative.asr.is_finite(), "asr must be finite");
+        assert!(negative.maghrib.is_finite(), "maghrib must be finite");
+        assert!(negative.isha.is_finite(), "isha must be finite");
+        assert_eq!(base.fajr,    negative.fajr);
+        assert_eq!(base.sunrise, negative.sunrise);
+        assert_eq!(base.dhuhr,   negative.dhuhr);
+        assert_eq!(base.asr,     negative.asr);
+        assert_eq!(base.maghrib, negative.maghrib);
+        assert_eq!(base.isha,    negative.isha);
     }
 
     #[test]
