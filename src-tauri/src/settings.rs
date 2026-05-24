@@ -152,4 +152,83 @@ mod tests {
 
         let _ = std::fs::remove_file(&test_path);
     }
+
+    /// Round-trip test: verify every AppSettings field survives a save → load cycle.
+    /// This guards against fields being silently dropped when serialising to TOML.
+    #[test]
+    fn test_roundtrip_all_fields() {
+        let original = AppSettings {
+            location: LocationSettings {
+                name: "TestCity".to_string(),
+                latitude: 1.234,
+                longitude: 5.678,
+                altitude: 42.0,
+                timezone: 8.0,
+            },
+            method: 3,
+            madhab: 2,
+            adjustments: Adjustments {
+                fajr: 1,
+                sunrise: -2,
+                dhuhr: 3,
+                asr: -4,
+                maghrib: 5,
+                isha: -6,
+            },
+            pembulatan: 1,
+            language: "English".to_string(),
+            skin: "dark-rose".to_string(),
+            adzan_sound_enabled: false,
+            adzan_file_path: "/path/to/adzan.mp3".to_string(),
+            always_on_top: true,
+            autostart: true,
+            floating_bar_visible: true,
+            drop_zone_visible: true,
+        };
+
+        let temp_dir = std::env::temp_dir();
+        let test_path = temp_dir.join("shollu_test_roundtrip_all.toml");
+
+        // Save
+        let toml_string = toml::to_string_pretty(&original).unwrap();
+        let mut file = File::create(&test_path).unwrap();
+        file.write_all(toml_string.as_bytes()).unwrap();
+
+        // Load
+        let mut file = File::open(&test_path).unwrap();
+        let mut contents = String::new();
+        file.read_to_string(&mut contents).unwrap();
+        let loaded: AppSettings = toml::from_str(&contents).unwrap();
+
+        // Location
+        assert_eq!(loaded.location.name, original.location.name);
+        assert_eq!(loaded.location.latitude, original.location.latitude);
+        assert_eq!(loaded.location.longitude, original.location.longitude);
+        assert_eq!(loaded.location.altitude, original.location.altitude);
+        assert_eq!(loaded.location.timezone, original.location.timezone);
+        // Calculation
+        assert_eq!(loaded.method, original.method);
+        assert_eq!(loaded.madhab, original.madhab);
+        // Adjustments
+        assert_eq!(loaded.adjustments.fajr, original.adjustments.fajr);
+        assert_eq!(loaded.adjustments.sunrise, original.adjustments.sunrise);
+        assert_eq!(loaded.adjustments.dhuhr, original.adjustments.dhuhr);
+        assert_eq!(loaded.adjustments.asr, original.adjustments.asr);
+        assert_eq!(loaded.adjustments.maghrib, original.adjustments.maghrib);
+        assert_eq!(loaded.adjustments.isha, original.adjustments.isha);
+        // Display / i18n
+        assert_eq!(loaded.pembulatan, original.pembulatan);
+        assert_eq!(loaded.language, original.language);
+        assert_eq!(loaded.skin, original.skin);
+        // Audio
+        assert_eq!(loaded.adzan_sound_enabled, original.adzan_sound_enabled);
+        assert_eq!(loaded.adzan_file_path, original.adzan_file_path);
+        // System
+        assert_eq!(loaded.always_on_top, original.always_on_top);
+        assert_eq!(loaded.autostart, original.autostart);
+        assert_eq!(loaded.floating_bar_visible, original.floating_bar_visible);
+        assert_eq!(loaded.drop_zone_visible, original.drop_zone_visible);
+
+        let _ = std::fs::remove_file(&test_path);
+    }
 }
