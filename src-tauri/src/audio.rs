@@ -5,6 +5,7 @@ use std::sync::{Mutex, OnceLock};
 
 struct Player {
     sink: Option<Sink>,
+    stream: Option<OutputStream>,
 }
 
 static PLAYER: OnceLock<Mutex<Player>> = OnceLock::new();
@@ -13,6 +14,7 @@ fn get_player() -> &'static Mutex<Player> {
     PLAYER.get_or_init(|| {
         Mutex::new(Player {
             sink: None,
+            stream: None,
         })
     })
 }
@@ -46,9 +48,7 @@ pub fn play_audio(file_path: &str) -> Result<(), String> {
     sink.play();
 
     p.sink = Some(sink);
-
-    // Leak output stream to keep it active
-    std::mem::forget(stream);
+    p.stream = Some(stream);
 
     Ok(())
 }
@@ -60,6 +60,7 @@ pub fn stop_audio() {
         s.stop();
     }
     p.sink = None;
+    p.stream = None;
 }
 
 /// Adjust the volume of the active player (value between 0.0 and 1.0)
