@@ -155,7 +155,7 @@ function LocationPage() {
       <div className="card" style={{marginBottom:12}}>
         <div className="card-title">Adjustments (minutes)</div>
         <div className="field-row-3">
-          {['Fajr','Dhuhr','Asr','Maghrib','Isha'].map(p => (
+          {['Fajr','Sunrise','Dhuhr','Asr','Maghrib','Isha'].map(p => (
             <div key={p} className="field">
               <div className="field-label">{p}</div>
               <input className="field-input" defaultValue="0" style={{textAlign:'center'}}/>
