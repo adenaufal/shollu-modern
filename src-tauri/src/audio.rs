@@ -29,11 +29,11 @@ pub fn play_audio(file_path: &str) -> Result<(), String> {
     }
 
     // Try to open the file
-    let file = File::open(file_path).map_err(|e| format!("Failed to open audio file: {}", e))?;
+    let file = File::open(file_path).map_err(|e| format!("Failed to open audio file '{}': {}", file_path, e))?;
     let reader = BufReader::new(file);
 
     // Try to decode
-    let source = Decoder::new(reader).map_err(|e| format!("Failed to decode audio: {}", e))?;
+    let source = Decoder::new(reader).map_err(|e| format!("Failed to decode audio '{}': {}", file_path, e))?;
 
     // Try to initialize output stream and handle
     let (stream, stream_handle) = OutputStream::try_default()

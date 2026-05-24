@@ -36,15 +36,22 @@ pub fn load_tasks() -> Vec<ScheduledTask> {
 
     let mut file = match File::open(&path) {
         Ok(f) => f,
-        Err(_) => return Vec::new(),
+        Err(e) => {
+            eprintln!("Failed to open tasks file '{}': {}", path.display(), e);
+            return Vec::new();
+        }
     };
 
     let mut contents = String::new();
-    if file.read_to_string(&mut contents).is_err() {
+    if let Err(e) = file.read_to_string(&mut contents) {
+        eprintln!("Failed to read tasks file '{}': {}", path.display(), e);
         return Vec::new();
     }
 
-    serde_json::from_str(&contents).unwrap_or_else(|_| Vec::new())
+    serde_json::from_str(&contents).unwrap_or_else(|e| {
+        eprintln!("Failed to parse tasks file '{}': {}", path.display(), e);
+        Vec::new()
+    })
 }
 
 /// Save all scheduled tasks
@@ -52,17 +59,17 @@ pub fn save_tasks(tasks: &[ScheduledTask]) -> Result<(), String> {
     let path = get_tasks_path();
 
     if let Some(parent) = path.parent() {
-        create_dir_all(parent).map_err(|e| format!("Failed to create tasks directory: {}", e))?;
+        create_dir_all(parent).map_err(|e| format!("Failed to create tasks directory '{}': {}", parent.display(), e))?;
     }
 
     let json_string = serde_json::to_string_pretty(tasks)
         .map_err(|e| format!("Failed to serialize tasks: {}", e))?;
 
     let mut file = File::create(&path)
-        .map_err(|e| format!("Failed to create tasks file: {}", e))?;
+        .map_err(|e| format!("Failed to create tasks file '{}': {}", path.display(), e))?;
 
     file.write_all(json_string.as_bytes())
-        .map_err(|e| format!("Failed to write tasks: {}", e))?;
+        .map_err(|e| format!("Failed to write tasks to '{}': {}", path.display(), e))?;
 
     Ok(())
 }

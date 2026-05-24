@@ -32,7 +32,7 @@ pub struct RegionRecord {
 
 /// Parse a legacy `.spn` binary file
 pub fn parse_spn_file(file_path: &Path) -> Result<Vec<RegionRecord>, String> {
-    let file = File::open(file_path).map_err(|e| format!("Failed to open spn file: {}", e))?;
+    let file = File::open(file_path).map_err(|e| format!("Failed to open spn file '{}': {}", file_path.display(), e))?;
     let mut reader = BufReader::new(file);
 
     // Read magic marker (2 bytes)
@@ -128,7 +128,7 @@ pub fn parse_spn_file(file_path: &Path) -> Result<Vec<RegionRecord>, String> {
 
 /// Initialize the SQLite database and migrate `.spn` files
 pub fn init_db(db_path: &Path, spn_dir: &Path) -> Result<(), String> {
-    let mut conn = Connection::open(db_path).map_err(|e| format!("Failed to open DB: {}", e))?;
+    let mut conn = Connection::open(db_path).map_err(|e| format!("Failed to open DB '{}': {}", db_path.display(), e))?;
 
     // Create tables
     conn.execute(
@@ -220,7 +220,7 @@ pub fn init_db(db_path: &Path, spn_dir: &Path) -> Result<(), String> {
 
 /// Search cities by query pattern
 pub fn search_cities(db_path: &Path, query: &str, limit: usize) -> Result<Vec<City>, String> {
-    let conn = Connection::open(db_path).map_err(|e| format!("Failed to open DB: {}", e))?;
+    let conn = Connection::open(db_path).map_err(|e| format!("Failed to open DB '{}': {}", db_path.display(), e))?;
     let mut stmt = conn
         .prepare(
             "SELECT c.id, c.region_id, r.name, c.name, c.latitude, c.longitude
@@ -230,7 +230,7 @@ pub fn search_cities(db_path: &Path, query: &str, limit: usize) -> Result<Vec<Ci
              ORDER BY c.name ASC
              LIMIT ?",
         )
-        .map_err(|e| format!("Failed to prepare search: {}", e))?;
+        .map_err(|e| format!("Failed to prepare search query: {}", e))?;
 
     let wildcard_query = format!("%{}%", query.replace('%', "\\%").replace('_', "\\_"));
     let rows = stmt
@@ -244,7 +244,7 @@ pub fn search_cities(db_path: &Path, query: &str, limit: usize) -> Result<Vec<Ci
                 longitude: row.get(5)?,
             })
         })
-        .map_err(|e| format!("Query failed: {}", e))?;
+        .map_err(|e| format!("City search query failed for '{}': {}", query, e))?;
 
     let results: Vec<City> = rows.flatten().collect();
     Ok(results)
@@ -252,10 +252,10 @@ pub fn search_cities(db_path: &Path, query: &str, limit: usize) -> Result<Vec<Ci
 
 /// List all administrative regions
 pub fn list_regions(db_path: &Path) -> Result<Vec<Region>, String> {
-    let conn = Connection::open(db_path).map_err(|e| format!("Failed to open DB: {}", e))?;
+    let conn = Connection::open(db_path).map_err(|e| format!("Failed to open DB '{}': {}", db_path.display(), e))?;
     let mut stmt = conn
         .prepare("SELECT id, name FROM regions ORDER BY name ASC")
-        .map_err(|e| format!("Failed to prepare query: {}", e))?;
+        .map_err(|e| format!("Failed to prepare regions query: {}", e))?;
 
     let rows = stmt
         .query_map([], |row| {
@@ -264,7 +264,7 @@ pub fn list_regions(db_path: &Path) -> Result<Vec<Region>, String> {
                 name: row.get(1)?,
             })
         })
-        .map_err(|e| format!("Query failed: {}", e))?;
+        .map_err(|e| format!("Regions query failed: {}", e))?;
 
     let results: Vec<Region> = rows.flatten().collect();
     Ok(results)
@@ -272,7 +272,7 @@ pub fn list_regions(db_path: &Path) -> Result<Vec<Region>, String> {
 
 /// List all cities belonging to a region
 pub fn cities_by_region(db_path: &Path, region_id: i32) -> Result<Vec<City>, String> {
-    let conn = Connection::open(db_path).map_err(|e| format!("Failed to open DB: {}", e))?;
+    let conn = Connection::open(db_path).map_err(|e| format!("Failed to open DB '{}': {}", db_path.display(), e))?;
     let mut stmt = conn
         .prepare(
             "SELECT c.id, c.region_id, r.name, c.name, c.latitude, c.longitude
@@ -281,7 +281,7 @@ pub fn cities_by_region(db_path: &Path, region_id: i32) -> Result<Vec<City>, Str
              WHERE c.region_id = ?
              ORDER BY c.name ASC",
         )
-        .map_err(|e| format!("Failed to prepare query: {}", e))?;
+        .map_err(|e| format!("Failed to prepare cities-by-region query: {}", e))?;
 
     let rows = stmt
         .query_map(params![region_id], |row| {
@@ -294,7 +294,7 @@ pub fn cities_by_region(db_path: &Path, region_id: i32) -> Result<Vec<City>, Str
                 longitude: row.get(5)?,
             })
         })
-        .map_err(|e| format!("Query failed: {}", e))?;
+        .map_err(|e| format!("Cities-by-region query failed for region_id={}: {}", region_id, e))?;
 
     let results: Vec<City> = rows.flatten().collect();
     Ok(results)
