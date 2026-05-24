@@ -135,8 +135,8 @@ export function App() {
     try {
       const label = getCurrentWindow().label;
       setWindowLabel(label);
-    } catch (e) {
-      console.error("Failed to get current window label:", e);
+    } catch {
+      console.warn("Could not get window label, defaulting to main");
     }
 
     await bootSettings();
