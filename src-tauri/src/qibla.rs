@@ -9,7 +9,7 @@ pub struct QiblaResult {
 /// Ported from `UMainPage.pas:179-188` (QiblaAngle)
 pub fn calculate_qibla(latitude: f64, longitude: f64) -> QiblaResult {
     const MLONG: f64 = 39.823333; // Mecca longitude
-    const MLAT: f64 = 21.42333;  // Mecca latitude
+    const MLAT: f64 = 21.42333; // Mecca latitude
 
     // Convert to radians
     let lat_rad = latitude * std::f64::consts::PI / 180.0;
@@ -39,14 +39,14 @@ pub fn calculate_qibla(latitude: f64, longitude: f64) -> QiblaResult {
 
     // Round to 2 decimal places for user friendliness
     let rounded_degrees = (degrees * 100.0).round() / 100.0;
-    
+
     // Map to cardinal direction
     let directions = [
-        "N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
-        "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"
+        "N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW",
+        "NW", "NNW",
     ];
     let index = (((degrees + 11.25) / 22.5).floor() as usize) % 16;
-    let cardinal = directions[index].to_string();
+    let cardinal = directions.get(index).copied().unwrap_or("N").to_string();
 
     QiblaResult {
         degrees: rounded_degrees,
@@ -72,5 +72,11 @@ mod tests {
         let res = calculate_qibla(-6.2088, 106.8456);
         assert!((res.degrees - 295.12).abs() < 0.1);
         assert_eq!(res.cardinal, "WNW");
+    }
+
+    #[test]
+    fn test_calculate_qibla_invalid_coordinates_no_panic() {
+        let res = calculate_qibla(f64::NAN, f64::INFINITY);
+        assert!(!res.cardinal.is_empty());
     }
 }
