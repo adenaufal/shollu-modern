@@ -273,7 +273,9 @@ pub fn run() {
         .setup(|app| {
             // DB and places setup
             let (db_path, spn_dir, _) = get_app_paths(app.handle());
-            let _ = places::init_db(&db_path, &spn_dir);
+            if let Err(e) = places::init_db(&db_path, &spn_dir) {
+                eprintln!("Failed to initialize places database: {}", e);
+            }
 
             // Restore floating bar and drop zone windows from saved settings
             let restored_settings = settings::load_settings();
