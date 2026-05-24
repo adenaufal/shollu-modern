@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-accent="teal">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin: 0; padding: 18px 24px; background: var(--bg); font-family: var(--font-body); display: flex; flex-direction: column; gap: 14px; }
+  .label { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--fg-muted); margin-bottom: 8px; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field-label { font-size: 13px; font-weight: 500; color: var(--fg); }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
+  input, select {
+    font-family: var(--font-body); font-size: 14px;
+    padding: 7px 10px; border-radius: var(--radius-md);
+    border: 1px solid var(--border-input); background: var(--surface); color: var(--fg);
+    outline: none; transition: border-color 150ms, box-shadow 150ms;
+  }
+  input:focus, select:focus {
+    border-color: var(--accent-500);
+    box-shadow: 0 0 0 3px oklch(0.62 0.15 208 / 0.15);
+  }
+  input.error { border-color: oklch(0.60 0.20 25); }
+  input.error:focus { box-shadow: 0 0 0 3px oklch(0.60 0.20 25 / 0.15); }
+  .error-msg { font-size: 12px; color: oklch(0.50 0.18 25); }
+  .hint { font-size: 12px; color: var(--fg-muted); }
+
+  /* Radio group */
+  .radio-group { display: flex; flex-direction: column; gap: 6px; }
+  .radio-option { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; color: var(--fg); }
+  .radio-dot {
+    width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--border-input);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    transition: border-color 150ms;
+  }
+  .radio-option.checked .radio-dot {
+    border-color: var(--accent-500); background: var(--accent-500);
+  }
+  .radio-option.checked .radio-dot::after {
+    content: ''; width: 5px; height: 5px; border-radius: 50%; background: white;
+  }
+
+  /* Checkbox */
+  .check-option { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; color: var(--fg); }
+  .check-box {
+    width: 16px; height: 16px; border-radius: 4px; border: 2px solid var(--border-input);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    transition: background 150ms, border-color 150ms;
+  }
+  .check-option.checked .check-box {
+    background: var(--accent-500); border-color: var(--accent-500);
+    color: white; font-size: 10px; font-weight: 700;
+  }
+
+  /* Select */
+  select { appearance: none; padding-right: 28px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 8px center;
+  }
+
+  /* Number input with +/- */
+  .number-input { display: flex; align-items: center; border: 1px solid var(--border-input); border-radius: var(--radius-md); overflow: hidden; background: var(--surface); width: 100px; }
+  .number-input button { width: 28px; height: 32px; border: none; background: transparent; color: var(--fg-muted); font-size: 14px; cursor: pointer; }
+  .number-input button:hover { background: var(--bg-hover); }
+  .number-input input { border: none; text-align: center; width: 44px; padding: 0; box-shadow: none; background: transparent; }
+  .number-input input:focus { box-shadow: none; }
+</style>
+</head>
+<body>
+<div>
+  <div class="label">Text Inputs</div>
+  <div class="row">
+    <div class="field">
+      <div class="field-label">Area name</div>
+      <input type="text" value="Jakarta" style="width:180px;">
+    </div>
+    <div class="field">
+      <div class="field-label">Latitude</div>
+      <input type="text" value="-6.2088" style="width:120px;">
+    </div>
+    <div class="field">
+      <div class="field-label">Longitude</div>
+      <input type="text" value="106.8456" style="width:120px;">
+    </div>
+    <div class="field">
+      <div class="field-label">Altitude (error)</div>
+      <input type="text" value="-7" class="error" style="width:100px;">
+      <div class="error-msg">Must be ≥ 0</div>
+    </div>
+  </div>
+</div>
+
+<div class="row" style="align-items:flex-start;">
+  <div>
+    <div class="label">Calculation Method</div>
+    <div class="radio-group">
+      <div class="radio-option"><div class="radio-dot"></div>Karachi</div>
+      <div class="radio-option checked"><div class="radio-dot"></div>ISNA (North America)</div>
+      <div class="radio-option"><div class="radio-dot"></div>Muslim World League</div>
+      <div class="radio-option"><div class="radio-dot"></div>Umm Al-Qura</div>
+    </div>
+  </div>
+  <div style="margin-left:24px;">
+    <div class="label">Reminder Options</div>
+    <div class="radio-group">
+      <div class="check-option checked"><div class="check-box">✓</div>Adzan on Fajr</div>
+      <div class="check-option checked"><div class="check-box">✓</div>Adzan on Dhuhr</div>
+      <div class="check-option"><div class="check-box"></div>Adzan on Sunrise</div>
+    </div>
+  </div>
+  <div style="margin-left:24px;">
+    <div class="label">Adjustments (min)</div>
+    <div style="display:flex;flex-direction:column;gap:6px;">
+      <div style="display:flex;align-items:center;gap:8px;font-size:13px;">
+        <span style="width:60px;color:var(--fg-muted);">Fajr</span>
+        <div class="number-input"><button>−</button><input type="text" value="0"><button>+</button></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:13px;">
+        <span style="width:60px;color:var(--fg-muted);">Dhuhr</span>
+        <div class="number-input"><button>−</button><input type="text" value="2"><button>+</button></div>
+      </div>
+    </div>
+  </div>
+  <div style="margin-left:24px;">
+    <div class="label">Timezone</div>
+    <select style="width:140px;">
+      <option selected>UTC+07:00</option>
+      <option>UTC+08:00</option>
+      <option>UTC+09:00</option>
+    </select>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-accent="teal">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin: 0; padding: 20px; background: var(--bg); font-family: var(--font-body); }
+  .section { margin-bottom: 18px; }
+  .label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--fg-muted); margin-bottom: 8px; }
+  .swatches { display: flex; gap: 4px; }
+  .swatch { flex: 1; height: 44px; border-radius: 6px; position: relative; }
+  .swatch-label { position: absolute; bottom: 4px; left: 0; right: 0; text-align: center; font-size: 9px; font-weight: 600; }
+  .light-text .swatch-label { color: rgba(255,255,255,0.85); }
+  .dark-text .swatch-label { color: rgba(0,0,0,0.5); }
+  .status-row { display: flex; gap: 8px; }
+  .status-chip { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+</style>
+</head>
+<body>
+<div class="section">
+  <div class="label">Neutral Slate</div>
+  <div class="swatches">
+    <div class="swatch dark-text" style="background:var(--slate-50)"><span class="swatch-label">50</span></div>
+    <div class="swatch dark-text" style="background:var(--slate-100)"><span class="swatch-label">100</span></div>
+    <div class="swatch dark-text" style="background:var(--slate-200)"><span class="swatch-label">200</span></div>
+    <div class="swatch dark-text" style="background:var(--slate-300)"><span class="swatch-label">300</span></div>
+    <div class="swatch light-text" style="background:var(--slate-400)"><span class="swatch-label">400</span></div>
+    <div class="swatch light-text" style="background:var(--slate-500)"><span class="swatch-label">500</span></div>
+    <div class="swatch light-text" style="background:var(--slate-600)"><span class="swatch-label">600</span></div>
+    <div class="swatch light-text" style="background:var(--slate-700)"><span class="swatch-label">700</span></div>
+    <div class="swatch light-text" style="background:var(--slate-800)"><span class="swatch-label">800</span></div>
+    <div class="swatch light-text" style="background:var(--slate-900)"><span class="swatch-label">900</span></div>
+    <div class="swatch light-text" style="background:var(--slate-950)"><span class="swatch-label">950</span></div>
+  </div>
+</div>
+<div class="section">
+  <div class="label">Semantic Status</div>
+  <div class="status-row">
+    <div class="status-chip" style="background: oklch(0.93 0.06 145); color: oklch(0.35 0.12 145);">● Success</div>
+    <div class="status-chip" style="background: oklch(0.96 0.05 84); color: oklch(0.45 0.13 84);">● Warning</div>
+    <div class="status-chip" style="background: oklch(0.93 0.06 25); color: oklch(0.40 0.16 25);">● Danger</div>
+    <div class="status-chip" style="background: oklch(0.93 0.05 230); color: oklch(0.38 0.12 230);">● Info</div>
+  </div>
+</div>
+</body>
+</html>

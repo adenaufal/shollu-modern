@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-accent="teal">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin: 0; padding: 16px; background: #f0f0f0; font-family: var(--font-body); }
+  .themes { display: flex; gap: 10px; }
+  .theme-card { flex: 1; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+  .theme-top { padding: 14px 14px 10px; }
+  .theme-name { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 6px; }
+  .theme-sidebar { height: 60px; padding: 8px; display: flex; flex-direction: column; gap: 4px; }
+  .nav-dot { height: 5px; border-radius: 3px; }
+  .theme-hero { padding: 10px 14px; }
+  .hero-label { font-size: 8px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 3px; opacity: 0.6; }
+  .hero-time { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; line-height: 1; }
+  .theme-footer { padding: 8px 14px; font-size: 9px; opacity: 0.5; }
+
+  .light-card { background: #f8fafc; }
+  .light-card .theme-name { color: #334155; }
+  .light-card .theme-sidebar { background: #eef4fb; }
+  .light-card .nav-dot { background: oklch(0.72 0.17 208); }
+  .light-card .theme-hero { background: white; }
+  .light-card .hero-label { color: oklch(0.52 0.14 208); }
+  .light-card .hero-time { color: #0f172a; }
+  .light-card .theme-footer { color: #64748b; }
+
+  .dark-card { background: oklch(0.11 0.01 208); }
+  .dark-card .theme-name { color: oklch(0.90 0.01 208); }
+  .dark-card .theme-sidebar { background: oklch(0.095 0.008 208); }
+  .dark-card .nav-dot { background: oklch(0.72 0.17 208); }
+  .dark-card .theme-hero { background: oklch(0.155 0.012 208); }
+  .dark-card .hero-label { color: oklch(0.62 0.14 208); }
+  .dark-card .hero-time { color: oklch(0.96 0.004 208); }
+  .dark-card .theme-footer { color: oklch(0.55 0.02 208); }
+
+  .sepia-card { background: oklch(0.97 0.018 75); }
+  .sepia-card .theme-name { color: oklch(0.30 0.035 60); }
+  .sepia-card .theme-sidebar { background: oklch(0.93 0.022 75); }
+  .sepia-card .nav-dot { background: oklch(0.62 0.15 208); }
+  .sepia-card .theme-hero { background: oklch(0.995 0.010 75); }
+  .sepia-card .hero-label { color: oklch(0.52 0.14 208); }
+  .sepia-card .hero-time { color: oklch(0.26 0.030 60); }
+  .sepia-card .theme-footer { color: oklch(0.50 0.035 70); }
+
+  .accent-row { display: flex; gap: 6px; padding: 10px 14px 6px; background: white; }
+  .accent-dot { width: 16px; height: 16px; border-radius: 50%; }
+</style>
+</head>
+<body>
+<div class="themes">
+  <div class="theme-card light-card">
+    <div class="theme-top"><div class="theme-name">Light</div></div>
+    <div class="theme-sidebar">
+      <div class="nav-dot" style="width:50%;"></div>
+      <div class="nav-dot" style="width:70%; opacity:0.3;"></div>
+      <div class="nav-dot" style="width:55%; opacity:0.3;"></div>
+    </div>
+    <div class="theme-hero">
+      <div class="hero-label">NEXT · Asr</div>
+      <div class="hero-time">2h 14m</div>
+    </div>
+    <div class="theme-footer">Jakarta · WIB +07:00</div>
+  </div>
+
+  <div class="theme-card dark-card">
+    <div class="theme-top"><div class="theme-name">Dark</div></div>
+    <div class="theme-sidebar">
+      <div class="nav-dot" style="width:50%;"></div>
+      <div class="nav-dot" style="width:70%; opacity:0.25;"></div>
+      <div class="nav-dot" style="width:55%; opacity:0.25;"></div>
+    </div>
+    <div class="theme-hero">
+      <div class="hero-label">NEXT · Asr</div>
+      <div class="hero-time">2h 14m</div>
+    </div>
+    <div class="theme-footer">Jakarta · WIB +07:00</div>
+  </div>
+
+  <div class="theme-card sepia-card">
+    <div class="theme-top"><div class="theme-name">Sepia</div></div>
+    <div class="theme-sidebar">
+      <div class="nav-dot" style="width:50%;"></div>
+      <div class="nav-dot" style="width:70%; opacity:0.3;"></div>
+      <div class="nav-dot" style="width:55%; opacity:0.3;"></div>
+    </div>
+    <div class="theme-hero">
+      <div class="hero-label">NEXT · Asr</div>
+      <div class="hero-time">2h 14m</div>
+    </div>
+    <div class="theme-footer">Jakarta · WIB +07:00</div>
+  </div>
+</div>
+
+<div style="margin-top:12px; background:white; border-radius:8px; padding:10px 14px; box-shadow:0 1px 4px rgba(0,0,0,0.08);">
+  <div style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:#64748b; margin-bottom:8px;">Accent Variants</div>
+  <div style="display:flex; gap:10px; align-items:center;">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+      <div class="accent-dot" style="background:oklch(0.72 0.17 208);border:2px solid oklch(0.62 0.15 208);"></div>
+      <span style="font-size:9px;color:#64748b;font-weight:600;">Teal</span>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+      <div class="accent-dot" style="background:oklch(0.67 0.18 270);"></div>
+      <span style="font-size:9px;color:#64748b;font-weight:600;">Indigo</span>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+      <div class="accent-dot" style="background:oklch(0.72 0.17 155);"></div>
+      <span style="font-size:9px;color:#64748b;font-weight:600;">Emerald</span>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+      <div class="accent-dot" style="background:oklch(0.70 0.18 10);"></div>
+      <span style="font-size:9px;color:#64748b;font-weight:600;">Rose</span>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+      <div class="accent-dot" style="background:oklch(0.567 0.028 210);"></div>
+      <span style="font-size:9px;color:#64748b;font-weight:600;">Slate</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>

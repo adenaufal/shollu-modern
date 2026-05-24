@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-accent="teal">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin: 0; padding: 20px 24px; background: var(--bg); font-family: var(--font-body); display: flex; flex-direction: column; gap: 16px; }
+  .label { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--fg-muted); margin-bottom: 8px; }
+  .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  button { font-family: var(--font-body); cursor: pointer; }
+
+  /* Primary */
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 16px; border-radius: var(--radius-md);
+    font-size: 14px; font-weight: 500; border: none;
+    background: var(--accent-500); color: white;
+    box-shadow: var(--shadow-sm);
+    transition: background var(--motion-instant);
+  }
+  .btn-primary:hover { background: var(--accent-600); }
+  .btn-primary:active { transform: scale(0.98); }
+
+  .btn-primary-sm {
+    padding: 5px 12px; font-size: 13px;
+    background: var(--accent-500); color: white;
+    border-radius: var(--radius-md); border: none;
+    font-family: var(--font-body); font-weight: 500;
+    box-shadow: var(--shadow-sm); cursor: pointer;
+  }
+
+  /* Secondary */
+  .btn-secondary {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 15px; border-radius: var(--radius-md);
+    font-size: 14px; font-weight: 500;
+    background: var(--surface); color: var(--fg);
+    border: 1px solid var(--border); box-shadow: var(--shadow-sm);
+    transition: background var(--motion-instant);
+  }
+  .btn-secondary:hover { background: var(--bg-hover); }
+
+  /* Ghost */
+  .btn-ghost {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px; border-radius: var(--radius-md);
+    font-size: 14px; font-weight: 500;
+    background: transparent; color: var(--fg-muted); border: none;
+    transition: background var(--motion-instant), color var(--motion-instant);
+  }
+  .btn-ghost:hover { background: var(--bg-hover); color: var(--fg); }
+
+  /* Danger */
+  .btn-danger {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 15px; border-radius: var(--radius-md);
+    font-size: 14px; font-weight: 500;
+    background: oklch(0.60 0.20 25); color: white; border: none;
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* Icon button */
+  .btn-icon {
+    width: 32px; height: 32px; border-radius: var(--radius-md);
+    display: inline-flex; align-items: center; justify-content: center;
+    background: transparent; color: var(--fg-muted); border: none; cursor: pointer;
+    font-size: 16px;
+    transition: background var(--motion-instant), color var(--motion-instant);
+  }
+  .btn-icon:hover { background: var(--bg-hover); color: var(--fg); }
+
+  /* Disabled */
+  .btn-disabled {
+    padding: 8px 16px; border-radius: var(--radius-md);
+    font-size: 14px; font-weight: 500; border: none;
+    background: var(--slate-200); color: var(--slate-400);
+    cursor: not-allowed;
+  }
+
+  .dark-panel {
+    background: oklch(0.13 0.010 208); border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .dark-panel .btn-secondary {
+    background: oklch(0.19 0.012 208);
+    border-color: oklch(0.24 0.020 208);
+    color: oklch(0.90 0.01 208);
+  }
+  .dark-panel .btn-ghost { color: oklch(0.62 0.02 208); }
+  .dark-panel .label { color: oklch(0.55 0.02 208); }
+</style>
+</head>
+<body>
+<div>
+  <div class="label">Primary</div>
+  <div class="row">
+    <button class="btn-primary">Save location</button>
+    <button class="btn-primary">Simpan pengaturan</button>
+    <button class="btn-primary-sm">Browse cities</button>
+  </div>
+</div>
+
+<div>
+  <div class="label">Secondary + Ghost</div>
+  <div class="row">
+    <button class="btn-secondary">Cancel</button>
+    <button class="btn-secondary">Export CSV</button>
+    <button class="btn-ghost">Skip</button>
+    <button class="btn-ghost">View all ›</button>
+    <button class="btn-icon" title="Settings">⚙</button>
+    <button class="btn-icon" title="Close">✕</button>
+  </div>
+</div>
+
+<div>
+  <div class="label">Danger + Disabled</div>
+  <div class="row">
+    <button class="btn-danger">Delete task</button>
+    <button class="btn-disabled" disabled>Not available</button>
+  </div>
+</div>
+
+<div class="dark-panel">
+  <div class="label">Dark theme</div>
+  <div class="row">
+    <button class="btn-primary">Save location</button>
+    <button class="btn-secondary">Cancel</button>
+    <button class="btn-ghost">Skip</button>
+  </div>
+</div>
+</body>
+</html>

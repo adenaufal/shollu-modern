@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-accent="teal">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin: 0; padding: 18px 22px; background: var(--bg); font-family: var(--font-body); display: flex; flex-direction: column; gap: 14px; }
+  .label { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--fg-muted); margin-bottom: 6px; }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 9px; border-radius: var(--radius-full);
+    font-size: 12px; font-weight: 600; line-height: 1.4;
+  }
+  .badge-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+  .badge-teal     { background: var(--shollu-100); color: var(--shollu-700); }
+  .badge-gold     { background: var(--gold-100); color: var(--gold-700); }
+  .badge-success  { background: oklch(0.93 0.05 145); color: oklch(0.35 0.14 145); }
+  .badge-warning  { background: oklch(0.96 0.06 84); color: oklch(0.42 0.14 84); }
+  .badge-danger   { background: oklch(0.93 0.06 25); color: oklch(0.40 0.18 25); }
+  .badge-neutral  { background: var(--slate-100); color: var(--slate-600); }
+  .badge-outline  { background: transparent; border: 1px solid var(--border); color: var(--fg-muted); }
+
+  /* Prayer status pills */
+  .status-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 10px; border-radius: var(--radius-full);
+    font-size: 12px; font-weight: 600;
+  }
+  .pill-done    { background: var(--slate-100); color: var(--slate-500); }
+  .pill-next    { background: var(--shollu-100); color: var(--shollu-700); }
+  .pill-pending { background: transparent; border: 1px solid var(--border); color: var(--fg-muted); }
+
+  /* Theme tags */
+  .theme-tag {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 10px; border-radius: var(--radius-full);
+    font-size: 11px; font-weight: 600; border: 1.5px solid;
+  }
+  .theme-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  /* Task type chips */
+  .task-chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 9px; border-radius: 6px;
+    font-size: 11px; font-weight: 600;
+  }
+</style>
+</head>
+<body>
+<div>
+  <div class="label">General Badges</div>
+  <div class="row">
+    <span class="badge badge-teal"><span class="badge-dot" style="background:var(--shollu-500);"></span>Active</span>
+    <span class="badge badge-gold"><span class="badge-dot" style="background:var(--gold-500);"></span>Next</span>
+    <span class="badge badge-success"><span class="badge-dot" style="background:oklch(0.55 0.16 145);"></span>Done</span>
+    <span class="badge badge-warning"><span class="badge-dot" style="background:oklch(0.65 0.16 84);"></span>Pending</span>
+    <span class="badge badge-danger"><span class="badge-dot" style="background:oklch(0.55 0.18 25);"></span>Error</span>
+    <span class="badge badge-neutral">v0.1.0</span>
+    <span class="badge badge-outline">Beta</span>
+  </div>
+</div>
+
+<div>
+  <div class="label">Prayer Status</div>
+  <div class="row">
+    <div class="status-pill pill-done">✓ Fajr</div>
+    <div class="status-pill pill-done">✓ Dhuhr</div>
+    <div class="status-pill pill-next">● Asr · 2h 14m</div>
+    <div class="status-pill pill-pending">Maghrib</div>
+    <div class="status-pill pill-pending">Isha</div>
+  </div>
+</div>
+
+<div>
+  <div class="label">Theme Selector Tags</div>
+  <div class="row">
+    <div class="theme-tag" style="border-color:oklch(0.90 0.01 208);color:var(--fg);">
+      <div class="theme-dot" style="background:#f8fafc;border:1px solid #cbd5e1;"></div>Light
+    </div>
+    <div class="theme-tag" style="border-color:var(--accent-500);color:var(--accent-600);background:var(--accent-50);">
+      <div class="theme-dot" style="background:oklch(0.15 0.01 208);border:1px solid oklch(0.72 0.17 208);"></div>Dark
+    </div>
+    <div class="theme-tag" style="border-color:oklch(0.87 0.03 75);color:oklch(0.40 0.04 70);">
+      <div class="theme-dot" style="background:oklch(0.97 0.018 75);border:1px solid oklch(0.82 0.035 75);"></div>Sepia
+    </div>
+    <div class="theme-tag" style="border-color:var(--border);color:var(--fg-muted);">System</div>
+  </div>
+</div>
+
+<div>
+  <div class="label">Task Types (Pesan Tambahan)</div>
+  <div class="row">
+    <span class="task-chip" style="background:oklch(0.93 0.04 230);color:oklch(0.38 0.12 230);">Informasi</span>
+    <span class="task-chip" style="background:oklch(0.93 0.06 25);color:oklch(0.40 0.18 25);">Peringatan</span>
+    <span class="task-chip" style="background:oklch(0.95 0.05 145);color:oklch(0.38 0.14 145);">Multimedia</span>
+    <span class="task-chip" style="background:oklch(0.95 0.03 270);color:oklch(0.42 0.18 270);">Command</span>
+    <span class="task-chip" style="background:var(--slate-100);color:var(--slate-600);">Shutdown</span>
+    <span class="task-chip" style="background:oklch(0.96 0.05 84);color:oklch(0.45 0.14 84);">Pertanyaan</span>
+  </div>
+</div>
+</body>
+</html>

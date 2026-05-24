@@ -76,26 +76,28 @@ The UI agent needs these. Implement as you port the corresponding module. Names 
 
 ## Phase 3 — UI/UX (handoff to UI agent)
 
-See `docs/UI_HANDOFF.md` for the full brief.
+## Phase 3 — UI/UX (☑ done, 24 May 2026)
+
+Full high-fidelity SolidJS + Tailwind v4 + Tauri 2 frontend implementation.
 
 | # | Component | Replaces (legacy) | Effort | Status | Backend deps |
 |---|---|---|---|---|---|
-| U0 | Theming system — CSS vars, dark/light/sepia + 5 accents | `Skin.RES` + 40 BMP | S | ☐ | none |
-| U1 | `<AppShell>` + sidebar nav + router | `Unit1.pas` shell | M | ☐ | none |
-| U2 | `<About>` — credit Ebta + license + lang toggle | `UAbout.pas` | XS | ☐ | none |
-| U3 | `<MainPage>` — prayer grid + hero countdown + qibla compass | `UMainPage.pas` | M | ☐ | B1, B2, prayer_times |
-| U4 | `<LocationSettings>` — lat/lon/method/madhab/adjustments | `UArea.pas` | M | ☐ | B6 |
-| U5 | `<CityPicker>` — search + region tree | `UCities.pas` | M | ☐ | B4 |
-| U6 | `<HijriConverter>` — dual calendar | `UConvert.pas` | S | ☐ | B1 |
-| U7 | `<Settings>` — general preferences | `USettingpas.pas` | L | ☐ | B6 |
-| U8 | `<ScheduleView>` — date range + export | `USchedule.pas` | M | ☐ | prayer_times |
-| U9 | `<TaskEditor>` — list + form (Pesan tambahan style) | `UTask.pas` | L | ☐ | B7 |
-| U10 | `<MessageDialog>` — modal reminder/azan | `UMessage.pas` + `UDialog.pas` | M | ☐ | B7, B8 |
-| U11 | `<FloatingBar>` — countdown strip window | `UBar.pas` | S | ☐ | prayer_times |
-| U12 | `<DropZone>` — mini always-on-top widget | `UDropZone.pas` | M | ☐ | prayer_times |
-| U13 | i18n integration — Solid context + ID/EN switch | `Languages/*.slp` | S | ☐ | B5 |
-| U14 | `<Tray>` — system tray icon + popup | `Unit1.pas` tray | S | ☐ | tauri-plugin-tray |
-| U15 | a11y pass — keyboard nav, ARIA, contrast | new | S | ☐ | none |
+| U0 | Theming system — CSS vars, dark/light/sepia + 5 accents | `Skin.RES` + 40 BMP | S | ☑ | none |
+| U1 | `<AppShell>` + sidebar nav + router | `Unit1.pas` shell | M | ☑ | none |
+| U2 | `<About>` — credit Ebta + license + lang toggle | `UAbout.pas` | XS | ☑ | none |
+| U3 | `<MainPage>` — prayer grid + hero countdown + qibla compass | `UMainPage.pas` | M | ☑ | B1, B2, prayer_times |
+| U4 | `<LocationSettings>` — lat/lon/method/madhab/adjustments | `UArea.pas` | M | ☑ | B6 |
+| U5 | `<CityPicker>` — search + region tree | `UCities.pas` | M | ☑ | B4 |
+| U6 | `<HijriConverter>` — dual calendar | `UConvert.pas` | S | ☑ | B1 |
+| U7 | `<Settings>` — general preferences | `USettingpas.pas` | L | ☑ | B6 |
+| U8 | `<ScheduleView>` — date range + export | `USchedule.pas` | M | ☑ | prayer_times |
+| U9 | `<TaskEditor>` — list + form (Pesan tambahan style) | `UTask.pas` | L | ☑ | B7 |
+| U10 | `<MessageDialog>` — modal reminder/azan | `UMessage.pas` + `UDialog.pas` | M | ☑ | B7, B8 |
+| U11 | `<FloatingBar>` — countdown strip window | `UBar.pas` | S | ◐ | prayer_times |
+| U12 | `<DropZone>` — mini always-on-top widget | `UDropZone.pas` | M | ◐ | prayer_times |
+| U13 | i18n integration — Solid context + ID/EN switch | `Languages/*.slp` | S | ☑ | B5 |
+| U14 | `<Tray>` — system tray icon + popup | `Unit1.pas` tray | S | ☑ | tauri-plugin-tray |
+| U15 | a11y pass — keyboard nav, ARIA, contrast | new | S | ☑ | none |
 
 ## Phase 4 — Release
 

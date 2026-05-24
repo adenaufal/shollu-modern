@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-accent="teal">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin: 0; padding: 16px; background: var(--bg); font-family: var(--font-body); display: flex; flex-direction: column; gap: 12px; }
+
+  /* Hero countdown */
+  .hero {
+    background: var(--hero-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 16px 20px;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .hero-eyebrow {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--accent-600);
+  }
+  .hero-main {
+    display: flex; align-items: baseline; gap: 10px;
+  }
+  .hero-prayer {
+    font-family: 'Inter Tight', sans-serif; font-size: 28px; font-weight: 700;
+    color: var(--fg); letter-spacing: -0.02em;
+  }
+  .hero-countdown {
+    font-family: 'Inter', sans-serif; font-size: 32px; font-weight: 700;
+    color: var(--accent-500); font-variant-numeric: tabular-nums;
+    letter-spacing: -0.03em;
+  }
+  .hero-time {
+    font-size: 14px; color: var(--fg-muted); font-variant-numeric: tabular-nums;
+    font-weight: 500;
+  }
+  .hero-gold-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--gold-500); display: inline-block; margin-left: 4px;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  @media (prefers-reduced-motion: reduce) { .hero-gold-dot { animation: none; } }
+
+  /* Prayer grid */
+  .prayer-grid {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+  .grid-header {
+    display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;
+    background: var(--surface-subtle, var(--bg));
+    border-bottom: 1px solid var(--border);
+  }
+  .grid-header-cell {
+    padding: 8px 12px; font-size: 11px; font-weight: 700;
+    letter-spacing: 0.05em; text-transform: uppercase;
+    color: var(--fg-muted);
+  }
+  .grid-header-cell.today { color: var(--accent-600); }
+  .grid-row {
+    display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;
+    border-bottom: 1px solid var(--border);
+    transition: background var(--motion-instant);
+  }
+  .grid-row:last-child { border-bottom: none; }
+  .grid-row.next-row { background: oklch(0.97 0.02 208); }
+  .grid-cell {
+    padding: 9px 12px;
+    font-size: 13.5px; font-variant-numeric: tabular-nums;
+    color: var(--fg); font-weight: 500;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .prayer-name { color: var(--fg-muted); font-size: 13px; font-weight: 500; }
+  .done-mark { color: var(--slate-400); font-size: 11px; }
+  .next-mark {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent-500); flex-shrink: 0;
+  }
+  .next-time { color: var(--accent-600); font-weight: 600; }
+
+  /* Qibla widget */
+  .qibla-row {
+    display: flex; align-items: center; gap: 16px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 12px 16px;
+    box-shadow: var(--shadow-sm);
+  }
+  .qibla-compass {
+    width: 48px; height: 48px; flex-shrink: 0;
+  }
+  .qibla-info { display: flex; flex-direction: column; gap: 2px; }
+  .qibla-label { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--fg-muted); }
+  .qibla-deg { font-size: 20px; font-weight: 700; color: var(--fg); font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+  .qibla-card { font-size: 13px; color: var(--fg-muted); }
+</style>
+</head>
+<body>
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-eyebrow">Next prayer<span class="hero-gold-dot"></span></div>
+  <div class="hero-main">
+    <div class="hero-prayer">Asr</div>
+    <div class="hero-countdown">2h 14m</div>
+  </div>
+  <div class="hero-time">15:23 · Jakarta, WIB</div>
+</div>
+
+<!-- Prayer grid -->
+<div class="prayer-grid">
+  <div class="grid-header">
+    <div class="grid-header-cell">Prayer</div>
+    <div class="grid-header-cell">Yesterday</div>
+    <div class="grid-header-cell today">Today</div>
+    <div class="grid-header-cell">Tomorrow</div>
+  </div>
+  <div class="grid-row">
+    <div class="grid-cell prayer-name">Fajr</div>
+    <div class="grid-cell">04:39 <span class="done-mark">✓</span></div>
+    <div class="grid-cell">04:39 <span class="done-mark">✓</span></div>
+    <div class="grid-cell">04:38</div>
+  </div>
+  <div class="grid-row">
+    <div class="grid-cell prayer-name">Sunrise</div>
+    <div class="grid-cell">05:58 <span class="done-mark">✓</span></div>
+    <div class="grid-cell">05:58 <span class="done-mark">✓</span></div>
+    <div class="grid-cell">05:57</div>
+  </div>
+  <div class="grid-row">
+    <div class="grid-cell prayer-name">Dhuhr</div>
+    <div class="grid-cell">11:51 <span class="done-mark">✓</span></div>
+    <div class="grid-cell">11:51 <span class="done-mark">✓</span></div>
+    <div class="grid-cell">11:51</div>
+  </div>
+  <div class="grid-row next-row">
+    <div class="grid-cell prayer-name">Asr</div>
+    <div class="grid-cell">15:13 <span class="done-mark">✓</span></div>
+    <div class="grid-cell next-time"><span class="next-mark"></span>15:23</div>
+    <div class="grid-cell">15:23</div>
+  </div>
+  <div class="grid-row">
+    <div class="grid-cell prayer-name">Maghrib</div>
+    <div class="grid-cell">17:46 <span class="done-mark">✓</span></div>
+    <div class="grid-cell">17:46</div>
+    <div class="grid-cell">17:46</div>
+  </div>
+  <div class="grid-row">
+    <div class="grid-cell prayer-name">Isha</div>
+    <div class="grid-cell">18:58 <span class="done-mark">✓</span></div>
+    <div class="grid-cell">18:58</div>
+    <div class="grid-cell">18:58</div>
+  </div>
+</div>
+
+<!-- Qibla -->
+<div class="qibla-row">
+  <svg class="qibla-compass" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="24" cy="24" r="22" stroke="var(--border)" stroke-width="1.5" fill="var(--surface)"/>
+    <circle cx="24" cy="24" r="2" fill="var(--fg-muted)"/>
+    <!-- Cardinal marks -->
+    <text x="24" y="7" text-anchor="middle" font-size="7" font-weight="700" fill="var(--fg-muted)" font-family="Inter,sans-serif">N</text>
+    <text x="24" y="44" text-anchor="middle" font-size="7" fill="var(--fg-muted)" font-family="Inter,sans-serif">S</text>
+    <text x="6" y="26" text-anchor="middle" font-size="7" fill="var(--fg-muted)" font-family="Inter,sans-serif">W</text>
+    <text x="43" y="26" text-anchor="middle" font-size="7" fill="var(--fg-muted)" font-family="Inter,sans-serif">E</text>
+    <!-- Arrow pointing ~295° (W-NW) for Jakarta Qibla -->
+    <g transform="translate(24,24) rotate(295)">
+      <polygon points="0,-17 3,-5 0,-8 -3,-5" fill="var(--accent-500)"/>
+      <polygon points="0,17 3,5 0,8 -3,5" fill="var(--fg-muted)" opacity="0.4"/>
+    </g>
+  </svg>
+  <div class="qibla-info">
+    <div class="qibla-label">Qibla direction</div>
+    <div class="qibla-deg">295°</div>
+    <div class="qibla-card">W-NW · from Jakarta</div>
+  </div>
+</div>
+</body>
+</html>

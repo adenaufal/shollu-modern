@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-accent="teal">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin: 0; padding: 18px 20px; background: var(--bg); font-family: var(--font-body); display: flex; flex-direction: column; gap: 14px; }
+  .label { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--fg-muted); margin-bottom: 8px; }
+  .row { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
+  .token { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .token-label { font-size: 9px; color: var(--fg-muted); font-weight: 600; text-align: center; }
+  /* Radii */
+  .radius-box { width: 44px; height: 44px; background: var(--accent-400); }
+  /* Shadows */
+  .shadow-box { width: 56px; height: 40px; background: var(--surface); border: 1px solid var(--border); }
+  /* Motion */
+  .motion-bar { height: 6px; background: var(--accent-400); border-radius: 3px; }
+  /* Spacing */
+  .space-bar { height: 28px; background: oklch(0.93 0.04 208); border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; color: var(--accent-600); }
+</style>
+</head>
+<body>
+<div>
+  <div class="label">Corner Radii</div>
+  <div class="row">
+    <div class="token">
+      <div class="radius-box" style="border-radius: var(--radius-sm);"></div>
+      <div class="token-label">sm · 4px</div>
+    </div>
+    <div class="token">
+      <div class="radius-box" style="border-radius: var(--radius-md);"></div>
+      <div class="token-label">md · 8px</div>
+    </div>
+    <div class="token">
+      <div class="radius-box" style="border-radius: var(--radius-lg);"></div>
+      <div class="token-label">lg · 12px<br><span style="color:var(--fg-subtle);font-weight:400;">cards</span></div>
+    </div>
+    <div class="token">
+      <div class="radius-box" style="border-radius: var(--radius-xl);"></div>
+      <div class="token-label">xl · 16px<br><span style="color:var(--fg-subtle);font-weight:400;">modals</span></div>
+    </div>
+    <div class="token">
+      <div class="radius-box" style="border-radius: var(--radius-full); width: 44px;"></div>
+      <div class="token-label">full<br><span style="color:var(--fg-subtle);font-weight:400;">pills</span></div>
+    </div>
+  </div>
+</div>
+
+<div>
+  <div class="label">Elevation / Shadows</div>
+  <div class="row">
+    <div class="token">
+      <div class="shadow-box" style="box-shadow: var(--shadow-sm); border-radius: var(--radius-md);"></div>
+      <div class="token-label">sm<br><span style="color:var(--fg-subtle);font-weight:400;">buttons</span></div>
+    </div>
+    <div class="token">
+      <div class="shadow-box" style="box-shadow: var(--shadow-md); border-radius: var(--radius-lg); width: 72px; height: 50px;"></div>
+      <div class="token-label">md<br><span style="color:var(--fg-subtle);font-weight:400;">cards</span></div>
+    </div>
+    <div class="token">
+      <div class="shadow-box" style="box-shadow: var(--shadow-lg); border-radius: var(--radius-xl); width: 88px; height: 60px;"></div>
+      <div class="token-label">lg<br><span style="color:var(--fg-subtle);font-weight:400;">modals</span></div>
+    </div>
+  </div>
+</div>
+
+<div>
+  <div class="label">Motion Durations</div>
+  <div style="display:flex; gap: 16px; align-items: flex-end;">
+    <div class="token">
+      <div class="motion-bar" style="width:28px;"></div>
+      <div class="token-label">150ms<br><span style="color:var(--fg-subtle);font-weight:400;">hover/press</span></div>
+    </div>
+    <div class="token">
+      <div class="motion-bar" style="width:50px;"></div>
+      <div class="token-label">250ms<br><span style="color:var(--fg-subtle);font-weight:400;">transitions</span></div>
+    </div>
+    <div class="token">
+      <div class="motion-bar" style="width:80px;"></div>
+      <div class="token-label">400ms<br><span style="color:var(--fg-subtle);font-weight:400;">modals/panels</span></div>
+    </div>
+    <div style="font-size:10px;color:var(--fg-subtle);padding-bottom:18px;border-left:1px solid var(--border);padding-left:12px;margin-left:4px;">All disabled<br>under<br>prefers-reduced-motion</div>
+  </div>
+</div>
+</body>
+</html>
