@@ -284,7 +284,8 @@ pub fn list_languages(languages_dir: &Path) -> Result<Vec<LanguageMeta>, String>
         return Ok(list);
     }
 
-    let entries = std::fs::read_dir(languages_dir).map_err(|e| format!("Failed to read lang dir: {}", e))?;
+    let entries =
+        std::fs::read_dir(languages_dir).map_err(|e| format!("Failed to read lang dir: {}", e))?;
     for entry_res in entries {
         let entry = entry_res.map_err(|e| format!("Failed to parse entry: {}", e))?;
         let path = entry.path();
@@ -302,7 +303,10 @@ pub fn list_languages(languages_dir: &Path) -> Result<Vec<LanguageMeta>, String>
 }
 
 /// Fetch all translations for a language pack
-pub fn get_translations(languages_dir: &Path, lang_id: &str) -> Result<HashMap<String, String>, String> {
+pub fn get_translations(
+    languages_dir: &Path,
+    lang_id: &str,
+) -> Result<HashMap<String, String>, String> {
     let file_path = languages_dir.join(format!("{}.slp", lang_id));
     if !file_path.exists() {
         return Err(format!("Language pack {}.slp not found", lang_id));
@@ -339,7 +343,10 @@ mod tests {
         assert!(!map.is_empty());
         assert_eq!(map.get("prayer.fajr").map(|s| s.as_str()), Some("Fajr"));
         assert_eq!(map.get("day.sunday").map(|s| s.as_str()), Some("Sunday"));
-        assert_eq!(map.get("month.gregorian.january").map(|s| s.as_str()), Some("January"));
+        assert_eq!(
+            map.get("month.gregorian.january").map(|s| s.as_str()),
+            Some("January")
+        );
     }
 
     #[test]
@@ -349,6 +356,9 @@ mod tests {
         assert!(!map.is_empty());
         assert_eq!(map.get("prayer.fajr").map(|s| s.as_str()), Some("Shubuh"));
         assert_eq!(map.get("day.sunday").map(|s| s.as_str()), Some("Ahad"));
-        assert_eq!(map.get("month.gregorian.january").map(|s| s.as_str()), Some("Januari"));
+        assert_eq!(
+            map.get("month.gregorian.january").map(|s| s.as_str()),
+            Some("Januari")
+        );
     }
 }

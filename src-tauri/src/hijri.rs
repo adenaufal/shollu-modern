@@ -23,25 +23,19 @@ pub fn gregorian_to_hijri(year: i32, month: u32, day: u32, adjustment: i8) -> Da
             + d2
             - 32075
     } else {
-        367 * y2 - ((7 * (y2 + 5001 + (m2 - 9) / 7)) / 4)
-            + ((275 * m2) / 9)
-            + d2
-            + 1729777
+        367 * y2 - ((7 * (y2 + 5001 + (m2 - 9) / 7)) / 4) + ((275 * m2) / 9) + d2 + 1729777
     };
 
     // Calculate Hijri date from Julian Day
     let l = jd - 1948440 + 10632;
     let n = (l - 1) / 10631;
     let l_rem = l - 10631 * n + 354;
-    
-    let j = ((10985 - l_rem) / 5316) * ((50 * l_rem) / 17719)
-        + (l_rem / 5670) * ((43 * l_rem) / 15238);
-        
-    let l_final = l_rem
-        - ((30 - j) / 15) * ((17719 * j) / 50)
-        - (j / 16) * ((15238 * j) / 43)
-        + 29;
-        
+
+    let j =
+        ((10985 - l_rem) / 5316) * ((50 * l_rem) / 17719) + (l_rem / 5670) * ((43 * l_rem) / 15238);
+
+    let l_final = l_rem - ((30 - j) / 15) * ((17719 * j) / 50) - (j / 16) * ((15238 * j) / 43) + 29;
+
     let rm = (24 * l_final) / 709;
     let rd = l_final - (709 * rm) / 24;
     let ry = 30 * n + j - 30;

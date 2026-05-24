@@ -61,7 +61,7 @@ mod tests {
     fn test_lat_to_dms() {
         let res = lat_to_dms(0.506567);
         assert_eq!(res, "0°30'24\"N");
-        
+
         let res_s = lat_to_dms(-6.2088);
         assert_eq!(res_s, "6°12'32\"S");
     }
@@ -70,7 +70,7 @@ mod tests {
     fn test_lon_to_dms() {
         let res = lon_to_dms(106.8456);
         assert_eq!(res, "106°50'44\"E");
-        
+
         let res_w = lon_to_dms(-39.823333);
         assert_eq!(res_w, "39°49'24\"W");
     }

@@ -67,7 +67,10 @@ impl Method {
             Method::Mwl => (18.0, 17.0),
             Method::UmmAlQura => (19.0, 18.0),
             Method::Egypt => (19.5, 17.5),
-            Method::Custom { fajr_angle, isha_angle } => (fajr_angle, isha_angle),
+            Method::Custom {
+                fajr_angle,
+                isha_angle,
+            } => (fajr_angle, isha_angle),
         }
     }
 }
@@ -107,17 +110,13 @@ pub fn compute(
     let bt = (2.0 * PI * day_of_year as f64) / 365.0;
 
     let d = (180.0 / PI)
-        * (0.006918
-            - 0.399912 * bt.cos()
-            + 0.070257 * bt.sin()
-            - 0.006758 * (2.0 * bt).cos()
+        * (0.006918 - 0.399912 * bt.cos() + 0.070257 * bt.sin() - 0.006758 * (2.0 * bt).cos()
             + 0.000907 * (2.0 * bt).sin()
             - 0.002697 * (3.0 * bt).cos()
             + 0.001480 * (3.0 * bt).sin());
 
     let t = 229.18
-        * (0.000075
-            + 0.001868 * bt.cos()
+        * (0.000075 + 0.001868 * bt.cos()
             - 0.032077 * bt.sin()
             - 0.014615 * (2.0 * bt).cos()
             - 0.040849 * (2.0 * bt).sin());
@@ -231,24 +230,36 @@ mod tests {
                 altitude: 0,
                 tz_hours: 7.0,
             },
-            Method::Custom { fajr_angle: 19.5, isha_angle: 17.5 },
+            Method::Custom {
+                fajr_angle: 19.5,
+                isha_angle: 17.5,
+            },
             Madhab::Shafii,
-            Adjustments { fajr: 0, dhuhr: 5, asr: 0, maghrib: 3, isha: 0 },
+            Adjustments {
+                fajr: 0,
+                dhuhr: 5,
+                asr: 0,
+                maghrib: 3,
+                isha: 0,
+            },
         );
 
         // Shollu3.exe displayed values (HH:mm:ss, Pembulatan=Kebawah):
         let expected: [(&str, &str, f64); 6] = [
-            ("Shubuh",  "04:46:27", t.fajr),
-            ("Terbit",  "06:06:06", t.sunrise),
-            ("Dhuhur",  "12:15:24", t.dhuhr),
-            ("Asar",    "15:34:23", t.asr),
+            ("Shubuh", "04:46:27", t.fajr),
+            ("Terbit", "06:06:06", t.sunrise),
+            ("Dhuhur", "12:15:24", t.dhuhr),
+            ("Asar", "15:34:23", t.asr),
             ("Maghrib", "18:17:43", t.maghrib),
-            ("Isya",    "19:25:47", t.isha),
+            ("Isya", "19:25:47", t.isha),
         ];
 
         println!();
         println!("Pekanbaru May 20 2026  Custom(19.5/17.5) Shafii  Dhuhur+5 Maghrib+3");
-        println!("{:<10} {:<10} {:<10} {:>10}", "Prayer", "Shollu3", "Rust", "Delta (s)");
+        println!(
+            "{:<10} {:<10} {:<10} {:>10}",
+            "Prayer", "Shollu3", "Rust", "Delta (s)"
+        );
         println!("{}", "-".repeat(45));
 
         let mut max_delta_sec: f64 = 0.0;
@@ -262,10 +273,7 @@ mod tests {
             let rust_sec = (hours * 3600.0) as i64;
             let delta = rust_sec - shollu_sec as i64;
 
-            println!(
-                "{:<10} {:<10} {:<10} {:>10}",
-                name, shollu, rust_str, delta
-            );
+            println!("{:<10} {:<10} {:<10} {:>10}", name, shollu, rust_str, delta);
             max_delta_sec = max_delta_sec.max((delta as f64).abs());
         }
         println!();
@@ -280,24 +288,113 @@ mod tests {
     fn print_reference_table() {
         #[allow(clippy::type_complexity)]
         let cases: &[(&str, u16, f64, f64, i32, f64, Method, Madhab)] = &[
-            ("Jakarta  May 20 (doy=140)  ISNA Shafii", 140, -6.2088, 106.8456, 7, 7.0, Method::Isna, Madhab::Shafii),
-            ("Mecca    May 20 (doy=140)  UmmAlQura Shafii", 140, 21.4225, 39.8262, 277, 3.0, Method::UmmAlQura, Madhab::Shafii),
-            ("Jakarta  Jan  1 (doy=001)  ISNA Shafii", 1, -6.2088, 106.8456, 7, 7.0, Method::Isna, Madhab::Shafii),
-            ("Jakarta  Jun 21 (doy=172)  ISNA Shafii", 172, -6.2088, 106.8456, 7, 7.0, Method::Isna, Madhab::Shafii),
-            ("Jakarta  Dec 21 (doy=355)  ISNA Shafii", 355, -6.2088, 106.8456, 7, 7.0, Method::Isna, Madhab::Shafii),
-            ("Jakarta  May 20 (doy=140)  MWL Shafii ", 140, -6.2088, 106.8456, 7, 7.0, Method::Mwl, Madhab::Shafii),
-            ("Jakarta  May 20 (doy=140)  Karachi Shafii", 140, -6.2088, 106.8456, 7, 7.0, Method::Karachi, Madhab::Shafii),
-            ("Jakarta  May 20 (doy=140)  Egypt Shafii", 140, -6.2088, 106.8456, 7, 7.0, Method::Egypt, Madhab::Shafii),
-            ("Jakarta  May 20 (doy=140)  ISNA Hanafi", 140, -6.2088, 106.8456, 7, 7.0, Method::Isna, Madhab::Hanafi),
+            (
+                "Jakarta  May 20 (doy=140)  ISNA Shafii",
+                140,
+                -6.2088,
+                106.8456,
+                7,
+                7.0,
+                Method::Isna,
+                Madhab::Shafii,
+            ),
+            (
+                "Mecca    May 20 (doy=140)  UmmAlQura Shafii",
+                140,
+                21.4225,
+                39.8262,
+                277,
+                3.0,
+                Method::UmmAlQura,
+                Madhab::Shafii,
+            ),
+            (
+                "Jakarta  Jan  1 (doy=001)  ISNA Shafii",
+                1,
+                -6.2088,
+                106.8456,
+                7,
+                7.0,
+                Method::Isna,
+                Madhab::Shafii,
+            ),
+            (
+                "Jakarta  Jun 21 (doy=172)  ISNA Shafii",
+                172,
+                -6.2088,
+                106.8456,
+                7,
+                7.0,
+                Method::Isna,
+                Madhab::Shafii,
+            ),
+            (
+                "Jakarta  Dec 21 (doy=355)  ISNA Shafii",
+                355,
+                -6.2088,
+                106.8456,
+                7,
+                7.0,
+                Method::Isna,
+                Madhab::Shafii,
+            ),
+            (
+                "Jakarta  May 20 (doy=140)  MWL Shafii ",
+                140,
+                -6.2088,
+                106.8456,
+                7,
+                7.0,
+                Method::Mwl,
+                Madhab::Shafii,
+            ),
+            (
+                "Jakarta  May 20 (doy=140)  Karachi Shafii",
+                140,
+                -6.2088,
+                106.8456,
+                7,
+                7.0,
+                Method::Karachi,
+                Madhab::Shafii,
+            ),
+            (
+                "Jakarta  May 20 (doy=140)  Egypt Shafii",
+                140,
+                -6.2088,
+                106.8456,
+                7,
+                7.0,
+                Method::Egypt,
+                Madhab::Shafii,
+            ),
+            (
+                "Jakarta  May 20 (doy=140)  ISNA Hanafi",
+                140,
+                -6.2088,
+                106.8456,
+                7,
+                7.0,
+                Method::Isna,
+                Madhab::Hanafi,
+            ),
         ];
 
         println!();
-        println!("{:<45}  Fajr     Sunrise  Dhuhr    Asr      Maghrib  Isha", "Case");
+        println!(
+            "{:<45}  Fajr     Sunrise  Dhuhr    Asr      Maghrib  Isha",
+            "Case"
+        );
         println!("{}", "-".repeat(45 + 6 * 9));
         for (label, doy, lat, lon, alt, tz, method, madhab) in cases {
             let t = compute(
                 *doy,
-                Location { latitude: *lat, longitude: *lon, altitude: *alt, tz_hours: *tz },
+                Location {
+                    latitude: *lat,
+                    longitude: *lon,
+                    altitude: *alt,
+                    tz_hours: *tz,
+                },
                 *method,
                 *madhab,
                 Adjustments::default(),
