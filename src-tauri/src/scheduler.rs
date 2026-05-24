@@ -79,8 +79,9 @@ pub fn is_task_due(task: &ScheduledTask, now: chrono::DateTime<Local>) -> bool {
         Err(_) => return false,
     };
 
-    // Check hour and minute matching
-    if now.hour() != task_time.hour() || now.minute() != task_time.minute() || now.second() != 0 {
+    // Check hour and minute matching (second is not checked here; the caller is
+    // responsible for only invoking this once per minute via last_checked_minute tracking)
+    if now.hour() != task_time.hour() || now.minute() != task_time.minute() {
         return false;
     }
 
@@ -183,6 +184,10 @@ mod tests {
         // Correct time
         let now = Local.with_ymd_and_hms(2026, 5, 24, 15, 30, 0).unwrap();
         assert!(is_task_due(&task, now));
+
+        // Also fires at a non-zero second within the same minute (minute tracking in caller)
+        let now_nonzero_sec = Local.with_ymd_and_hms(2026, 5, 24, 15, 30, 45).unwrap();
+        assert!(is_task_due(&task, now_nonzero_sec));
 
         // Incorrect time
         let now_wrong = Local.with_ymd_and_hms(2026, 5, 24, 15, 31, 0).unwrap();

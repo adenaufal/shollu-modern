@@ -8,7 +8,7 @@ mod settings;
 mod scheduler;
 mod audio;
 
-use chrono::{Datelike, Local, NaiveDate};
+use chrono::{Datelike, Local, NaiveDate, Timelike};
 use std::collections::HashMap;
 use std::path::PathBuf;
 use tauri::{Emitter, Manager};
@@ -314,10 +314,20 @@ pub fn run() {
             let app_handle = app.handle().clone();
             tauri::async_runtime::spawn(async move {
                 let mut interval = tokio::time::interval(std::time::Duration::from_secs(1));
+                let mut last_checked_minute: Option<u32> = None;
                 loop {
                     interval.tick().await;
 
                     let now = Local::now();
+
+                    // Only run task checks when the minute changes to avoid missing
+                    // the trigger if the loop was delayed past second 0.
+                    let current_minute = now.minute();
+                    if last_checked_minute == Some(current_minute) {
+                        continue;
+                    }
+                    last_checked_minute = Some(current_minute);
+
                     let tasks = scheduler::load_tasks();
                     for task in tasks {
                         if scheduler::is_task_due(&task, now) {
