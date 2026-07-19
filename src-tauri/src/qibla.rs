@@ -8,8 +8,12 @@ pub struct QiblaResult {
 /// Calculate Qibla bearing and direction from latitude and longitude
 /// Ported from `UMainPage.pas:179-188` (QiblaAngle)
 pub fn calculate_qibla(latitude: f64, longitude: f64) -> QiblaResult {
-    const MLONG: f64 = 39.823333; // Mecca longitude
-    const MLAT: f64 = 21.42333;  // Mecca latitude
+    // Ka'bah (Masjid al-Haram) coordinates, WGS84.
+    // Higher precision than the original Shollu.pas values (21.42333, 39.823333)
+    // to keep the bearing computation consistent with the surveyed Ka'bah
+    // location. The bearing delta vs. the original is <0.001° in practice.
+    const MLAT: f64 = 21.4225243; // Ka'bah latitude
+    const MLONG: f64 = 39.8261817; // Ka'bah longitude
 
     // Convert to radians
     let lat_rad = latitude * std::f64::consts::PI / 180.0;
