@@ -8,8 +8,8 @@ mod settings;
 mod scheduler;
 mod audio;
 
-use chrono::{Datelike, Local, NaiveDate};
-use std::collections::HashMap;
+use chrono::{Datelike, Local, NaiveDate, Timelike};
+use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 use tauri::{Emitter, Manager};
 
@@ -71,7 +71,7 @@ fn compute_prayer_times(
     let location = prayer_times::Location {
         latitude,
         longitude,
-        altitude: altitude as i32,
+        altitude,
         tz_hours: timezone,
     };
 
@@ -273,7 +273,13 @@ pub fn run() {
         .setup(|app| {
             // DB and places setup
             let (db_path, spn_dir, _) = get_app_paths(app.handle());
-            let _ = places::init_db(&db_path, &spn_dir);
+            if let Err(error) = places::init_db(&db_path, &spn_dir) {
+                eprintln!(
+                    "Failed to initialize places database at {}: {}",
+                    db_path.display(),
+                    error
+                );
+            }
 
             // Restore floating bar and drop zone windows from saved settings
             let restored_settings = settings::load_settings();
@@ -314,13 +320,23 @@ pub fn run() {
             let app_handle = app.handle().clone();
             tauri::async_runtime::spawn(async move {
                 let mut interval = tokio::time::interval(std::time::Duration::from_secs(1));
+                let mut fired_task_keys: HashSet<(String, chrono::NaiveDate, u32, u32)> =
+                    HashSet::new();
                 loop {
                     interval.tick().await;
 
                     let now = Local::now();
+                    let date = now.date_naive();
+                    let hour = now.hour();
+                    let minute = now.minute();
+                    fired_task_keys.retain(|(_, fired_date, fired_hour, fired_minute)| {
+                        *fired_date == date && *fired_hour == hour && *fired_minute == minute
+                    });
+
                     let tasks = scheduler::load_tasks();
                     for task in tasks {
-                        if scheduler::is_task_due(&task, now) {
+                        let task_key = (task.id.clone(), date, hour, minute);
+                        if scheduler::is_task_due(&task, now) && fired_task_keys.insert(task_key) {
                             // Execute OS commands, Shutdown/Hibernate actions
                             scheduler::execute_task_action(&task);
 

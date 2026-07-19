@@ -36,15 +36,22 @@ pub fn load_tasks() -> Vec<ScheduledTask> {
 
     let mut file = match File::open(&path) {
         Ok(f) => f,
-        Err(_) => return Vec::new(),
+        Err(error) => {
+            eprintln!("Failed to read tasks '{}': {}; using empty task list", path.display(), error);
+            return Vec::new();
+        }
     };
 
     let mut contents = String::new();
-    if file.read_to_string(&mut contents).is_err() {
+    if let Err(error) = file.read_to_string(&mut contents) {
+        eprintln!("Failed to read tasks '{}': {}; using empty task list", path.display(), error);
         return Vec::new();
     }
 
-    serde_json::from_str(&contents).unwrap_or_else(|_| Vec::new())
+    serde_json::from_str(&contents).unwrap_or_else(|error| {
+        eprintln!("Failed to parse tasks '{}': {}; using empty task list", path.display(), error);
+        Vec::new()
+    })
 }
 
 /// Save all scheduled tasks
@@ -52,17 +59,19 @@ pub fn save_tasks(tasks: &[ScheduledTask]) -> Result<(), String> {
     let path = get_tasks_path();
 
     if let Some(parent) = path.parent() {
-        create_dir_all(parent).map_err(|e| format!("Failed to create tasks directory: {}", e))?;
+        create_dir_all(parent).map_err(|e| {
+            format!("Failed to create tasks directory '{}': {}", parent.display(), e)
+        })?;
     }
 
     let json_string = serde_json::to_string_pretty(tasks)
         .map_err(|e| format!("Failed to serialize tasks: {}", e))?;
 
     let mut file = File::create(&path)
-        .map_err(|e| format!("Failed to create tasks file: {}", e))?;
+        .map_err(|e| format!("Failed to create tasks file '{}': {}", path.display(), e))?;
 
     file.write_all(json_string.as_bytes())
-        .map_err(|e| format!("Failed to write tasks: {}", e))?;
+        .map_err(|e| format!("Failed to write tasks '{}': {}", path.display(), e))?;
 
     Ok(())
 }
@@ -80,7 +89,7 @@ pub fn is_task_due(task: &ScheduledTask, now: chrono::DateTime<Local>) -> bool {
     };
 
     // Check hour and minute matching
-    if now.hour() != task_time.hour() || now.minute() != task_time.minute() || now.second() != 0 {
+    if now.hour() != task_time.hour() || now.minute() != task_time.minute() {
         return false;
     }
 
@@ -180,9 +189,11 @@ mod tests {
             enabled: true,
         };
 
-        // Correct time
+        // Correct time, including a delayed scheduler tick within the minute
         let now = Local.with_ymd_and_hms(2026, 5, 24, 15, 30, 0).unwrap();
         assert!(is_task_due(&task, now));
+        let delayed_tick = Local.with_ymd_and_hms(2026, 5, 24, 15, 30, 42).unwrap();
+        assert!(is_task_due(&task, delayed_tick));
 
         // Incorrect time
         let now_wrong = Local.with_ymd_and_hms(2026, 5, 24, 15, 31, 0).unwrap();

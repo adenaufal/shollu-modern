@@ -39,6 +39,7 @@ export function LocationPage(props: LocationPageProps) {
   const [searchQuery, setSearchQuery] = createSignal<string>("");
   const [searchResults, setSearchResults] = createSignal<City[]>([]);
   const [showDropdown, setShowDropdown] = createSignal<boolean>(false);
+  const [validationError, setValidationError] = createSignal<string>("");
 
   // Load existing location settings on mount
   const loadLocationSettings = async () => {
@@ -116,6 +117,44 @@ export function LocationPage(props: LocationPageProps) {
   const handleSaveLocation = async () => {
     const currSettings = settings();
     if (!currSettings) return;
+
+    setValidationError("");
+    const values = [
+      latitude(),
+      longitude(),
+      altitude(),
+      timezone(),
+      adjFajr(),
+      adjSunrise(),
+      adjDhuhr(),
+      adjAsr(),
+      adjMaghrib(),
+      adjIsha(),
+    ];
+    const errorMessage = props.lang === "Indonesia"
+      ? "Periksa kembali koordinat, zona waktu, ketinggian, dan koreksi waktu."
+      : "Please check the coordinates, timezone, altitude, and time adjustments.";
+
+    if (!values.every(Number.isFinite)) {
+      setValidationError(errorMessage);
+      return;
+    }
+    if (latitude() < -90 || latitude() > 90) {
+      setValidationError(props.lang === "Indonesia" ? "Lintang harus antara -90 dan 90."
+        : "Latitude must be between -90 and 90.");
+      return;
+    }
+    if (longitude() < -180 || longitude() > 180) {
+      setValidationError(props.lang === "Indonesia" ? "Bujur harus antara -180 dan 180."
+        : "Longitude must be between -180 and 180.");
+      return;
+    }
+    if (timezone() < -12 || timezone() > 14) {
+      setValidationError(props.lang === "Indonesia" ? "Zona waktu harus antara UTC-12 dan UTC+14."
+        : "Timezone must be between UTC-12 and UTC+14.");
+      return;
+    }
+    // Negative altitude is valid (below sea level); original algorithm uses signum * sqrt(|h|).
 
     const updated: AppSettings = {
       ...currSettings,
@@ -360,6 +399,11 @@ export function LocationPage(props: LocationPageProps) {
 
       {/* Form Action Controls */}
       <div class="flex justify-end pt-2 select-none pb-8">
+        <Show when={validationError()}>
+          <p role="alert" class="text-sm text-red-600 dark:text-red-400 mr-auto self-center">
+            {validationError()}
+          </p>
+        </Show>
         <button
           onClick={handleSaveLocation}
           class="btn btn-primary select-none text-xs font-semibold px-6 py-2 shadow"

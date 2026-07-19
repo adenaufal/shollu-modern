@@ -1,8 +1,26 @@
-import { createSignal, onMount, onCleanup, Show } from "solid-js";
+import { createSignal, onMount, onCleanup, Show, For } from "solid-js";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import "./App.css";
+
+type TranslationKey =
+  | "nav.main"
+  | "nav.location"
+  | "nav.schedule"
+  | "nav.tasks"
+  | "nav.convert"
+  | "nav.settings"
+  | "nav.about"
+  | "title.main"
+  | "title.location"
+  | "title.schedule"
+  | "title.tasks"
+  | "title.convert"
+  | "title.settings"
+  | "title.about";
+type TranslationDictionary = Record<TranslationKey, string>;
+type SupportedLanguage = "Indonesia" | "English";
 
 // Import page views
 import { MainPage } from "./components/MainPage";
@@ -48,13 +66,12 @@ export function App() {
   const [accent, setAccentState] = createSignal<string>("teal");
   const [collapsed, setCollapsed] = createSignal<boolean>(false);
   const [lang, setLangState] = createSignal<string>("Indonesia");
-  const [showTrayIcon, setShowTrayIcon] = createSignal<boolean>(true);
   const [windowLabel, setWindowLabel] = createSignal<string>("main");
 
   // Sync translation functions based on active language pack
   const t = (key: string, fallback: string): string => {
     // Basic reactive dictionary mapping fallbacks inside the client
-    const dict: Record<string, Record<string, string>> = {
+    const dict: Record<SupportedLanguage, TranslationDictionary> = {
       Indonesia: {
         "nav.main": "Utama",
         "nav.location": "Lokasi",
@@ -88,8 +105,8 @@ export function App() {
         "title.about": "About Shollu"
       }
     };
-    const activeDict = dict[lang()] || dict["English"];
-    return activeDict[key] || fallback;
+    const activeDict = dict[lang() as SupportedLanguage] || dict.English;
+    return activeDict[key as TranslationKey] || fallback;
   };
 
   const setTheme = (t: string) => {
@@ -241,16 +258,6 @@ export function App() {
           </nav>
 
           <div class="sidebar-footer py-2 px-1">
-            <div class="tray-row flex items-center justify-between px-3 py-2">
-              {!collapsed() && <span>{lang() === "Indonesia" ? "Tray Sistem" : "System Tray"}</span>}
-              <div
-                onClick={() => setShowTrayIcon(!showTrayIcon())}
-                class={`toggle-pill cursor-pointer ${showTrayIcon() ? "active" : ""}`}
-              >
-                <div class="toggle-knob" />
-              </div>
-            </div>
-
             {!collapsed() ? (
               <button
                 onClick={() => setCollapsed(true)}
