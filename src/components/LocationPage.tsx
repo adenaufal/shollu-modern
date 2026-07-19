@@ -26,7 +26,7 @@ export function LocationPage(props: LocationPageProps) {
   const [timezone, setTimezone] = createSignal<number>(7);
   const [method, setMethod] = createSignal<number>(2); // ISNA
   const [madhab, setMadhab] = createSignal<number>(1); // Shafii
-  
+
   // Individual adjustments
   const [adjFajr, setAdjFajr] = createSignal<number>(0);
   const [adjSunrise, setAdjSunrise] = createSignal<number>(0);
@@ -46,14 +46,14 @@ export function LocationPage(props: LocationPageProps) {
     try {
       const res = await invoke<AppSettings>("get_settings");
       setSettings(res);
-      
+
       setAreaName(res.location.name);
       setSearchQuery(res.location.name);
       setLatitude(res.location.latitude);
       setLongitude(res.location.longitude);
       setAltitude(res.location.altitude);
       setTimezone(res.location.timezone);
-      
+
       setMethod(res.method);
       setMadhab(res.madhab);
 
@@ -84,7 +84,10 @@ export function LocationPage(props: LocationPageProps) {
 
     try {
       // Query rusqlite cities DB via Tauri B4 query layers
-      const res = await invoke<City[]>("search_cities", { query: query.trim(), limit: 10 });
+      const res = await invoke<City[]>("search_cities", {
+        query: query.trim(),
+        limit: 10,
+      });
       setSearchResults(res);
       setShowDropdown(res.length > 0);
     } catch (e) {
@@ -108,7 +111,7 @@ export function LocationPage(props: LocationPageProps) {
       tzOffset = 9; // WIT
     }
     setTimezone(tzOffset);
-    
+
     setSearchResults([]);
     setShowDropdown(false);
   };
@@ -131,27 +134,37 @@ export function LocationPage(props: LocationPageProps) {
       adjMaghrib(),
       adjIsha(),
     ];
-    const errorMessage = props.lang === "Indonesia"
-      ? "Periksa kembali koordinat, zona waktu, ketinggian, dan koreksi waktu."
-      : "Please check the coordinates, timezone, altitude, and time adjustments.";
+    const errorMessage =
+      props.lang === "Indonesia"
+        ? "Periksa kembali koordinat, zona waktu, ketinggian, dan koreksi waktu."
+        : "Please check the coordinates, timezone, altitude, and time adjustments.";
 
     if (!values.every(Number.isFinite)) {
       setValidationError(errorMessage);
       return;
     }
     if (latitude() < -90 || latitude() > 90) {
-      setValidationError(props.lang === "Indonesia" ? "Lintang harus antara -90 dan 90."
-        : "Latitude must be between -90 and 90.");
+      setValidationError(
+        props.lang === "Indonesia"
+          ? "Lintang harus antara -90 dan 90."
+          : "Latitude must be between -90 and 90.",
+      );
       return;
     }
     if (longitude() < -180 || longitude() > 180) {
-      setValidationError(props.lang === "Indonesia" ? "Bujur harus antara -180 dan 180."
-        : "Longitude must be between -180 and 180.");
+      setValidationError(
+        props.lang === "Indonesia"
+          ? "Bujur harus antara -180 dan 180."
+          : "Longitude must be between -180 and 180.",
+      );
       return;
     }
     if (timezone() < -12 || timezone() > 14) {
-      setValidationError(props.lang === "Indonesia" ? "Zona waktu harus antara UTC-12 dan UTC+14."
-        : "Timezone must be between UTC-12 and UTC+14.");
+      setValidationError(
+        props.lang === "Indonesia"
+          ? "Zona waktu harus antara UTC-12 dan UTC+14."
+          : "Timezone must be between UTC-12 and UTC+14.",
+      );
       return;
     }
     // Negative altitude is valid (below sea level); original algorithm uses signum * sqrt(|h|).
@@ -163,7 +176,7 @@ export function LocationPage(props: LocationPageProps) {
         latitude: latitude(),
         longitude: longitude(),
         altitude: altitude(),
-        timezone: timezone()
+        timezone: timezone(),
       },
       method: method(),
       madhab: madhab(),
@@ -173,61 +186,92 @@ export function LocationPage(props: LocationPageProps) {
         dhuhr: adjDhuhr(),
         asr: adjAsr(),
         maghrib: adjMaghrib(),
-        isha: adjIsha()
-      }
+        isha: adjIsha(),
+      },
     };
 
     try {
       await invoke("save_settings", { settings: updated });
       setSettings(updated);
-      alert(props.lang === "Indonesia" ? "Lokasi & Metode berhasil diperbarui!" : "Location & Calculation parameters successfully saved!");
+      alert(
+        props.lang === "Indonesia"
+          ? "Lokasi & Metode berhasil diperbarui!"
+          : "Location & Calculation parameters successfully saved!",
+      );
     } catch (e) {
       console.error("Failed to save location settings:", e);
     }
   };
 
   const methodsList = [
-    { id: 1, label: props.lang === "Indonesia" ? "Karachi (Univ. Ilmu Islam)" : "Karachi (Univ. of Islamic Science)" },
+    {
+      id: 1,
+      label:
+        props.lang === "Indonesia"
+          ? "Karachi (Univ. Ilmu Islam)"
+          : "Karachi (Univ. of Islamic Science)",
+    },
     { id: 2, label: "ISNA (North America)" },
-    { id: 3, label: props.lang === "Indonesia" ? "MWL (Liga Dunia Islam)" : "MWL (Muslim World League)" },
+    {
+      id: 3,
+      label:
+        props.lang === "Indonesia"
+          ? "MWL (Liga Dunia Islam)"
+          : "MWL (Muslim World League)",
+    },
     { id: 4, label: "Umm Al-Qura (Saudi Arabia)" },
-    { id: 5, label: props.lang === "Indonesia" ? "Mesir (Survey Umum)" : "Egypt General Survey Authority" }
+    {
+      id: 5,
+      label:
+        props.lang === "Indonesia"
+          ? "Mesir (Survey Umum)"
+          : "Egypt General Survey Authority",
+    },
   ];
 
   return (
-    <div class="content-scroll animate-fade-in space-y-4 max-w-lg mx-auto">
-      
+    <div class="page-stack animate-fade-in">
       {/* Area & Coordinates Card */}
       <div class="card border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl p-5 shadow-sm space-y-4">
         <h3 class="text-sm font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase select-none">
-          {props.lang === "Indonesia" ? "Lokasi & Koordinat" : "Area & Coordinates"}
+          {props.lang === "Indonesia"
+            ? "Lokasi & Koordinat"
+            : "Area & Coordinates"}
         </h3>
 
         {/* Autocomplete City Input */}
         <div class="field autocomplete-container select-none">
-          <label class="field-label">{props.lang === "Indonesia" ? "Nama Wilayah / Kota" : "Area Name"}</label>
+          <label class="field-label">
+            {props.lang === "Indonesia" ? "Nama Wilayah / Kota" : "Area Name"}
+          </label>
           <input
             type="text"
-            placeholder={props.lang === "Indonesia" ? "Cari kota (misal: Pekanbaru)..." : "Search cities (e.g., Pekanbaru)..."}
+            placeholder={
+              props.lang === "Indonesia"
+                ? "Cari kota (misal: Pekanbaru)..."
+                : "Search cities (e.g., Pekanbaru)..."
+            }
             value={searchQuery()}
             onInput={(e) => handleAreaInput(e.currentTarget.value)}
             class="field-input text-slate-800 dark:text-slate-200"
           />
-          
+
           {/* Autocomplete Dropdown List */}
           <Show when={showDropdown()}>
             <div class="autocomplete-dropdown border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
               <For each={searchResults()}>
                 {(city) => (
-                  <div
+                  <button
+                    type="button"
                     onClick={() => handleSelectCity(city)}
                     class="autocomplete-item hover:bg-slate-50 dark:hover:bg-slate-800/40 text-slate-800 dark:text-slate-200"
                   >
                     <span>{city.name}</span>
                     <span class="autocomplete-item-region text-slate-400 font-medium">
-                      {city.region_name} ({city.longitude.toFixed(2)}°, {city.latitude.toFixed(2)}°)
+                      {city.region_name} ({city.longitude.toFixed(2)}°,{" "}
+                      {city.latitude.toFixed(2)}°)
                     </span>
-                  </div>
+                  </button>
                 )}
               </For>
             </div>
@@ -237,7 +281,9 @@ export function LocationPage(props: LocationPageProps) {
         {/* Coordinates Inputs Row */}
         <div class="field-row">
           <div class="field">
-            <span class="field-label select-none">{props.lang === "Indonesia" ? "Lintang (Latitude)" : "Latitude"}</span>
+            <span class="field-label select-none">
+              {props.lang === "Indonesia" ? "Lintang (Latitude)" : "Latitude"}
+            </span>
             <input
               type="number"
               step="0.000001"
@@ -247,7 +293,9 @@ export function LocationPage(props: LocationPageProps) {
             />
           </div>
           <div class="field">
-            <span class="field-label select-none">{props.lang === "Indonesia" ? "Bujur (Longitude)" : "Longitude"}</span>
+            <span class="field-label select-none">
+              {props.lang === "Indonesia" ? "Bujur (Longitude)" : "Longitude"}
+            </span>
             <input
               type="number"
               step="0.000001"
@@ -261,7 +309,9 @@ export function LocationPage(props: LocationPageProps) {
         {/* Altitude & Timezone Row */}
         <div class="field-row">
           <div class="field">
-            <span class="field-label select-none">{props.lang === "Indonesia" ? "Ketinggian (m)" : "Altitude (m)"}</span>
+            <span class="field-label select-none">
+              {props.lang === "Indonesia" ? "Ketinggian (m)" : "Altitude (m)"}
+            </span>
             <input
               type="number"
               value={altitude()}
@@ -270,7 +320,9 @@ export function LocationPage(props: LocationPageProps) {
             />
           </div>
           <div class="field">
-            <span class="field-label select-none">{props.lang === "Indonesia" ? "Zona Waktu" : "Timezone Offset"}</span>
+            <span class="field-label select-none">
+              {props.lang === "Indonesia" ? "Zona Waktu" : "Timezone Offset"}
+            </span>
             <select
               value={timezone()}
               onChange={(e) => setTimezone(parseFloat(e.currentTarget.value))}
@@ -292,20 +344,27 @@ export function LocationPage(props: LocationPageProps) {
       {/* Calculation Methods Card */}
       <div class="card border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl p-5 shadow-sm space-y-3 select-none">
         <h3 class="text-sm font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase select-none">
-          {props.lang === "Indonesia" ? "Metode Kalkulasi" : "Calculation Methods"}
+          {props.lang === "Indonesia"
+            ? "Metode Kalkulasi"
+            : "Calculation Methods"}
         </h3>
 
         {/* List of Calculation Methods */}
         <div class="radio-list select-none">
           <For each={methodsList}>
             {(m) => (
-              <div
+              <button
+                type="button"
+                role="radio"
+                aria-checked={method() === m.id}
                 onClick={() => setMethod(m.id)}
                 class={`radio-opt select-none ${method() === m.id ? "checked" : ""}`}
               >
                 <div class="radio-circ" />
-                <span class="text-slate-700 dark:text-slate-300 font-medium">{m.label}</span>
-              </div>
+                <span class="text-slate-700 dark:text-slate-300 font-medium">
+                  {m.label}
+                </span>
+              </button>
             )}
           </For>
         </div>
@@ -313,29 +372,43 @@ export function LocationPage(props: LocationPageProps) {
         {/* Fiqh Madhab Selectors */}
         <div class="flex items-center gap-4 pt-2 select-none border-t border-slate-100 dark:border-slate-800/40">
           <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase select-none">
-            {props.lang === "Indonesia" ? "Kalkulasi Asar (Mazhab)" : "Fiqh Madhab (Asr)"}
+            {props.lang === "Indonesia"
+              ? "Kalkulasi Asar (Mazhab)"
+              : "Fiqh Madhab (Asr)"}
           </span>
-          <div
+          <button
+            type="button"
+            role="radio"
+            aria-checked={madhab() === 1}
             onClick={() => setMadhab(1)}
             class={`radio-opt select-none ${madhab() === 1 ? "checked" : ""}`}
           >
             <div class="radio-circ" />
-            <span class="text-xs text-slate-700 dark:text-slate-300 font-semibold select-none">Shafi'i (Maliki, Hanbali)</span>
-          </div>
-          <div
+            <span class="text-xs text-slate-700 dark:text-slate-300 font-semibold select-none">
+              Shafi'i (Maliki, Hanbali)
+            </span>
+          </button>
+          <button
+            type="button"
+            role="radio"
+            aria-checked={madhab() === 2}
             onClick={() => setMadhab(2)}
             class={`radio-opt select-none ${madhab() === 2 ? "checked" : ""}`}
           >
             <div class="radio-circ" />
-            <span class="text-xs text-slate-700 dark:text-slate-300 font-semibold select-none">Hanafi</span>
-          </div>
+            <span class="text-xs text-slate-700 dark:text-slate-300 font-semibold select-none">
+              Hanafi
+            </span>
+          </button>
         </div>
       </div>
 
       {/* Adjustments offset Card */}
       <div class="card border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl p-5 shadow-sm space-y-3 select-none">
         <h3 class="text-sm font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase select-none">
-          {props.lang === "Indonesia" ? "Koreksi Waktu (Menit)" : "Adjustments (Minutes)"}
+          {props.lang === "Indonesia"
+            ? "Koreksi Waktu (Menit)"
+            : "Adjustments (Minutes)"}
         </h3>
 
         {/* Grid of offset adjusters */}
@@ -400,7 +473,10 @@ export function LocationPage(props: LocationPageProps) {
       {/* Form Action Controls */}
       <div class="flex justify-end pt-2 select-none pb-8">
         <Show when={validationError()}>
-          <p role="alert" class="text-sm text-red-600 dark:text-red-400 mr-auto self-center">
+          <p
+            role="alert"
+            class="text-sm text-red-600 dark:text-red-400 mr-auto self-center"
+          >
             {validationError()}
           </p>
         </Show>
@@ -411,7 +487,6 @@ export function LocationPage(props: LocationPageProps) {
           {props.lang === "Indonesia" ? "Simpan Lokasi" : "Save Location"}
         </button>
       </div>
-
     </div>
   );
 }
