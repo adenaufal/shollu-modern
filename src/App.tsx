@@ -4,25 +4,6 @@ import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import "./App.css";
 
-type TranslationKey =
-  | "nav.main"
-  | "nav.location"
-  | "nav.schedule"
-  | "nav.tasks"
-  | "nav.convert"
-  | "nav.settings"
-  | "nav.about"
-  | "title.main"
-  | "title.location"
-  | "title.schedule"
-  | "title.tasks"
-  | "title.convert"
-  | "title.settings"
-  | "title.about";
-type TranslationDictionary = Record<TranslationKey, string>;
-type SupportedLanguage = "Indonesia" | "English";
-
-// Import page views
 import { MainPage } from "./components/MainPage";
 import { LocationPage } from "./components/LocationPage";
 import { ConvertPage } from "./components/ConvertPage";
@@ -33,7 +14,6 @@ import { AboutPage } from "./components/AboutPage";
 import { FloatingBar } from "./components/FloatingBar";
 import { DropZone } from "./components/DropZone";
 
-// Import brand icons
 import {
   ClockIcon,
   MapPinIcon,
@@ -43,8 +23,58 @@ import {
   SettingsIcon,
   InfoIcon,
   ChevronLeftIcon,
-  ChevronRightIcon
+  ChevronRightIcon,
 } from "./components/Icons";
+
+type Lang = "Indonesia" | "English";
+type PageId =
+  | "main"
+  | "location"
+  | "schedule"
+  | "tasks"
+  | "convert"
+  | "settings"
+  | "about";
+// `nav.*` and `title.*` mirror the PageId set so every page has a translation
+// key for both the sidebar label and the page header. Typing the dictionary
+// as Record<Lang, Record<TranslationKey, string>> makes missing translations
+// a compile-time error instead of a silent runtime fallback (issue #16).
+type TranslationKey = `nav.${PageId}` | `title.${PageId}`;
+
+const TRANSLATIONS: Record<Lang, Record<TranslationKey, string>> = {
+  Indonesia: {
+    "nav.main": "Utama",
+    "nav.location": "Lokasi",
+    "nav.schedule": "Jadwal",
+    "nav.tasks": "Pengingat",
+    "nav.convert": "Konversi",
+    "nav.settings": "Pengaturan",
+    "nav.about": "Tentang",
+    "title.main": "Layar Utama",
+    "title.location": "Pengaturan Lokasi",
+    "title.schedule": "Pembuat Jadwal",
+    "title.tasks": "Jadwal Pengingat",
+    "title.convert": "Konversi Kalender",
+    "title.settings": "Pengaturan Aplikasi",
+    "title.about": "Tentang Shollu",
+  },
+  English: {
+    "nav.main": "Main",
+    "nav.location": "Location",
+    "nav.schedule": "Schedule",
+    "nav.tasks": "Tasks",
+    "nav.convert": "Convert",
+    "nav.settings": "Settings",
+    "nav.about": "About",
+    "title.main": "Main Page",
+    "title.location": "Location Parameters",
+    "title.schedule": "Schedule Maker",
+    "title.tasks": "Reminder Scheduler",
+    "title.convert": "Convert Dates",
+    "title.settings": "App Settings",
+    "title.about": "About Shollu",
+  },
+};
 
 interface AppSettings {
   language: string;
@@ -60,76 +90,65 @@ interface ScheduledTask {
   enabled: boolean;
 }
 
+type ToastState = {
+  id: number;
+  title: string;
+  message: string;
+  tone: "info" | "success" | "warning";
+};
+
 export function App() {
-  const [page, setPage] = createSignal<string>("main");
+  const [page, setPage] = createSignal<PageId>("main");
   const [theme, setThemeState] = createSignal<string>("light");
   const [accent, setAccentState] = createSignal<string>("teal");
   const [collapsed, setCollapsed] = createSignal<boolean>(false);
-  const [lang, setLangState] = createSignal<string>("Indonesia");
+  const [lang, setLangState] = createSignal<Lang>("Indonesia");
   const [windowLabel, setWindowLabel] = createSignal<string>("main");
+  const [toast, setToast] = createSignal<ToastState | null>(null);
 
-  // Sync translation functions based on active language pack
-  const t = (key: string, fallback: string): string => {
-    // Basic reactive dictionary mapping fallbacks inside the client
-    const dict: Record<SupportedLanguage, TranslationDictionary> = {
-      Indonesia: {
-        "nav.main": "Utama",
-        "nav.location": "Lokasi",
-        "nav.schedule": "Jadwal",
-        "nav.tasks": "Pengingat",
-        "nav.convert": "Konversi",
-        "nav.settings": "Pengaturan",
-        "nav.about": "Tentang",
-        "title.main": "Layar Utama",
-        "title.location": "Pengaturan Lokasi",
-        "title.schedule": "Pembuat Jadwal",
-        "title.tasks": "Jadwal Pengingat",
-        "title.convert": "Konversi Kalender",
-        "title.settings": "Pengaturan Aplikasi",
-        "title.about": "Tentang Shollu"
-      },
-      English: {
-        "nav.main": "Main",
-        "nav.location": "Location",
-        "nav.schedule": "Schedule",
-        "nav.tasks": "Tasks",
-        "nav.convert": "Convert",
-        "nav.settings": "Settings",
-        "nav.about": "About",
-        "title.main": "Main Page",
-        "title.location": "Location Parameters",
-        "title.schedule": "Schedule Maker",
-        "title.tasks": "Reminder Scheduler",
-        "title.convert": "Convert Dates",
-        "title.settings": "App Settings",
-        "title.about": "About Shollu"
-      }
-    };
-    const activeDict = dict[lang() as SupportedLanguage] || dict.English;
-    return activeDict[key as TranslationKey] || fallback;
+  let toastTimer: ReturnType<typeof setTimeout> | undefined;
+
+  const showToast = (
+    title: string,
+    message: string,
+    tone: ToastState["tone"] = "info",
+  ) => {
+    if (toastTimer) clearTimeout(toastTimer);
+    const next: ToastState = { id: Date.now(), title, message, tone };
+    setToast(next);
+    toastTimer = setTimeout(() => {
+      setToast((current) => (current?.id === next.id ? null : current));
+    }, 4200);
   };
 
-  const setTheme = (t: string) => {
-    setThemeState(t);
-    document.documentElement.setAttribute("data-theme", t);
+  const t = (key: TranslationKey, fallback: string): string => {
+    const active = TRANSLATIONS[lang()] ?? TRANSLATIONS.English;
+    return active[key] || fallback;
   };
 
-  const setAccent = (a: string) => {
-    setAccentState(a);
-    document.documentElement.setAttribute("data-accent", a);
+  const setTheme = (next: string) => {
+    setThemeState(next);
+    document.documentElement.setAttribute("data-theme", next);
   };
 
-  const setLang = (l: string) => {
-    setLangState(l);
+  const setAccent = (next: string) => {
+    setAccentState(next);
+    document.documentElement.setAttribute("data-accent", next);
   };
 
-  // Load startup TOML settings on boot
+  const setLang = (next: string) => {
+    if (next === "Indonesia" || next === "English") {
+      setLangState(next);
+    }
+  };
+
   const bootSettings = async () => {
     try {
       const res = await invoke<AppSettings>("get_settings");
-      setLangState(res.language);
+      if (res.language === "Indonesia" || res.language === "English") {
+        setLangState(res.language);
+      }
 
-      // Parse theme and accent from Rust `skin` field (formatted as "{theme}-{accent}")
       if (res.skin && res.skin !== "default") {
         const parts = res.skin.split("-");
         if (parts.length === 2) {
@@ -142,7 +161,6 @@ export function App() {
       }
     } catch (e) {
       console.error("Boot settings failed:", e);
-      // Fallback defaults
       setTheme("light");
       setAccent("teal");
     }
@@ -158,15 +176,21 @@ export function App() {
 
     await bootSettings();
 
-    // Listen to async Tokio due alarms in scheduler.rs
     const unlisten = await listen<ScheduledTask>("trigger-task", (event) => {
       const task = event.payload;
-      // Show warning/alert modal natively
-      alert(`[Shollu - ${task.task_type}] ${task.name}\n\n${task.message}`);
+      showToast(
+        `${task.task_type}: ${task.name}`,
+        task.message ||
+          (lang() === "Indonesia"
+            ? "Pengingat jadwal tiba."
+            : "Scheduled reminder due."),
+        task.task_type === "Warning" ? "warning" : "info",
+      );
     });
 
     onCleanup(() => {
       unlisten();
+      if (toastTimer) clearTimeout(toastTimer);
     });
   });
 
@@ -194,20 +218,50 @@ export function App() {
           />
         );
       case "about":
-        return <AboutPage lang={lang()} t={t} />;
+        return <AboutPage lang={lang()} />;
       default:
         return <MainPage lang={lang()} />;
     }
   };
 
-  const navItems = [
+  const navItems: {
+    id: PageId;
+    labelKey: TranslationKey;
+    fallback: string;
+    Icon: typeof ClockIcon;
+  }[] = [
     { id: "main", labelKey: "nav.main", fallback: "Main", Icon: ClockIcon },
-    { id: "location", labelKey: "nav.location", fallback: "Location", Icon: MapPinIcon },
-    { id: "schedule", labelKey: "nav.schedule", fallback: "Schedule", Icon: CalendarIcon },
-    { id: "tasks", labelKey: "nav.tasks", fallback: "Tasks", Icon: CheckSquareIcon },
-    { id: "convert", labelKey: "nav.convert", fallback: "Convert", Icon: ArrowRightLeftIcon },
-    { id: "settings", labelKey: "nav.settings", fallback: "Settings", Icon: SettingsIcon },
-    { id: "about", labelKey: "nav.about", fallback: "About", Icon: InfoIcon }
+    {
+      id: "location",
+      labelKey: "nav.location",
+      fallback: "Location",
+      Icon: MapPinIcon,
+    },
+    {
+      id: "schedule",
+      labelKey: "nav.schedule",
+      fallback: "Schedule",
+      Icon: CalendarIcon,
+    },
+    {
+      id: "tasks",
+      labelKey: "nav.tasks",
+      fallback: "Tasks",
+      Icon: CheckSquareIcon,
+    },
+    {
+      id: "convert",
+      labelKey: "nav.convert",
+      fallback: "Convert",
+      Icon: ArrowRightLeftIcon,
+    },
+    {
+      id: "settings",
+      labelKey: "nav.settings",
+      fallback: "Settings",
+      Icon: SettingsIcon,
+    },
+    { id: "about", labelKey: "nav.about", fallback: "About", Icon: InfoIcon },
   ];
 
   return (
@@ -219,78 +273,124 @@ export function App() {
         </Show>
       }
     >
-      <div class="app-window select-none">
-        {/* Sidebar Navigation */}
-        <div class={`sidebar ${collapsed() ? "collapsed" : ""}`}>
+      <div class="app-window">
+        <aside
+          class={`sidebar ${collapsed() ? "collapsed" : ""}`}
+          aria-label="Primary"
+        >
           <div class="sidebar-logo">
-            <img src="/icon-32.png" alt="Shollu Modern" />
-            {!collapsed() && (
+            <img src="/icon-32.png" alt="" width="26" height="26" />
+            <Show when={!collapsed()}>
               <div class="sidebar-logo-text">
-                <div class="sidebar-logo-name">
-                  Shollu
-                </div>
-                <div class="sidebar-logo-sub">
-                  Modern
-                </div>
+                <div class="sidebar-logo-name">Shollu</div>
+                <div class="sidebar-logo-sub">Modern</div>
               </div>
-            )}
+            </Show>
           </div>
 
-          <nav class="flex-1 py-4 space-y-1">
+          <nav
+            class="sidebar-nav"
+            aria-label={
+              lang() === "Indonesia" ? "Navigasi utama" : "Main navigation"
+            }
+          >
             <For each={navItems}>
-              {(item) => (
-                <button
-                  onClick={() => setPage(item.id)}
-                  class={`nav-item ${page() === item.id ? "active" : ""}`}
-                  title={collapsed() ? t(item.labelKey, item.fallback) : undefined}
-                >
-                  <div class="nav-icon">
-                    <item.Icon size={16} />
-                  </div>
-                  {!collapsed() && (
-                    <span>
-                      {t(item.labelKey, item.fallback)}
+              {(item) => {
+                const active = () => page() === item.id;
+                return (
+                  <button
+                    type="button"
+                    onClick={() => setPage(item.id)}
+                    class={`nav-item ${active() ? "active" : ""}`}
+                    aria-current={active() ? "page" : undefined}
+                    title={
+                      collapsed() ? t(item.labelKey, item.fallback) : undefined
+                    }
+                  >
+                    <span class="nav-icon" aria-hidden="true">
+                      <item.Icon size={16} />
                     </span>
-                  )}
-                </button>
-              )}
+                    <Show when={!collapsed()}>
+                      <span>{t(item.labelKey, item.fallback)}</span>
+                    </Show>
+                  </button>
+                );
+              }}
             </For>
           </nav>
 
-          <div class="sidebar-footer py-2 px-1">
-            {!collapsed() ? (
+          <div class="sidebar-footer">
+            <Show
+              when={!collapsed()}
+              fallback={
+                <button
+                  type="button"
+                  onClick={() => setCollapsed(false)}
+                  class="nav-item nav-item-compact"
+                  aria-label={
+                    lang() === "Indonesia"
+                      ? "Perluas sidebar"
+                      : "Expand sidebar"
+                  }
+                  title={lang() === "Indonesia" ? "Perluas" : "Expand"}
+                >
+                  <ChevronRightIcon size={14} />
+                </button>
+              }
+            >
               <button
+                type="button"
                 onClick={() => setCollapsed(true)}
-                class="nav-item text-xs px-3 py-2 flex items-center gap-2 w-full"
+                class="nav-item nav-item-compact"
               >
                 <ChevronLeftIcon size={14} />
-                <span>{lang() === "Indonesia" ? "Sembunyikan" : "Collapse"}</span>
+                <span>
+                  {lang() === "Indonesia" ? "Sembunyikan" : "Collapse"}
+                </span>
               </button>
-            ) : (
-              <button
-                onClick={() => setCollapsed(false)}
-                class="nav-item justify-center py-2 w-full"
-              >
-                <ChevronRightIcon size={14} />
-              </button>
-            )}
+            </Show>
           </div>
-        </div>
+        </aside>
 
-        {/* Main Content Area */}
         <div class="content-area">
-          <div class="content-header">
-            <div class="content-header-title">
+          <header class="content-header">
+            <h1 class="content-header-title">
               {t(`title.${page()}`, "Shollu Modern")}
-            </div>
-          </div>
+            </h1>
+          </header>
 
-          <div class="content-scroll flex-grow overflow-y-auto p-6">
+          <main class="content-scroll" id="main-content">
             {renderPage()}
-          </div>
+          </main>
         </div>
+
+        <Show when={toast()}>
+          {(item) => (
+            <div
+              class={`app-toast tone-${item().tone}`}
+              role="status"
+              aria-live="polite"
+            >
+              <div class="app-toast-title">{item().title}</div>
+              <div class="app-toast-message">{item().message}</div>
+              <button
+                type="button"
+                class="app-toast-close"
+                aria-label={
+                  lang() === "Indonesia"
+                    ? "Tutup notifikasi"
+                    : "Dismiss notification"
+                }
+                onClick={() => setToast(null)}
+              >
+                ×
+              </button>
+            </div>
+          )}
+        </Show>
       </div>
     </Show>
   );
 }
+
 export default App;
