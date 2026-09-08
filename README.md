@@ -7,6 +7,8 @@ Sebuah pembangunan ulang modern dan lintas platform dari **[Shollu](https://gith
 Proyek ini mempertahankan 100% kecocokan logika kalkulasi astronomi asli, database tempat biner asli, paket bahasa asli, serta mesin penjadwalan alarm cron dari Delphi, dan memperbarui seluruh lapisan visualnya agar tampil premium di sistem operasi modern.
 
 > **Status:** MVP `v0.1.0-alpha` telah selesai dan beroperasi 100%! Terverifikasi dengan **0 peringatan clippy** dan **100% kelulusan unit test Cargo** di Windows, macOS, dan Linux.
+>
+> **[⬇ Unduh rilis](https://github.com/adenaufal/shollu-modern/releases)** · **[📚 Dokumentasi](docs/README.md)** · **[📋 Catatan perubahan](CHANGELOG.md)**
 
 ---
 
@@ -44,6 +46,12 @@ Karya asli dan nama Mas Ebta Setiawan dihargai secara terhormat dalam proyek ini
 - **SolidJS** + **TypeScript** (High-performance reactive frontend components)
 - **Tailwind CSS v4** (Modern utility styles)
 - **SQLite** (Mesin pencarian tempat lokal yang super cepat)
+
+---
+
+## Unduh Rilis Siap Pakai
+
+Installer untuk Windows, macOS, dan Linux tersedia di [halaman Releases](https://github.com/adenaufal/shollu-modern/releases). Untuk membangun sendiri dari sumber, ikuti panduan di bawah.
 
 ---
 

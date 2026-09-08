@@ -11,18 +11,18 @@ We have successfully completed all release infrastructure, developer manuals, re
 - Wires tray toggle handlers in sidebar footers, preparing fully for tray tooltip count configurations.
 
 ### 2. Comprehensive Code Signing Guide (R2)
-- Created [docs/code-signing.md](file:///f:/dev/projects/shollu-modern/docs/code-signing.md) mapping exact signatures strategies:
+- Created [docs/release/code-signing.md](code-signing.md) mapping exact signatures strategies:
   - **Updater Keypair**: Generating updater public/private keys using `tauri signer generate` and configuring action secrets (`TAURI_SIGNING_PRIVATE_KEY` / `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`).
   - **Windows Authenticode**: Setup OV/EV certificates, base64 PFX decoding on CI nodes, and using free SignPath services for open-source releases.
   - **macOS Notarization**: Structuring Developer ID Application profiles, setting up Apple ID API keys, and automating notarizations inside Matrix workflows.
 
 ### 3. First Public Release `v0.1.0-alpha` (R3)
-- Created [CHANGELOG.md](file:///f:/dev/projects/shollu-modern/CHANGELOG.md) in the workspace root beautifully detailing the changelog notes, keeping updates transparent for future maintainers.
+- Created [CHANGELOG.md](../../CHANGELOG.md) in the workspace root beautifully detailing the changelog notes, keeping updates transparent for future maintainers.
 - Successfully created Git Tag `v0.1.0-alpha` locally on our final clean commit.
 - Pushed tag `v0.1.0-alpha` to GitHub, which instantly fires the `.github/workflows/release.yml` CI runner to compile, sign, and draft releases.
 
 ### 4. Ebta Setiawan Courtesy Outreach Drafts (R4)
-- Created [docs/courtesy-outreach.md](file:///f:/dev/projects/shollu-modern/docs/courtesy-outreach.md) outlining highly respectful bilingual (Bahasa Indonesia / English) silaturahmi email drafts.
+- Created [docs/release/courtesy-outreach.md](courtesy-outreach.md) outlining highly respectful bilingual (Bahasa Indonesia / English) silaturahmi email drafts.
 - Detailed the porting process from Delphi to Rust and SolidJS to show respect for his historical classic.
 
 ---

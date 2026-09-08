@@ -57,7 +57,8 @@ shollu-modern/
 ├── LICENSE.md                 PolyForm Noncommercial 1.0.0
 ├── ATTRIBUTION.md             Credit to Ebta + heritage + license compatibility
 ├── CONTRIBUTING.md            Contribution guide (noncommercial scope)
-├── CODE_OF_CONDUCT.md         (to be added — Contributor Covenant 2.1)
+├── CODE_OF_CONDUCT.md         Contributor Covenant 2.1
+├── CHANGELOG.md               Keep-a-Changelog; v0.1.0-alpha tag
 ├── package.json
 ├── pnpm-lock.yaml
 ├── pnpm-workspace.yaml        (esbuild build approval)
@@ -67,18 +68,20 @@ shollu-modern/
 ├── index.html
 ├── tsconfig.json, tsconfig.node.json
 ├── vite.config.ts             Vite + Solid + Tailwind v4
-├── docs/
-│   ├── ROADMAP.md             ← phased action plan; check status here
-│   ├── UI_HANDOFF.md          ← brief for UI/UX agent
-│   ├── original-license.txt   Verbatim from Ebta's distribution
-│   ├── prayer-time-algorithm.md
-│   ├── data-formats.md        .slp + .spn binary specs
-│   ├── module-survey.md       Pascal-to-Rust/Solid mapping with effort estimates
-│   └── ui-design.md           Information architecture + screen specs
+├── docs/                      ← index: docs/README.md
+│   ├── ROADMAP.md             Phased action plan; check status here
+│   ├── UI_HANDOFF.md          Brief for UI/UX agent
+│   ├── original-license.txt   Verbatim from Ebta's distribution (load-bearing)
+│   ├── reference/             prayer-time-algorithm, data-formats, module-survey, ui-design
+│   ├── release/               code-signing, courtesy-outreach, walkthrough
+│   └── design-system/         Design tokens, HTML previews, hi-fi UI-kit prototype
+├── public/                    Static assets served by Vite (icons, logo)
 ├── src/                       SolidJS frontend
 │   ├── App.tsx
 │   ├── App.css                Tailwind v4 + theme tokens
 │   ├── index.tsx
+│   ├── helpers.ts             Time formatting + localization helpers
+│   ├── components/            One PascalCase.tsx per page + overlays (FloatingBar, DropZone, QiblaCompass, Icons)
 │   └── assets/
 └── src-tauri/                 Rust backend
     ├── Cargo.toml
@@ -86,10 +89,20 @@ shollu-modern/
     ├── build.rs
     ├── capabilities/
     ├── icons/
+    ├── Languages/*.slp        Original Shollu language packs (7 files)
+    ├── placenames/*.spn       Original binary place databases
     └── src/
         ├── main.rs
         ├── lib.rs             Tauri runtime + command registration
-        └── prayer_times.rs    Ported from Shollu.pas:408-472
+        ├── prayer_times.rs    Ported from Shollu.pas:408-472
+        ├── astro.rs           Math helpers (Shollu.pas:160-300)
+        ├── hijri.rs           Hijri ↔ Gregorian (Shollu.pas:301-379)
+        ├── qibla.rs           Qibla bearing (UMainPage.pas:179-188)
+        ├── places.rs          .spn parser + SQLite (UCities.pas)
+        ├── i18n.rs            .slp parser (Unit1.pas)
+        ├── settings.rs        TOML persistence (Unit1.pas registry)
+        ├── scheduler.rs       Task engine (USchedule.pas + UTask.pas)
+        └── audio.rs           Adzan playback via CPAL/Rodio
 ```
 
 The original Pascal source lives at `F:\dev\projects\shollu\` (sibling folder) as a read-only reference. Don't modify it.
@@ -130,22 +143,20 @@ These are baked in. Don't violate them without explicit user authorization.
 
 5. **Don't delete `docs/original-license.txt` or `ATTRIBUTION.md`.** They're load-bearing for licensing compliance.
 
-## Current state (2026-05-20)
+## Current state (2026-07-19)
 
-- ✅ Bootstrap done: scaffold builds + runs, prayer-time math ported and validated against Shollu3 (max delta 11s)
-- ✅ 4 unit tests pass (`cargo test --lib`)
-- ✅ Documentation in `docs/` is comprehensive
-- ⏳ Pending: git push to GitHub, port remaining 8 Rust modules, build UI components, set up CI
+- ✅ Phases 0-4 complete (see `docs/ROADMAP.md`): full Rust backend (B1-B9), complete SolidJS UI (U0-U15), tray + overlay widgets, bilingual i18n
+- ✅ First release `v0.1.0-alpha` tagged and published via GitHub Actions
+- ✅ 25 Rust unit tests pass (`cargo test --lib`)
+- ⏳ Pending: configure code-signing secrets (see `docs/release/code-signing.md`), send courtesy email to Ebta (drafts ready), post-MVP polish toward v0.1.0 stable
 
 See `docs/ROADMAP.md` for the phased action plan and current status of each item.
 
 ## Next priorities (in order)
 
-1. **Infrastructure:** git init → commit → `gh repo create adenaufal/shollu-modern --public` → push. Then add CONTRIBUTING.md (done), CODE_OF_CONDUCT.md, GitHub Actions CI workflow.
-2. **Backend quick wins:** B1 Hijri converter (port `Shollu.pas:301-379`, ~XS), B2 Qibla bearing (port `UMainPage.pas:179-188`, ~XS), B3 astro helpers (~XS).
-3. **Hand off UI work:** see `docs/UI_HANDOFF.md` — give that doc to the UI agent.
-4. **Heavier backend:** B4-B9 (places SQLite, i18n, settings, scheduler, audio).
-5. **Release:** signed cross-platform builds.
+1. **Signed releases:** configure updater keys + Authenticode/notarization per `docs/release/code-signing.md`, then cut a signed build.
+2. **Courtesy outreach:** send the draft in `docs/release/courtesy-outreach.md` to Ebta Setiawan.
+3. **Stabilize:** triage post-MVP feedback and push toward v0.1.0 stable.
 
 ## Working with the user
 
