@@ -3,3 +3,8 @@ allowBuilds:
 
 onlyBuiltDependencies:
   - esbuild
+
+# Keep CI's 24-hour release-age policy without relaxing dependency checks.
+minimumReleaseAge: 1440
+overrides:
+  std-env: 4.2.0

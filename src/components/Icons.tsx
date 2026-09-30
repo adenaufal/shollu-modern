@@ -125,3 +125,10 @@ export const CompassIcon = (props: IconProps) => (
     <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
   </Icon>
 );
+
+export const SearchIcon = (props: IconProps) => (
+  <Icon {...props}><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></Icon>
+);
+export const PowerIcon = (props: IconProps) => (
+  <Icon {...props}><path d="M12 2v10M5.6 5.6a9 9 0 1 0 12.8 0"/></Icon>
+);

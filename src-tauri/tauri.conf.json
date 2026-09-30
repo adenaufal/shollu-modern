@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Shollu Modern",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "identifier": "id.shollu.modern",
   "build": {
     "beforeDevCommand": "pnpm dev",
@@ -13,9 +13,9 @@
     "windows": [
       {
         "title": "Shollu Modern",
-        "width": 900,
-        "height": 640,
-        "minWidth": 720,
+        "width": 960,
+        "height": 660,
+        "minWidth": 600,
         "minHeight": 480
       }
     ],
@@ -28,6 +28,7 @@
     "active": true,
     "targets": "all",
     "createUpdaterArtifacts": true,
+    "resources": ["placenames/*", "Languages/*"],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",

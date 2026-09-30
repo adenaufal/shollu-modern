@@ -1,247 +1,47 @@
-import { createSignal, onMount, onCleanup, Show } from "solid-js";
-import { invoke } from "@tauri-apps/api/core";
-import {
-  formatHours,
-  PRAYER_NAMES,
-  toLocalDateIso,
-  addLocalDays,
-} from "../helpers";
-import type { AppSettings, PrayerTimes } from "../helpers";
+import { createMemo, Show } from 'solid-js'
+import { formatHours, prayerLabel, PRAYER_NAMES } from '../helpers'
+import { useAppState } from '../state'
+import './prayer-pages.css'
+
+const keys = ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha'] as const
 
 export function FloatingBar() {
-  const [settings, setSettings] = createSignal<AppSettings | null>(null);
-  const [todayTimes, setTodayTimes] = createSignal<PrayerTimes | null>(null);
-  const [nextPrayerName, setNextPrayerName] = createSignal<string>("—");
-  const [countdownString, setCountdownString] =
-    createSignal<string>("--:--:--");
-
-  let tickerInterval: ReturnType<typeof setInterval> | undefined;
-
-  const initData = async () => {
-    try {
-      const activeSettings = await invoke<AppSettings>("get_settings");
-      setSettings(activeSettings);
-
-      if (activeSettings.skin && activeSettings.skin !== "default") {
-        const parts = activeSettings.skin.split("-");
-        if (parts.length === 2) {
-          document.documentElement.setAttribute("data-theme", parts[0]);
-          document.documentElement.setAttribute("data-accent", parts[1]);
-        }
-      }
-
-      const today = new Date();
-      const todayIso = toLocalDateIso(today);
-      const tomorrowIso = toLocalDateIso(addLocalDays(today, 1));
-
-      const fetchTimes = (dateIso: string) =>
-        invoke<PrayerTimes>("compute_prayer_times", {
-          dateIso,
-          latitude: activeSettings.location.latitude,
-          longitude: activeSettings.location.longitude,
-          altitude: activeSettings.location.altitude,
-          timezone: activeSettings.location.timezone,
-          methodId: activeSettings.method,
-          madhabId: activeSettings.madhab,
-          fajrAngle: null,
-          ishaAngle: null,
-          adjustments: activeSettings.adjustments,
-        });
-
-      const [currToday, tomorrow] = await Promise.all([
-        fetchTimes(todayIso),
-        fetchTimes(tomorrowIso),
-      ]);
-
-      setTodayTimes(currToday);
-      startTicker(currToday, tomorrow);
-    } catch (e) {
-      console.error("FloatingBar data initialization failed:", e);
-    }
-  };
-
-  const startTicker = (todayT: PrayerTimes, tomorrowT: PrayerTimes) => {
-    if (tickerInterval) clearInterval(tickerInterval);
-
-    const updateTicker = () => {
-      const now = new Date();
-      const currentDecimalHours =
-        now.getHours() + now.getMinutes() / 60 + now.getSeconds() / 3600;
-
-      const todayHours = [
-        todayT.fajr,
-        todayT.sunrise,
-        todayT.dhuhr,
-        todayT.asr,
-        todayT.maghrib,
-        todayT.isha,
-      ];
-      const tomorrowHours = [
-        tomorrowT.fajr,
-        tomorrowT.sunrise,
-        tomorrowT.dhuhr,
-        tomorrowT.asr,
-        tomorrowT.maghrib,
-        tomorrowT.isha,
-      ];
-
-      let targetPrayerIdx = -1;
-      let isTomorrow = false;
-
-      for (let i = 0; i < todayHours.length; i++) {
-        if (currentDecimalHours < todayHours[i]) {
-          targetPrayerIdx = i;
-          break;
-        }
-      }
-
-      if (targetPrayerIdx === -1) {
-        targetPrayerIdx = 0;
-        isTomorrow = true;
-      }
-
-      setNextPrayerName(PRAYER_NAMES[targetPrayerIdx]);
-
-      const targetHours = isTomorrow
-        ? tomorrowHours[targetPrayerIdx]
-        : todayHours[targetPrayerIdx];
-      const targetTimeTotalSecs = Math.floor(targetHours * 3600);
-      const currentTimeTotalSecs = Math.floor(currentDecimalHours * 3600);
-
-      let deltaSecs = targetTimeTotalSecs - currentTimeTotalSecs;
-      if (isTomorrow) {
-        deltaSecs = 86400 - currentTimeTotalSecs + targetTimeTotalSecs;
-      }
-      if (deltaSecs < 0) deltaSecs = 0;
-
-      const h = Math.floor(deltaSecs / 3600);
-      const m = Math.floor((deltaSecs % 3600) / 60);
-      const s = deltaSecs % 60;
-
-      setCountdownString(
-        `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`,
-      );
-    };
-
-    updateTicker();
-    tickerInterval = setInterval(updateTicker, 1000);
-  };
-
-  const handleClose = async () => {
-    try {
-      await invoke("toggle_floating_bar", { show: false });
-    } catch (e) {
-      console.error("Failed to close FloatingBar:", e);
-    }
-  };
-
-  onMount(() => {
-    initData();
-  });
-
-  onCleanup(() => {
-    if (tickerInterval) clearInterval(tickerInterval);
-  });
-
-  const activeClass = (name: string) =>
-    nextPrayerName() === name ? "floating-accent" : "text-subtle";
-
-  return (
-    <div
-      data-tauri-drag-region
-      class="floating-shell bar"
-      style={{ "-webkit-app-region": "drag" } as any}
-    >
-      <div
-        data-tauri-drag-region
-        style={{ display: "flex", "align-items": "center", gap: "8px" }}
-      >
-        <img
-          data-tauri-drag-region
-          src="/icon-32.png"
-          alt=""
-          width="20"
-          height="20"
-          style={{ "border-radius": "4px" }}
-        />
-        <span
-          data-tauri-drag-region
-          style={{ "font-size": "12px", "font-weight": "700" }}
-        >
-          Shollu ·{" "}
-          <span class="floating-accent">
-            {settings()?.location.name ?? "—"}
-          </span>
-        </span>
-      </div>
-
-      <div
-        data-tauri-drag-region
-        style={{
-          display: "flex",
-          "align-items": "center",
-          gap: "8px",
-          "font-size": "12px",
-          "font-weight": "600",
-        }}
-      >
-        <span data-tauri-drag-region>
-          {settings()?.language === "Indonesia" ? "Berikutnya" : "Next"}:{" "}
-          <span class="floating-accent">{nextPrayerName()}</span>
-        </span>
-        <span
-          data-tauri-drag-region
-          class="floating-accent tabular"
-          style={{ "font-size": "13px" }}
-        >
-          {countdownString()}
-        </span>
-      </div>
-
-      <div
-        data-tauri-drag-region
-        style={{
-          display: "flex",
-          "align-items": "center",
-          gap: "12px",
-          "font-size": "10px",
-          "font-weight": "700",
-        }}
-      >
-        <Show when={todayTimes()}>
-          {(times) => (
-            <>
-              <span data-tauri-drag-region class={activeClass("Fajr")}>
-                Fajr {formatHours(times().fajr)}
-              </span>
-              <span data-tauri-drag-region class={activeClass("Dhuhr")}>
-                Dhuhr {formatHours(times().dhuhr)}
-              </span>
-              <span data-tauri-drag-region class={activeClass("Asr")}>
-                Asr {formatHours(times().asr)}
-              </span>
-              <span data-tauri-drag-region class={activeClass("Maghrib")}>
-                Maghrib {formatHours(times().maghrib)}
-              </span>
-              <span data-tauri-drag-region class={activeClass("Isha")}>
-                Isha {formatHours(times().isha)}
-              </span>
-            </>
-          )}
-        </Show>
-
-        <button
-          type="button"
-          onClick={handleClose}
-          style={{ "-webkit-app-region": "no-drag" } as any}
-          class="floating-close"
-          aria-label="Close floating bar"
-        >
-          ✕
-        </button>
-      </div>
-    </div>
-  );
+  const app = useAppState()
+  const id = () => app.lang() === 'Indonesia'
+  const second = () => app.now().getHours() * 3600 + app.now().getMinutes() * 60 + app.now().getSeconds()
+  const next = createMemo(() => {
+    const today = app.todayTimes()
+    if (!today) return { index: 0, hour: 0, tomorrow: false }
+    for (const index of [0, 2, 3, 4, 5]) if (second() < today[keys[index]] * 3600) return { index, hour: today[keys[index]], tomorrow: false }
+    return { index: 0, hour: app.tomorrowTimes()?.fajr ?? today.fajr, tomorrow: true }
+  })
+  const countdown = createMemo(() => {
+    const n = next(); const delta = Math.max(0, Math.floor(n.hour * 3600 + (n.tomorrow ? 86400 : 0) - second()))
+    return `${String(Math.floor(delta / 3600)).padStart(2, '0')}:${String(Math.floor(delta % 3600 / 60)).padStart(2, '0')}:${String(delta % 60).padStart(2, '0')}`
+  })
+  const countdownLabel = () => app.layoutMode() === 'tenang' ? countdown().replace(/^0(?=\d:)/, '') : countdown()
+  const close = () => void app.saveSettings({ floating_bar_visible: false }).catch(cause => app.notify(String(cause), 'error'))
+  const times = () => app.todayTimes()
+  const progress = () => {
+    const start = times()?.fajr ?? 5
+    const end = times()?.isha ?? 19
+    return Math.max(0, Math.min(1, (second() / 3600 - start) / (end - start)))
+  }
+  const name = () => prayerLabel(PRAYER_NAMES[next().index], app.lang())
+  return <div class={`prayer-overlay-bar ${app.layoutMode()}`} data-tauri-drag-region>
+    <Show when={!app.loading() && Boolean(app.todayTimes())} fallback={<span class="overlay-status" data-tauri-drag-region role="status">{app.error() || (id() ? 'Memuat jadwal…' : 'Loading prayer times…')}</span>}>
+    {app.layoutMode() === 'tenang' ? <>
+      <i class="overlay-accent-dot" data-tauri-drag-region/>
+      <strong class="overlay-prayer-name" data-tauri-drag-region>{name()}</strong>
+      <b class="overlay-countdown" data-tauri-drag-region>{countdownLabel()}</b>
+      <div class="overlay-mini-arc" data-tauri-drag-region><span data-tauri-drag-region style={{ width: `${progress() * 100}%` }}/><i data-tauri-drag-region style={{ left: `${progress() * 100}%` }}/></div>
+      <span class="overlay-target" data-tauri-drag-region>{formatHours(next().hour % 24)}</span>
+    </> : <div class="overlay-ledger" data-tauri-drag-region>
+      <b data-tauri-drag-region>{app.settings()?.location.name?.toUpperCase() ?? '—'}</b><i data-tauri-drag-region>│</i><span data-tauri-drag-region>{name().toUpperCase()} {formatHours(next().hour % 24)}</span><i data-tauri-drag-region>│</i><strong data-tauri-drag-region>{countdownLabel()}</strong><i data-tauri-drag-region>│</i><span data-tauri-drag-region>MGH {times() ? formatHours(times()!.maghrib) : '--:--'}</span><i data-tauri-drag-region>│</i><span data-tauri-drag-region>ISH {times() ? formatHours(times()!.isha) : '--:--'}</span>
+    </div>}
+    </Show>
+    <button type="button" class="overlay-close" onClick={close} aria-label={id() ? 'Tutup bilah melayang' : 'Close floating bar'}>×</button>
+  </div>
 }
 
-export default FloatingBar;
+export default FloatingBar

@@ -1,227 +1,44 @@
-import { createSignal, onMount, onCleanup, Show } from "solid-js";
-import { invoke } from "@tauri-apps/api/core";
-import {
-  formatHours,
-  PRAYER_NAMES,
-  toLocalDateIso,
-  addLocalDays,
-} from "../helpers";
-import type { AppSettings, PrayerTimes } from "../helpers";
+import { createMemo, Show } from 'solid-js'
+import { formatHours, prayerLabel, PRAYER_NAMES } from '../helpers'
+import { useAppState } from '../state'
+import './prayer-pages.css'
+
+const keys = ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha'] as const
 
 export function DropZone() {
-  const [settings, setSettings] = createSignal<AppSettings | null>(null);
-  const [nextPrayerName, setNextPrayerName] = createSignal<string>("—");
-  const [nextPrayerTime, setNextPrayerTime] = createSignal<string>("--:--");
-  const [countdownString, setCountdownString] =
-    createSignal<string>("--:--:--");
-  const [isHovered, setIsHovered] = createSignal<boolean>(false);
-
-  let tickerInterval: ReturnType<typeof setInterval> | undefined;
-
-  const initData = async () => {
-    try {
-      const activeSettings = await invoke<AppSettings>("get_settings");
-      setSettings(activeSettings);
-
-      if (activeSettings.skin && activeSettings.skin !== "default") {
-        const parts = activeSettings.skin.split("-");
-        if (parts.length === 2) {
-          document.documentElement.setAttribute("data-theme", parts[0]);
-          document.documentElement.setAttribute("data-accent", parts[1]);
-        }
-      }
-
-      const today = new Date();
-      const todayIso = toLocalDateIso(today);
-      const tomorrowIso = toLocalDateIso(addLocalDays(today, 1));
-
-      const fetchTimes = (dateIso: string) =>
-        invoke<PrayerTimes>("compute_prayer_times", {
-          dateIso,
-          latitude: activeSettings.location.latitude,
-          longitude: activeSettings.location.longitude,
-          altitude: activeSettings.location.altitude,
-          timezone: activeSettings.location.timezone,
-          methodId: activeSettings.method,
-          madhabId: activeSettings.madhab,
-          fajrAngle: null,
-          ishaAngle: null,
-          adjustments: activeSettings.adjustments,
-        });
-
-      const [currToday, tomorrow] = await Promise.all([
-        fetchTimes(todayIso),
-        fetchTimes(tomorrowIso),
-      ]);
-
-      startTicker(currToday, tomorrow);
-    } catch (e) {
-      console.error("DropZone data initialization failed:", e);
-    }
-  };
-
-  const startTicker = (todayT: PrayerTimes, tomorrowT: PrayerTimes) => {
-    if (tickerInterval) clearInterval(tickerInterval);
-
-    const updateTicker = () => {
-      const now = new Date();
-      const currentDecimalHours =
-        now.getHours() + now.getMinutes() / 60 + now.getSeconds() / 3600;
-
-      const todayHours = [
-        todayT.fajr,
-        todayT.sunrise,
-        todayT.dhuhr,
-        todayT.asr,
-        todayT.maghrib,
-        todayT.isha,
-      ];
-      const tomorrowHours = [
-        tomorrowT.fajr,
-        tomorrowT.sunrise,
-        tomorrowT.dhuhr,
-        tomorrowT.asr,
-        tomorrowT.maghrib,
-        tomorrowT.isha,
-      ];
-
-      let targetPrayerIdx = -1;
-      let isTomorrow = false;
-
-      for (let i = 0; i < todayHours.length; i++) {
-        if (currentDecimalHours < todayHours[i]) {
-          targetPrayerIdx = i;
-          break;
-        }
-      }
-
-      if (targetPrayerIdx === -1) {
-        targetPrayerIdx = 0;
-        isTomorrow = true;
-      }
-
-      setNextPrayerName(PRAYER_NAMES[targetPrayerIdx]);
-
-      const targetHours = isTomorrow
-        ? tomorrowHours[targetPrayerIdx]
-        : todayHours[targetPrayerIdx];
-      setNextPrayerTime(formatHours(targetHours));
-
-      const targetTimeTotalSecs = Math.floor(targetHours * 3600);
-      const currentTimeTotalSecs = Math.floor(currentDecimalHours * 3600);
-
-      let deltaSecs = targetTimeTotalSecs - currentTimeTotalSecs;
-      if (isTomorrow) {
-        deltaSecs = 86400 - currentTimeTotalSecs + targetTimeTotalSecs;
-      }
-      if (deltaSecs < 0) deltaSecs = 0;
-
-      const h = Math.floor(deltaSecs / 3600);
-      const m = Math.floor((deltaSecs % 3600) / 60);
-      const s = deltaSecs % 60;
-
-      setCountdownString(
-        `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`,
-      );
-    };
-
-    updateTicker();
-    tickerInterval = setInterval(updateTicker, 1000);
-  };
-
-  const handleClose = async () => {
-    try {
-      await invoke("toggle_drop_zone", { show: false });
-    } catch (e) {
-      console.error("Failed to close DropZone:", e);
-    }
-  };
-
-  onMount(() => {
-    initData();
-  });
-
-  onCleanup(() => {
-    if (tickerInterval) clearInterval(tickerInterval);
-  });
-
-  return (
-    <div
-      data-tauri-drag-region
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      class="floating-shell zone"
-      style={{ "-webkit-app-region": "drag" } as any}
-    >
-      <div
-        data-tauri-drag-region
-        style={{
-          display: "flex",
-          "flex-direction": "column",
-          gap: "2px",
-          "text-align": "left",
-        }}
-      >
-        <span
-          data-tauri-drag-region
-          class="text-subtle"
-          style={{
-            "font-size": "9px",
-            "font-weight": "700",
-            "letter-spacing": "0.06em",
-            "text-transform": "uppercase",
-          }}
-        >
-          {settings()?.language === "Indonesia" ? "Berikutnya" : "Next"}
-        </span>
-        <span
-          data-tauri-drag-region
-          class="text-fg"
-          style={{
-            "font-size": "12px",
-            "font-weight": "800",
-            "line-height": "1",
-            "letter-spacing": "-0.02em",
-          }}
-        >
-          {nextPrayerName()}
-        </span>
-        <span
-          data-tauri-drag-region
-          class="text-subtle"
-          style={{ "font-size": "10px", "line-height": "1" }}
-        >
-          {nextPrayerTime()}
-        </span>
-      </div>
-
-      <div data-tauri-drag-region>
-        <span
-          data-tauri-drag-region
-          class="floating-accent tabular"
-          style={{
-            "font-size": "18px",
-            "font-weight": "800",
-            "letter-spacing": "-0.03em",
-          }}
-        >
-          {countdownString()}
-        </span>
-      </div>
-
-      <Show when={isHovered()}>
-        <button
-          type="button"
-          onClick={handleClose}
-          style={{ "-webkit-app-region": "no-drag" } as any}
-          class="zone-close"
-          aria-label="Close drop zone"
-        >
-          ✕
-        </button>
-      </Show>
-    </div>
-  );
+  const app = useAppState()
+  const nowSeconds = () => app.now().getHours() * 3600 + app.now().getMinutes() * 60 + app.now().getSeconds()
+  const next = createMemo(() => {
+    const today = app.todayTimes()
+    if (!today) return { index: 0, hour: 0, tomorrow: false }
+    for (const index of [0, 2, 3, 4, 5]) if (nowSeconds() < today[keys[index]] * 3600) return { index, hour: today[keys[index]], tomorrow: false }
+    return { index: 0, hour: app.tomorrowTimes()?.fajr ?? today.fajr, tomorrow: true }
+  })
+  const remaining = createMemo(() => {
+    const target = next(); return Math.max(0, Math.floor(target.hour * 3600 + (target.tomorrow ? 86400 : 0) - nowSeconds()))
+  })
+  const countdown = () => `${String(Math.floor(remaining() / 3600)).padStart(2, '0')}:${String(Math.floor(remaining() % 3600 / 60)).padStart(2, '0')}:${String(remaining() % 60).padStart(2, '0')}`
+  const countdownLabel = () => app.layoutMode() === 'tenang' ? countdown().replace(/^0(?=\d:)/, '') : countdown()
+  const progress = () => {
+    const start = app.todayTimes()?.fajr ?? 5
+    const end = app.todayTimes()?.isha ?? 19
+    return Math.max(0, Math.min(1, (nowSeconds() / 3600 - start) / Math.max(1, end - start)))
+  }
+  const close = () => void app.saveSettings({ drop_zone_visible: false }).catch(cause => app.notify(String(cause), 'error'))
+  const nextName = () => prayerLabel(PRAYER_NAMES[next().index], app.lang())
+  const city = () => app.settings()?.location.name ?? '—'
+  const time = () => formatHours(next().hour % 24)
+  return <div class={`prayer-overlay-zone ${app.layoutMode()}`} data-tauri-drag-region>
+    <Show when={!app.loading() && Boolean(app.todayTimes())} fallback={<span class="overlay-status" data-tauri-drag-region role="status">{app.error() || (app.lang() === 'Indonesia' ? 'Memuat jadwal…' : 'Loading prayer times…')}</span>}>
+    {app.layoutMode() === 'tenang' ? <>
+      <div class="zone-ring" data-tauri-drag-region style={{ background: `conic-gradient(var(--accent-500) ${progress() * 1}turn, var(--bg-hover) ${progress() * 1}turn 1turn)` }}><div data-tauri-drag-region><small data-tauri-drag-region>{nextName()}</small></div></div>
+      <strong class="zone-countdown" data-tauri-drag-region>{countdownLabel()}</strong><span class="zone-time-city" data-tauri-drag-region>{time()} · {city()}</span>
+    </> : <>
+      <div class="zone-ledger-stack" data-tauri-drag-region><b data-tauri-drag-region>{nextName().toUpperCase()}</b><strong data-tauri-drag-region>{countdownLabel()}</strong><span data-tauri-drag-region>{time()} · {city()}</span></div><i class="zone-progress" data-tauri-drag-region><span data-tauri-drag-region style={{ height: `${progress() * 100}%` }}/></i>
+    </>}
+    </Show>
+    <button type="button" class="zone-overlay-close" onClick={close} aria-label={app.lang() === 'Indonesia' ? 'Tutup drop zone' : 'Close drop zone'}>×</button>
+  </div>
 }
 
-export default DropZone;
+export default DropZone

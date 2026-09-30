@@ -1,492 +1,166 @@
-import { createSignal, onMount, For, Show } from "solid-js";
-import { invoke } from "@tauri-apps/api/core";
-import type { AppSettings } from "../helpers";
-
-interface LocationPageProps {
-  lang: string;
-}
+import { createEffect, createResource, createSignal, For, onCleanup, onMount, Show } from 'solid-js'
+import { invoke } from '@tauri-apps/api/core'
+import { Portal } from 'solid-js/web'
+import { calculationKey, computeTimes, useAppState } from '../state'
+import { formatHours, prayerLabel, toLocalDateIso } from '../helpers'
+import './utility-pages.css'
 
 interface City {
-  id: number;
-  region_id: number;
-  region_name: string;
-  name: string;
-  latitude: number;
-  longitude: number;
+  id: number
+  region_id: number
+  region_name: string
+  name: string
+  latitude: number
+  longitude: number
 }
 
-export function LocationPage(props: LocationPageProps) {
-  const [settings, setSettings] = createSignal<AppSettings | null>(null);
+const methods = [
+  ['Karachi (Univ. Ilmu Islam)', 'Karachi (Univ. of Islamic Science)'],
+  ['ISNA (Amerika Utara)', 'ISNA (North America)'],
+  ['Liga Dunia Islam (MWL)', 'Muslim World League (MWL)'],
+  ['Umm Al-Qura (Arab Saudi)', 'Umm Al-Qura (Saudi Arabia)'],
+  ['Otoritas Survei Mesir', 'Egyptian General Authority of Survey'],
+]
+const timeNames = ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha'] as const
+const timezones = Array.from({ length: 105 }, (_, i) => i / 4 - 12)
+const timezoneLabel = (offset: number) => offset.toFixed(2).replace(/0+$/, '').replace(/\.$/, '')
+const displayMethods = [
+  { setting: 2, method: 1, code: 'ISNA', detail: 'North America · 15° / 15°' },
+  { setting: 1, method: 0, code: 'Karachi', detail: 'Univ. of Islamic Science · 18° / 18°' },
+  { setting: 3, method: 2, code: 'MWL', detail: 'Muslim World League · 18° / 17°' },
+  { setting: 4, method: 3, code: 'Umm Al-Qura', detail: 'Saudi Arabia · 18.5° / 90 min' },
+  { setting: 5, method: 4, code: 'Egypt', detail: 'General Survey Authority · 19.5° / 17.5°' },
+]
 
-  // Form field states
-  const [areaName, setAreaName] = createSignal<string>("");
-  const [latitude, setLatitude] = createSignal<number>(0.506567);
-  const [longitude, setLongitude] = createSignal<number>(101.43779);
-  const [altitude, setAltitude] = createSignal<number>(12);
-  const [timezone, setTimezone] = createSignal<number>(7);
-  const [method, setMethod] = createSignal<number>(2); // ISNA
-  const [madhab, setMadhab] = createSignal<number>(1); // Shafii
+export function LocationPage(props: { lang: string }) {
+  const app = useAppState()
+  const id = () => props.lang === 'Indonesia'
+  const [query, setQuery] = createSignal('')
+  const [results, setResults] = createSignal<City[]>([])
+  const [searching, setSearching] = createSignal(false)
+  const [error, setError] = createSignal('')
+  const [previewError, setPreviewError] = createSignal('')
+  const [saving, setSaving] = createSignal(false)
+  const [saveError, setSaveError] = createSignal('')
+  let previewRequest = 0
+  let searchTimer: ReturnType<typeof setTimeout> | undefined
+  let requestId = 0
+  let searchInitialized = false
+  onCleanup(() => { if (searchTimer) clearTimeout(searchTimer) })
+  const handleSave = () => { void save() }
+  onMount(() => window.addEventListener('shollu-save', handleSave))
+  onCleanup(() => window.removeEventListener('shollu-save', handleSave))
 
-  // Individual adjustments
-  const [adjFajr, setAdjFajr] = createSignal<number>(0);
-  const [adjSunrise, setAdjSunrise] = createSignal<number>(0);
-  const [adjDhuhr, setAdjDhuhr] = createSignal<number>(0);
-  const [adjAsr, setAdjAsr] = createSignal<number>(0);
-  const [adjMaghrib, setAdjMaghrib] = createSignal<number>(0);
-  const [adjIsha, setAdjIsha] = createSignal<number>(0);
-
-  // Autocomplete search states
-  const [searchQuery, setSearchQuery] = createSignal<string>("");
-  const [searchResults, setSearchResults] = createSignal<City[]>([]);
-  const [showDropdown, setShowDropdown] = createSignal<boolean>(false);
-  const [validationError, setValidationError] = createSignal<string>("");
-
-  // Load existing location settings on mount
-  const loadLocationSettings = async () => {
-    try {
-      const res = await invoke<AppSettings>("get_settings");
-      setSettings(res);
-
-      setAreaName(res.location.name);
-      setSearchQuery(res.location.name);
-      setLatitude(res.location.latitude);
-      setLongitude(res.location.longitude);
-      setAltitude(res.location.altitude);
-      setTimezone(res.location.timezone);
-
-      setMethod(res.method);
-      setMadhab(res.madhab);
-
-      setAdjFajr(res.adjustments.fajr);
-      setAdjSunrise(res.adjustments.sunrise);
-      setAdjDhuhr(res.adjustments.dhuhr);
-      setAdjAsr(res.adjustments.asr);
-      setAdjMaghrib(res.adjustments.maghrib);
-      setAdjIsha(res.adjustments.isha);
-    } catch (e) {
-      console.error("Failed to load settings:", e);
-    }
-  };
-
-  onMount(() => {
-    loadLocationSettings();
-  });
-
-  // Handle typing inside Area input box to trigger search
-  const handleAreaInput = async (query: string) => {
-    setSearchQuery(query);
-    setAreaName(query);
-    if (query.trim().length < 2) {
-      setSearchResults([]);
-      setShowDropdown(false);
-      return;
-    }
-
-    try {
-      // Query rusqlite cities DB via Tauri B4 query layers
-      const res = await invoke<City[]>("search_cities", {
-        query: query.trim(),
-        limit: 10,
-      });
-      setSearchResults(res);
-      setShowDropdown(res.length > 0);
-    } catch (e) {
-      console.error("City search query failed:", e);
-    }
-  };
-
-  // Click handler on selecting a city from autocomplete list
-  const handleSelectCity = (city: City) => {
-    setAreaName(city.name);
-    setSearchQuery(city.name);
-    setLatitude(city.latitude);
-    setLongitude(city.longitude);
-    // Standard Indonesian timezone offsets helper, can be overridden manually
-    // Most cities from SPN parser default to correct coordinates.
-    // Set typical timezone defaults based on longitude bounds:
-    let tzOffset = 7; // WIB
-    if (city.longitude >= 115 && city.longitude < 125) {
-      tzOffset = 8; // WITA
-    } else if (city.longitude >= 125) {
-      tzOffset = 9; // WIT
-    }
-    setTimezone(tzOffset);
-
-    setSearchResults([]);
-    setShowDropdown(false);
-  };
-
-  // Save modified locations back to Settings persistence
-  const handleSaveLocation = async () => {
-    const currSettings = settings();
-    if (!currSettings) return;
-
-    setValidationError("");
-    const values = [
-      latitude(),
-      longitude(),
-      altitude(),
-      timezone(),
-      adjFajr(),
-      adjSunrise(),
-      adjDhuhr(),
-      adjAsr(),
-      adjMaghrib(),
-      adjIsha(),
-    ];
-    const errorMessage =
-      props.lang === "Indonesia"
-        ? "Periksa kembali koordinat, zona waktu, ketinggian, dan koreksi waktu."
-        : "Please check the coordinates, timezone, altitude, and time adjustments.";
-
-    if (!values.every(Number.isFinite)) {
-      setValidationError(errorMessage);
-      return;
-    }
-    if (latitude() < -90 || latitude() > 90) {
-      setValidationError(
-        props.lang === "Indonesia"
-          ? "Lintang harus antara -90 dan 90."
-          : "Latitude must be between -90 and 90.",
-      );
-      return;
-    }
-    if (longitude() < -180 || longitude() > 180) {
-      setValidationError(
-        props.lang === "Indonesia"
-          ? "Bujur harus antara -180 dan 180."
-          : "Longitude must be between -180 and 180.",
-      );
-      return;
-    }
-    if (timezone() < -12 || timezone() > 14) {
-      setValidationError(
-        props.lang === "Indonesia"
-          ? "Zona waktu harus antara UTC-12 dan UTC+14."
-          : "Timezone must be between UTC-12 and UTC+14.",
-      );
-      return;
-    }
-    // Negative altitude is valid (below sea level); original algorithm uses signum * sqrt(|h|).
-
-    const updated: AppSettings = {
-      ...currSettings,
-      location: {
-        name: areaName().trim(),
-        latitude: latitude(),
-        longitude: longitude(),
-        altitude: altitude(),
-        timezone: timezone(),
-      },
-      method: method(),
-      madhab: madhab(),
-      adjustments: {
-        fajr: adjFajr(),
-        sunrise: adjSunrise(),
-        dhuhr: adjDhuhr(),
-        asr: adjAsr(),
-        maghrib: adjMaghrib(),
-        isha: adjIsha(),
-      },
-    };
-
-    try {
-      await invoke("save_settings", { settings: updated });
-      setSettings(updated);
-      alert(
-        props.lang === "Indonesia"
-          ? "Lokasi & Metode berhasil diperbarui!"
-          : "Location & Calculation parameters successfully saved!",
-      );
-    } catch (e) {
-      console.error("Failed to save location settings:", e);
-    }
-  };
-
-  const methodsList = [
-    {
-      id: 1,
-      label:
-        props.lang === "Indonesia"
-          ? "Karachi (Univ. Ilmu Islam)"
-          : "Karachi (Univ. of Islamic Science)",
+  const draft = () => app.draftSettings()
+  const location = () => draft()?.location
+  createEffect(() => {
+    const name = location()?.name
+    if (!searchInitialized && name) { setQuery(name); searchInitialized = true }
+  })
+  const previewDate = () => {
+    const active = app.settings()
+    const baseOffset = active?.location.timezone ?? location()?.timezone ?? 0
+    const offset = location()?.timezone ?? baseOffset
+    return toLocalDateIso(new Date(app.now().getTime() + (offset - baseOffset) * 3_600_000))
+  }
+  const [preview] = createResource(
+    () => {
+      const settings = draft()
+      return settings ? `${calculationKey(settings)}|${previewDate()}` : undefined
     },
-    { id: 2, label: "ISNA (North America)" },
-    {
-      id: 3,
-      label:
-        props.lang === "Indonesia"
-          ? "MWL (Liga Dunia Islam)"
-          : "MWL (Muslim World League)",
+    async (source) => {
+      const settings = draft()
+      if (!settings || !source) return null
+      const currentRequest = ++previewRequest
+      setPreviewError('')
+      const date = source.slice(source.lastIndexOf('|') + 1)
+      const loc = settings.location
+      const values = [loc.latitude, loc.longitude, loc.altitude, loc.timezone]
+      const adjustmentsValid = Object.values(settings.adjustments).every(Number.isFinite)
+      if (!loc.name.trim() || !values.every(Number.isFinite) || loc.latitude < -90 || loc.latitude > 90 || loc.longitude < -180 || loc.longitude > 180 || loc.altitude < -500 || loc.altitude > 10000 || loc.timezone < -12 || loc.timezone > 14 || !adjustmentsValid) {
+        if (currentRequest === previewRequest) setPreviewError(id() ? 'Periksa nilai lokasi untuk melihat pratinjau.' : 'Check the location values to calculate this preview.')
+        return null
+      }
+      try { return await computeTimes(settings, date) }
+      catch {
+        if (currentRequest === previewRequest) setPreviewError(id() ? 'Pratinjau waktu sholat gagal dihitung.' : 'Could not calculate the prayer-time preview.')
+        return null
+      }
     },
-    { id: 4, label: "Umm Al-Qura (Saudi Arabia)" },
-    {
-      id: 5,
-      label:
-        props.lang === "Indonesia"
-          ? "Mesir (Survey Umum)"
-          : "Egypt General Survey Authority",
-    },
-  ];
+  )
+  const patchLocation = (patch: Partial<NonNullable<ReturnType<typeof location>>>) => {
+    const current = location()
+    if (current) app.updateDraft({ location: { ...current, ...patch } })
+  }
+  const search = (value: string) => {
+    setQuery(value)
+    setResults([])
+    if (searchTimer) clearTimeout(searchTimer)
+    const current = ++requestId
+    if (value.trim().length < 2) { setSearching(false); return }
+    setSearching(true)
+    searchTimer = setTimeout(async () => {
+      try {
+        const cities = await invoke<City[]>('search_cities', { query: value.trim(), limit: 8 })
+        if (current === requestId) setResults(cities)
+      } catch {
+        if (current === requestId) setError(id() ? 'Pencarian kota gagal.' : 'City search failed.')
+      } finally {
+        if (current === requestId) setSearching(false)
+      }
+    }, 250)
+  }
+  const selectCity = (city: City) => {
+    const current = location()
+    if (!current) return
+    app.updateDraft({ location: { ...current, name: city.name, latitude: city.latitude, longitude: city.longitude } })
+    setQuery(city.name)
+    setResults([])
+    setError('')
+  }
+  const save = async () => {
+    const settings = draft()
+    const loc = location()
+    if (!settings || !loc) return
+    setError('')
+    setSaveError('')
+    if (!loc.name.trim() || ![loc.latitude, loc.longitude, loc.altitude, loc.timezone].every(Number.isFinite) || loc.latitude < -90 || loc.latitude > 90 || loc.longitude < -180 || loc.longitude > 180 || loc.altitude < -500 || loc.altitude > 10000 || loc.timezone < -12 || loc.timezone > 14) {
+      setError(id() ? 'Periksa nama, koordinat, ketinggian (-500–10.000 m), dan zona waktu.' : 'Check the name, coordinates, altitude (-500–10,000 m), and timezone.')
+      return
+    }
+    setSaving(true)
+    try { await app.saveDraft() }
+    catch { setSaveError(id() ? 'Gagal menyimpan. Coba lagi.' : 'Could not save. Try again.') }
+    finally { setSaving(false) }
+  }
+  const time = (value?: number) => value == null || !Number.isFinite(value) ? '—' : formatHours(value)
+  const largestShift = () => {
+    const current = app.todayTimes()
+    const next = preview()
+    if (!current || !next) return null
+    return timeNames.map(name => Math.round((next[name] - current[name]) * 60)).reduce((largest, value) => Math.abs(value) > Math.abs(largest) ? value : largest, 0)
+  }
+  const cityPicker = (withLabel = true) => <div class="u-field autocomplete-field"><Show when={withLabel}><label for="location-city">{id() ? 'Kota / wilayah' : 'City'}</label></Show><input id="location-city" value={query()} onInput={e => search(e.currentTarget.value)} placeholder={id() ? 'Cari kota…' : 'Search city…'} autocomplete="off"/><Show when={searching()}><small class="field-hint">{id() ? 'Mencari…' : 'Searching…'}</small></Show><Show when={results().length}><div class="city-results"><For each={results()}>{city => <button onClick={() => selectCity(city)}><strong>{city.name}</strong><span>{city.region_name} · {city.latitude.toFixed(3)}, {city.longitude.toFixed(3)}</span></button>}</For></div></Show></div>
+  const timezoneSelect = (inputId: string) => <select id={inputId} value={location()?.timezone ?? 7} onChange={e => patchLocation({ timezone: Number(e.currentTarget.value) })}><For each={timezones}>{offset => <option value={offset}>UTC{offset >= 0 ? '+' : ''}{timezoneLabel(offset)}</option>}</For></select>
+  const coordinates = () => <>
+    <div class="u-field-grid"><div class="u-field"><label for="location-latitude">{id() ? 'Lintang' : 'Latitude'}</label><div class="input-suffix"><input id="location-latitude" type="number" min="-90" max="90" step="0.000001" value={location()?.latitude ?? ''} onInput={e => patchLocation({ latitude: e.currentTarget.value === '' ? Number.NaN : Number(e.currentTarget.value) })}/><span>° N/S</span></div></div><div class="u-field"><label for="location-longitude">{id() ? 'Bujur' : 'Longitude'}</label><div class="input-suffix"><input id="location-longitude" type="number" min="-180" max="180" step="0.000001" value={location()?.longitude ?? ''} onInput={e => patchLocation({ longitude: e.currentTarget.value === '' ? Number.NaN : Number(e.currentTarget.value) })}/><span>° E/W</span></div></div></div>
+    <div class="u-field-grid"><div class="u-field"><label for="location-altitude">{id() ? 'Ketinggian' : 'Altitude'}</label><div class="input-suffix"><input id="location-altitude" type="number" min="-500" max="10000" step="1" value={location()?.altitude ?? ''} onInput={e => patchLocation({ altitude: e.currentTarget.value === '' ? Number.NaN : Number(e.currentTarget.value) })}/><span>m</span></div></div><div class="u-field"><label for="location-timezone">{id() ? 'Zona waktu' : 'Timezone'}</label>{timezoneSelect('location-timezone')}</div></div>
+  </>
+  const compactRows = () => <div class="location-inline-rows"><div class="location-inline-row"><label for="location-city">{id() ? 'Kota' : 'City'}</label>{cityPicker(false)}</div><div class="location-inline-row"><label for="location-latitude-compact">{id() ? 'Lintang' : 'Latitude'}</label><input id="location-latitude-compact" type="number" min="-90" max="90" step="0.000001" value={location()?.latitude ?? ''} onInput={e => patchLocation({ latitude: e.currentTarget.value === '' ? Number.NaN : Number(e.currentTarget.value) })}/></div><div class="location-inline-row"><label for="location-longitude-compact">{id() ? 'Bujur' : 'Longitude'}</label><input id="location-longitude-compact" type="number" min="-180" max="180" step="0.000001" value={location()?.longitude ?? ''} onInput={e => patchLocation({ longitude: e.currentTarget.value === '' ? Number.NaN : Number(e.currentTarget.value) })}/></div><div class="location-inline-row"><label for="location-altitude-compact">{id() ? 'Ketinggian' : 'Altitude'}</label><input id="location-altitude-compact" type="number" min="-500" max="10000" step="1" value={location()?.altitude ?? ''} onInput={e => patchLocation({ altitude: e.currentTarget.value === '' ? Number.NaN : Number(e.currentTarget.value) })}/></div><div class="location-inline-row"><label for="location-timezone-compact">{id() ? 'Zona waktu' : 'Timezone'}</label>{timezoneSelect('location-timezone-compact')}</div></div>
+  const adjustmentFields = () => <div class="adjustment-grid"><div class="adjustment-title">{id() ? 'Koreksi waktu · menit' : 'Adjustments · minutes'}</div><For each={timeNames}>{name => <label for={`adjust-${name}`}>{prayerLabel(name, props.lang)}<input id={`adjust-${name}`} type="number" min="-60" max="60" value={draft()?.adjustments[name] ?? 0} onInput={e => app.updateDraft({ adjustments: { ...draft()!.adjustments, [name]: e.currentTarget.value === '' ? Number.NaN : Number(e.currentTarget.value) } })}/></label>}</For></div>
+  const methodRadios = () => <div class="method-radio-list" role="radiogroup" aria-label={id() ? 'Metode perhitungan' : 'Calculation method'}><For each={displayMethods}>{item => <button type="button" role="radio" aria-checked={draft()?.method === item.setting} class={`method-radio-card ${draft()?.method === item.setting ? 'selected' : ''}`} onClick={() => app.updateDraft({ method: item.setting })}><i/><span><strong>{id() ? methods[item.method][0] : methods[item.method][1]}</strong><small>{item.detail}</small></span></button>}</For></div>
+  const methodSegments = () => <div class="location-method-segments" role="radiogroup" aria-label={id() ? 'Metode perhitungan' : 'Calculation method'}><For each={displayMethods}>{item => <button type="button" role="radio" aria-checked={draft()?.method === item.setting} classList={{ selected: draft()?.method === item.setting }} title={id() ? methods[item.method][0] : methods[item.method][1]} onClick={() => app.updateDraft({ method: item.setting })}>{item.code}</button>}</For></div>
 
-  return (
-    <div class="page-stack animate-fade-in">
-      {/* Area & Coordinates Card */}
-      <div class="card border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl p-5 shadow-sm space-y-4">
-        <h3 class="text-sm font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase select-none">
-          {props.lang === "Indonesia"
-            ? "Lokasi & Koordinat"
-            : "Area & Coordinates"}
-        </h3>
-
-        {/* Autocomplete City Input */}
-        <div class="field autocomplete-container select-none">
-          <label class="field-label">
-            {props.lang === "Indonesia" ? "Nama Wilayah / Kota" : "Area Name"}
-          </label>
-          <input
-            type="text"
-            placeholder={
-              props.lang === "Indonesia"
-                ? "Cari kota (misal: Pekanbaru)..."
-                : "Search cities (e.g., Pekanbaru)..."
-            }
-            value={searchQuery()}
-            onInput={(e) => handleAreaInput(e.currentTarget.value)}
-            class="field-input text-slate-800 dark:text-slate-200"
-          />
-
-          {/* Autocomplete Dropdown List */}
-          <Show when={showDropdown()}>
-            <div class="autocomplete-dropdown border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
-              <For each={searchResults()}>
-                {(city) => (
-                  <button
-                    type="button"
-                    onClick={() => handleSelectCity(city)}
-                    class="autocomplete-item hover:bg-slate-50 dark:hover:bg-slate-800/40 text-slate-800 dark:text-slate-200"
-                  >
-                    <span>{city.name}</span>
-                    <span class="autocomplete-item-region text-slate-400 font-medium">
-                      {city.region_name} ({city.longitude.toFixed(2)}°,{" "}
-                      {city.latitude.toFixed(2)}°)
-                    </span>
-                  </button>
-                )}
-              </For>
-            </div>
-          </Show>
-        </div>
-
-        {/* Coordinates Inputs Row */}
-        <div class="field-row">
-          <div class="field">
-            <span class="field-label select-none">
-              {props.lang === "Indonesia" ? "Lintang (Latitude)" : "Latitude"}
-            </span>
-            <input
-              type="number"
-              step="0.000001"
-              value={latitude()}
-              onInput={(e) => setLatitude(parseFloat(e.currentTarget.value))}
-              class="field-input text-slate-800 dark:text-slate-200"
-            />
-          </div>
-          <div class="field">
-            <span class="field-label select-none">
-              {props.lang === "Indonesia" ? "Bujur (Longitude)" : "Longitude"}
-            </span>
-            <input
-              type="number"
-              step="0.000001"
-              value={longitude()}
-              onInput={(e) => setLongitude(parseFloat(e.currentTarget.value))}
-              class="field-input text-slate-800 dark:text-slate-200"
-            />
-          </div>
-        </div>
-
-        {/* Altitude & Timezone Row */}
-        <div class="field-row">
-          <div class="field">
-            <span class="field-label select-none">
-              {props.lang === "Indonesia" ? "Ketinggian (m)" : "Altitude (m)"}
-            </span>
-            <input
-              type="number"
-              value={altitude()}
-              onInput={(e) => setAltitude(parseFloat(e.currentTarget.value))}
-              class="field-input text-slate-800 dark:text-slate-200"
-            />
-          </div>
-          <div class="field">
-            <span class="field-label select-none">
-              {props.lang === "Indonesia" ? "Zona Waktu" : "Timezone Offset"}
-            </span>
-            <select
-              value={timezone()}
-              onChange={(e) => setTimezone(parseFloat(e.currentTarget.value))}
-              class="date-select text-slate-800 dark:text-slate-200"
-            >
-              <option value={7}>UTC+07:00 (WIB)</option>
-              <option value={8}>UTC+08:00 (WITA)</option>
-              <option value={9}>UTC+09:00 (WIT)</option>
-              <option value={0}>UTC+00:00 (GMT)</option>
-              <option value={1}>UTC+01:00 (BST)</option>
-              <option value={3.5}>UTC+03:30 (Tehran)</option>
-              <option value={4}>UTC+04:00 (GST)</option>
-              <option value={5.5}>UTC+05:30 (IST)</option>
-            </select>
-          </div>
-        </div>
+  return <div class="utility-page location-page" classList={{ 'layout-ringkas': app.layoutMode() === 'ringkas' }}>
+    <Show when={app.layoutMode() === 'tenang'}><Portal mount={document.getElementById('page-actions')!}><div class="heading-actions"><Show when={previewError()} fallback={<Show when={largestShift() !== null}><span class="location-delta">{id() ? 'Pergeseran waktu' : 'Times shift by'} <strong>{largestShift()! > 0 ? '+' : ''}{largestShift()}m</strong></span></Show>}><span class="location-delta error" title={previewError()}>{id() ? 'Pratinjau tidak tersedia' : 'Preview unavailable'}</span></Show><button class="u-button" onClick={() => { app.revertDraft(); setQuery(draft()?.location.name ?? '') }}>{id() ? 'Urungkan' : 'Revert'}</button><button class="u-button primary" onClick={save} disabled={saving() || app.dirtyCount() === 0}>{saving() ? (id() ? 'Menyimpan…' : 'Saving…') : (id() ? 'Simpan' : 'Save')}</button></div></Portal></Show>
+    <Show when={app.layoutMode() === 'tenang'} fallback={<div class="location-layout compact-location-layout">
+      <div class="compact-location-main"><section class="u-card location-form compact-location-card"><div class="u-card-heading"><div><p class="utility-kicker">{id() ? 'TEMPAT' : 'PLACE'}</p><h3>{location()?.name}</h3></div></div>{compactRows()}</section>
+        <section class="u-card calculation-card compact-calculation-card"><div class="u-card-heading"><div><p class="utility-kicker">{id() ? 'METODE' : 'METHOD'}</p><h3>{id() ? 'Metode perhitungan' : 'Calculation method'}</h3></div></div>{methodSegments()}<div class="madhab-choice"><span>{id() ? 'Mazhab Ashar' : 'Asr madhab'}</span><div><button classList={{ selected: draft()?.madhab === 1 }} aria-pressed={draft()?.madhab === 1} onClick={() => app.updateDraft({ madhab: 1 })}>Shafi'i</button><button classList={{ selected: draft()?.madhab === 2 }} aria-pressed={draft()?.madhab === 2} onClick={() => app.updateDraft({ madhab: 2 })}>Hanafi</button></div></div>{adjustmentFields()}</section>
       </div>
-
-      {/* Calculation Methods Card */}
-      <div class="card border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl p-5 shadow-sm space-y-3 select-none">
-        <h3 class="text-sm font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase select-none">
-          {props.lang === "Indonesia"
-            ? "Metode Kalkulasi"
-            : "Calculation Methods"}
-        </h3>
-
-        {/* List of Calculation Methods */}
-        <div class="radio-list select-none">
-          <For each={methodsList}>
-            {(m) => (
-              <button
-                type="button"
-                role="radio"
-                aria-checked={method() === m.id}
-                onClick={() => setMethod(m.id)}
-                class={`radio-opt select-none ${method() === m.id ? "checked" : ""}`}
-              >
-                <div class="radio-circ" />
-                <span class="text-slate-700 dark:text-slate-300 font-medium">
-                  {m.label}
-                </span>
-              </button>
-            )}
-          </For>
-        </div>
-
-        {/* Fiqh Madhab Selectors */}
-        <div class="flex items-center gap-4 pt-2 select-none border-t border-slate-100 dark:border-slate-800/40">
-          <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase select-none">
-            {props.lang === "Indonesia"
-              ? "Kalkulasi Asar (Mazhab)"
-              : "Fiqh Madhab (Asr)"}
-          </span>
-          <button
-            type="button"
-            role="radio"
-            aria-checked={madhab() === 1}
-            onClick={() => setMadhab(1)}
-            class={`radio-opt select-none ${madhab() === 1 ? "checked" : ""}`}
-          >
-            <div class="radio-circ" />
-            <span class="text-xs text-slate-700 dark:text-slate-300 font-semibold select-none">
-              Shafi'i (Maliki, Hanbali)
-            </span>
-          </button>
-          <button
-            type="button"
-            role="radio"
-            aria-checked={madhab() === 2}
-            onClick={() => setMadhab(2)}
-            class={`radio-opt select-none ${madhab() === 2 ? "checked" : ""}`}
-          >
-            <div class="radio-circ" />
-            <span class="text-xs text-slate-700 dark:text-slate-300 font-semibold select-none">
-              Hanafi
-            </span>
-          </button>
-        </div>
-      </div>
-
-      {/* Adjustments offset Card */}
-      <div class="card border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl p-5 shadow-sm space-y-3 select-none">
-        <h3 class="text-sm font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase select-none">
-          {props.lang === "Indonesia"
-            ? "Koreksi Waktu (Menit)"
-            : "Adjustments (Minutes)"}
-        </h3>
-
-        {/* Grid of offset adjusters */}
-        <div class="field-row-3 select-none">
-          <div class="field">
-            <span class="field-label text-center select-none">Fajr</span>
-            <input
-              type="number"
-              value={adjFajr()}
-              onInput={(e) => setAdjFajr(parseInt(e.currentTarget.value))}
-              class="field-input text-center select-none text-slate-800 dark:text-slate-200"
-            />
-          </div>
-          <div class="field">
-            <span class="field-label text-center select-none">Sunrise</span>
-            <input
-              type="number"
-              value={adjSunrise()}
-              onInput={(e) => setAdjSunrise(parseInt(e.currentTarget.value))}
-              class="field-input text-center select-none text-slate-800 dark:text-slate-200"
-            />
-          </div>
-          <div class="field">
-            <span class="field-label text-center select-none">Dhuhr</span>
-            <input
-              type="number"
-              value={adjDhuhr()}
-              onInput={(e) => setAdjDhuhr(parseInt(e.currentTarget.value))}
-              class="field-input text-center select-none text-slate-800 dark:text-slate-200"
-            />
-          </div>
-          <div class="field">
-            <span class="field-label text-center select-none">Asr</span>
-            <input
-              type="number"
-              value={adjAsr()}
-              onInput={(e) => setAdjAsr(parseInt(e.currentTarget.value))}
-              class="field-input text-center select-none text-slate-800 dark:text-slate-200"
-            />
-          </div>
-          <div class="field">
-            <span class="field-label text-center select-none">Maghrib</span>
-            <input
-              type="number"
-              value={adjMaghrib()}
-              onInput={(e) => setAdjMaghrib(parseInt(e.currentTarget.value))}
-              class="field-input text-center select-none text-slate-800 dark:text-slate-200"
-            />
-          </div>
-          <div class="field">
-            <span class="field-label text-center select-none">Isha</span>
-            <input
-              type="number"
-              value={adjIsha()}
-              onInput={(e) => setAdjIsha(parseInt(e.currentTarget.value))}
-              class="field-input text-center select-none text-slate-800 dark:text-slate-200"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Form Action Controls */}
-      <div class="flex justify-end pt-2 select-none pb-8">
-        <Show when={validationError()}>
-          <p
-            role="alert"
-            class="text-sm text-red-600 dark:text-red-400 mr-auto self-center"
-          >
-            {validationError()}
-          </p>
-        </Show>
-        <button
-          onClick={handleSaveLocation}
-          class="btn btn-primary select-none text-xs font-semibold px-6 py-2 shadow"
-        >
-          {props.lang === "Indonesia" ? "Simpan Lokasi" : "Save Location"}
-        </button>
-      </div>
-    </div>
-  );
+      <aside class="location-inspector"><div class="compact-location-inspector"><div class="u-card-heading"><div><p class="utility-kicker">{id() ? 'PRATINJAU LANGSUNG · HARI INI' : 'LIVE PREVIEW · TODAY'}</p><h3>{location()?.name}</h3><p>{previewDate()} · UTC{(location()?.timezone ?? 0) >= 0 ? '+' : ''}{timezoneLabel(location()?.timezone ?? 0)}</p></div></div><div class="inspector-prayer-list"><For each={timeNames}>{name => <div><span>{prayerLabel(name, props.lang)}</span><strong>{time(preview()?.[name])}</strong></div>}</For></div><Show when={previewError()}><p class="u-alert error" role="alert">{previewError()}</p></Show><p class="inspector-hint">{id() ? 'Pratinjau berubah saat nilai lokasi dan metode diedit.' : 'Preview recalculates as location and method values change.'}</p></div><div class="compact-location-actions"><Show when={app.dirtyCount() > 0}><span>{app.dirtyCount()} {id() ? 'perubahan' : 'changes'}</span></Show><div><button class="u-button" onClick={() => { app.revertDraft(); setQuery(draft()?.location.name ?? '') }}>{id() ? 'Urungkan' : 'Revert'}</button><button class="u-button primary" onClick={save} disabled={saving() || app.dirtyCount() === 0}>{saving() ? '…' : <>{id() ? 'Simpan' : 'Save'} <kbd>⌘S</kbd></>}</button></div></div></aside>
+    </div>}>
+      <div class="location-layout tenang-location-layout"><div class="location-editor tenang-location-editor"><section class="u-card location-form"><div class="u-card-heading"><div><p class="utility-kicker">{id() ? 'TEMPAT' : 'PLACE'}</p><h3>{id() ? 'Tempat' : 'Place'}</h3></div></div>{cityPicker()}{coordinates()}</section><section class="u-card calculation-card adjustment-card">{adjustmentFields()}</section></div><section class="u-card calculation-card method-card"><div class="u-card-heading"><div><p class="utility-kicker">{id() ? 'METODE PERHITUNGAN' : 'CALCULATION METHOD'}</p><h3>{id() ? 'Metode perhitungan' : 'Calculation method'}</h3></div></div>{methodRadios()}<div class="madhab-choice"><span>{id() ? 'Mazhab Ashar' : 'Asr madhab'}</span><div><button classList={{ selected: draft()?.madhab === 1 }} aria-pressed={draft()?.madhab === 1} onClick={() => app.updateDraft({ madhab: 1 })}>Shafi'i</button><button classList={{ selected: draft()?.madhab === 2 }} aria-pressed={draft()?.madhab === 2} onClick={() => app.updateDraft({ madhab: 2 })}>Hanafi</button></div></div></section></div>
+    </Show>
+    <Show when={error() || saveError()}><div class="u-alert error" role="alert">{error() || saveError()}</div></Show>
+  </div>
 }

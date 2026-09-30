@@ -48,5 +48,14 @@ jobs:
       - name: Frontend build check
         run: pnpm build
 
+      - name: Frontend regression tests
+        run: pnpm test
+
+      - name: Backend formatting
+        run: cargo fmt --manifest-path src-tauri/Cargo.toml --check
+
       - name: Backend tests
-        run: cd src-tauri && cargo test --lib
+        run: cd src-tauri && cargo test --locked --lib
+
+      - name: Backend lint
+        run: cargo clippy --locked --manifest-path src-tauri/Cargo.toml --lib -- -D warnings
