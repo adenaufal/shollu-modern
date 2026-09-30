@@ -1,4 +1,17 @@
-# UI Design Plan
+# UI Design Reference — Historical Proposal and Current v1
+
+This file preserves the original visual and information-architecture proposal. The wireframes, sample dates/times, page ordering, typography/color examples, and prototype dimensions below are design artifacts; they are not runtime specifications. For the current working v1, the implemented Tenang and Ringkas layouts in `src/App.tsx`, `src/shell.css`, `src/components/prayer-pages.css`, and `src/components/utility-pages.css` are authoritative. The prototype in `docs/design-system/ui_kits/shollu-app/` is archival and predates that handoff.
+
+## Current implementation at a glance
+
+- Two display layouts: **Tenang** (full sidebar layout) and **Ringkas** (compact tabs and status strip).
+- Seven app pages: Main, Schedule, Reminders, Convert, Location, Settings, and About. Floating Bar and Drop Zone are optional separate windows.
+- Three themes (light, dark, sepia) and five accent choices (teal, indigo, emerald, rose, slate).
+- The default Tauri window is 960×660 px; minimum size is 600×480 px.
+- Typography is bundled for offline use: Inter, Inter Tight, and JetBrains Mono. The UI does not depend on remote Google Fonts or Noto Naskh Arabic.
+- Current shell and page styles are implemented in the CSS files named above; consult them for actual sizing, interaction, and responsive behavior.
+
+The sections that follow describe the original design direction and may contain ideas that did not ship. Treat them as background, not acceptance criteria for current UI work.
 
 The original Shollu used a fixed 600×400-ish window with a left-side icon nav and a swapping content frame on the right. The visual language was Windows XP–Vista era: bevelled buttons, gradient title bars, 40 skin variants for tinting.
 

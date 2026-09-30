@@ -18,21 +18,23 @@ If your intent is to build a commercial product, this is not the project for tha
 
 ## Quick start
 
+Version 1.0.0 is implemented and confirmed working by the user on Windows. Current usage and platform verification are documented in [the v1 guide](docs/V1.md). Public distribution/signing is deferred; contribution work does not imply publishing a release.
+
 ### Prerequisites
 
-- **Node.js** 20+ and **pnpm** 11+
+- **Node.js** 22.x ≥22.13.0 and **pnpm** 11 (matching CI)
 - **Rust** stable toolchain (install via [rustup](https://rustup.rs/))
 - **Platform toolchain:**
-  - Windows: Visual Studio Build Tools 2022 with C++ workload and Windows 11 SDK
+  - Windows: Visual Studio Build Tools 2022 with C++ workload, Windows SDK, and WebView2
   - macOS: Xcode Command Line Tools
-  - Linux: `libwebkit2gtk-4.1-dev`, `libssl-dev`, `libayatana-appindicator3-dev`, `librsvg2-dev`
+  - Linux (Debian/Ubuntu): `libwebkit2gtk-4.1-dev`, `libssl-dev`, `libayatana-appindicator3-dev`, `librsvg2-dev`, `libsoup-3.0-dev`, `libjavascriptcoregtk-4.1-dev`, `libasound2-dev`; release bundling also uses `patchelf`
 
 ### Set up locally
 
 ```bash
 git clone https://github.com/<your-username>/shollu-modern.git
 cd shollu-modern
-pnpm install
+pnpm install --frozen-lockfile
 pnpm tauri dev
 ```
 
@@ -41,15 +43,19 @@ The desktop window should open within a couple of minutes (longer on first build
 ### Run tests
 
 ```bash
-# Rust backend
-cd src-tauri
-cargo test --lib
+# Frontend: regression tests, types, production build
+pnpm test
+pnpm build
 
-# Frontend
-cd ..
-pnpm build       # production build
-pnpm dev         # vite dev server (without Tauri shell)
+# Rust backend
+cargo fmt --manifest-path src-tauri/Cargo.toml --check
+cargo test --locked --manifest-path src-tauri/Cargo.toml --lib
+cargo clippy --locked --manifest-path src-tauri/Cargo.toml --lib -- -D warnings
 ```
+
+CI runs those checks on Windows, macOS, and Linux. Windows native smoke testing (`pnpm test:desktop`) uses the real desktop backend and isolated data; see the debug/release instructions in [V1.md](docs/V1.md). Native UI testing on macOS/Linux is still welcome. Do not run destructive shutdown/hibernate actions as part of smoke testing.
+
+Commit both lockfiles when dependencies change. `pnpm-workspace.yaml` keeps the 24-hour dependency release-age policy and pins `std-env` to the compatible aged version; preserve that policy when updating packages.
 
 ## How to contribute
 
@@ -71,12 +77,12 @@ Open an issue tagged `enhancement` describing the feature, the use case, and (if
 2. Create a feature branch: `git checkout -b feature/short-description`.
 3. Make your changes. Keep commits focused and well-described.
 4. Add or update tests where it makes sense.
-5. Run `cargo test --lib` and `pnpm build` to make sure everything still works.
+5. Run the checks relevant to your change; code changes must pass the frontend and Rust checks above. For documentation-only changes, inspect the diff and verify links/instructions.
 6. Open a pull request against `main` with a clear description.
 
 ### Code style
 
-- **Rust:** Default `rustfmt` + `clippy`. Run `cargo fmt` and `cargo clippy` before pushing.
+- **Rust:** Default `rustfmt`; CI requires formatting and Clippy with warnings denied.
 - **TypeScript:** Prettier defaults. The project uses Tailwind v4 utility classes — prefer composing utilities over writing custom CSS unless there's a strong reason.
 - **Commit messages:** Short imperative subject line (under 70 chars), longer body if needed. e.g., `port hijri converter from Shollu.pas:301`.
 
@@ -84,12 +90,12 @@ Open an issue tagged `enhancement` describing the feature, the use case, and (if
 
 In rough priority:
 
-1. **Backend modules** — porting remaining Pascal modules to Rust (`hijri.rs`, `places.rs`, `scheduler.rs`, `audio.rs`, `settings.rs`). See `docs/reference/module-survey.md`.
-2. **UI components** — building Solid components per `docs/reference/ui-design.md` (MainPage, LocationSettings, CityPicker, etc.).
-3. **Data migration** — converting original `.slp` (language) and `.spn` (city) files to JSON/SQLite (see `docs/reference/data-formats.md`).
-4. **Localization** — additional language translations beyond Indonesian/English (Aceh, Sunda, Jawa, Banyumasan, Palembang, etc.).
-5. **Testing** — reference test cases against the original Shollu3.exe behavior for high latitudes, edge cases, calendar conversion.
-6. **Accessibility** — keyboard navigation, ARIA labels, screen-reader testing, contrast audits.
+1. **Native platform verification** — test tray, notifications, overlays, audio, and persistence on macOS/Linux.
+2. **Regression coverage** — high-latitude behavior, clock/calendar boundaries, reference schedules, and native integration failures.
+3. **Accessibility** — keyboard navigation, ARIA labels, screen-reader testing, and contrast audits in both modes.
+4. **Deferred audio behavior** — define the original basmallah/hamdallah triggers and implement them under [issue #45](https://github.com/adenaufal/shollu-modern/issues/45).
+5. **Localization** — UI translations beyond Indonesian/English; bundled original language packs do not mean every pack is supported by the new UI.
+6. **Future public distribution** — automate signing when requested and a provider is selected; preserve separate Authenticode/updater/notarization requirements. See [the distribution note](docs/release/windows-local-signing.md).
 
 ## Attribution
 

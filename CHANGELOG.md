@@ -9,18 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
-- Original Shollu3 adhan recordings mapped to the five prayers, followed by `dua.mp3`, with bundled/custom audio previews and a reset to bundled defaults.
-- Basmallah and hamdallah recordings preserved for future behavior tracked in issue #45.
-- Local Windows Authenticode signing instructions and an optional signing configuration example.
+### Documentation
+- Refresh both READMEs, contribution/setup instructions, agent context, reference/design archives, and release status for the user-verified v1 baseline.
+- Record personal testing first and future signing automation when public distribution is requested.
 
 ## [1.0.0] — 2026-09-30
+
+Application/source baseline, confirmed working by the user on Windows. This heading does not indicate a published GitHub Release; public distribution is deferred.
 
 ### Added
 - Tenang and Ringkas display modes recreated from the design handoff, with shared settings, a command palette, keyboard shortcuts, and offline fonts.
 - Live location previews with save/revert, a 42-cell prayer calendar, monthly ledgers, selected-day inspectors, and native CSV/HTML/text exports.
 - Per-prayer adhan switches, reminder editing, native desktop notifications, and persistent floating-bar/drop-zone visibility.
 - Isolated desktop verification through `SHOLLU_CONFIG_DIR`, frontend unit tests, and a Windows smoke script that exercises real Tauri commands.
+- Original Shollu3 adhan recordings mapped to the five prayers, followed by `dua.mp3`, with bundled/custom audio previews and a reset to bundled defaults.
+- Basmallah and hamdallah recordings preserved for future behavior tracked in [issue #45](https://github.com/adenaufal/shollu-modern/issues/45).
+- Local Windows Authenticode signing instructions and an optional signing configuration example.
 
 ### Fixed
 - Qibla bearings across quadrants and validation of coordinates, calendar dates, task inputs, and audio paths.
@@ -29,12 +33,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Window routing and invalid-coordinate handling from PRs #28 and #25.
 
 ### Release notes
-- Adhan audio uses a user-selected local file; no recording is bundled.
+- Windows NSIS installer built locally at about 8.10 MiB with all seven original MP3s and license notices. It remains unsigned Authenticode for personal testing.
+- Verification baseline: 38 Rust tests, a separate release resource-resolution test, 6 frontend tests, 17 native Windows smoke groups, and passing CI on Windows/macOS/Linux. Native UI testing outside Windows remains future work.
+- PRs [#25](https://github.com/adenaufal/shollu-modern/pull/25), [#28](https://github.com/adenaufal/shollu-modern/pull/28), [#44](https://github.com/adenaufal/shollu-modern/pull/44), and [#46](https://github.com/adenaufal/shollu-modern/pull/46) are merged.
+- Public signing automation is planned when requested; see [the distribution note](docs/release/windows-local-signing.md).
 - See [v1.0 guide](docs/V1.md) for verification, packaging, keyboard shortcuts, and platform limits.
 
 ## [0.1.0-alpha] — 2026-05-24
 
-This is the first pre-release MVP of the modernized Shollu application! It ports 100% of the legacy Delphi calculations, database schemas, language packs, and cron task schedulers to a lightning-fast Rust + SolidJS + Tauri desktop frame.
+Historical development milestone for the initial Rust/SolidJS/Tauri implementation. The entries below describe the alpha-era work, not the current v1 interface or proof of a publicly downloadable release.
 
 ### Added
 
@@ -49,10 +56,10 @@ This is the first pre-release MVP of the modernized Shollu application! It ports
 - **Prayer Algorithms** (`prayer_times.rs`): Ported the 5 traditional calculation methods (ISNA, Karachi, MWL, Umm Al-Qura, Egypt) and matched legacy Pekanbaru values.
 - **Julian calendar converter** (`hijri.rs`): Ported the standard Hijri ↔ Gregorian date converter.
 - **Qibla coordinates** (`qibla.rs`): Spherical bearing calculation toward Mecca.
-- **SQLite Places migration** (`places.rs`): Decoded the original `.spn` binary places files and migrated 10,000+ records to SQLite.
+- **SQLite Places migration** (`places.rs`): Decoded original `.spn` place records and imported them into SQLite.
 - **SLP language parser** (`i18n.rs`): Raw binary parsing to import legacy language files and convert them to JSON.
 - **Task engine** (`scheduler.rs`): Cron-like async execution loop handling info alerts, command execution, and PC power management.
-- **Audio players** (`audio.rs`): Multi-format audio output wraps wrapping CPAL/Rodio for threat-safe adzan MP3 playback.
+- **Audio players** (`audio.rs`): Multi-format audio output through a dedicated CPAL/Rodio worker thread.
 
 #### Phase 3 — Premium UI/UX Dashboard
 - **Brand Colors**: Clean glassmorphism styling, 3 theme togglers (`light`, `dark`, and warm `sepia`), and 5 accent dots highlights (`teal` (brand), `indigo`, `emerald`, `rose`, `slate`).

@@ -6,6 +6,14 @@ Phased action plan with effort estimates and status. Update statuses as you comp
 
 **Status legend:** ☐ pending · ◐ in progress · ☑ done
 
+## Current status — 2026-09-30
+
+Shollu Modern **v1.0.0 is in `main`**. The owner has personally tested the current v1 app. The release is not yet published publicly; see [the release walkthrough](release/walkthrough.md) for the verification snapshot and [code-signing notes](release/code-signing.md) for deferred signing work. The earlier `v0.1.0-alpha` tag and preparation notes are historical; a public alpha release is not verified.
+
+Current verification snapshot: 38 Rust unit tests, one separate release-resolver test, 6 frontend tests, 17 native Windows smoke-test groups, and CI coverage on Windows, macOS, and Linux. This snapshot describes the current project status; it is not a claim that every feature matches the original Shollu.
+
+Current audio assets are under `src-tauri/audio/`: Fajr uses the Fajr recording, Dhuhr and Isha use the Mecca recording, Asr uses the Egypt recording, and Maghrib uses the Dammam recording. Dua follows each prayer's adhan in the playback queue. Basmallah and hamdallah are bundled for future work; runtime triggers are deferred under [issue #45](https://github.com/adenaufal/shollu-modern/issues/45).
+
 ---
 
 ## Phase 0 — Bootstrap (☑ done, 2026-05-20)
@@ -102,9 +110,11 @@ Full high-fidelity SolidJS + Tailwind v4 + Tauri 2 frontend implementation.
 | # | Item | Effort | Status | Notes |
 |---|---|---|---|---|
 | R1 | First MVP: P0 done + U0 + U1 + U2 + U3 + U4 + U5 + U14 | — | ☑ | 24 May 2026 · First complete functional prayer-time app MVP ready |
-| R2 | Code signing — Windows Authenticode + macOS notarization | M | ☑ | 24 May 2026 · Detailed guides created in docs/release/code-signing.md |
-| R3 | First public release v0.1.0-alpha + changelog | S | ☑ | 24 May 2026 · Compiled CHANGELOG.md and created tag v0.1.0-alpha |
-| R4 | Courtesy outreach to Ebta Setiawan | XS | ☑ | 24 May 2026 · Created highly respectful drafts in docs/release/courtesy-outreach.md |
+| R2 | Code signing — Windows Authenticode + macOS notarization | M | ◐ | Signing is deferred. No certificate or trust changes have been made; follow the future one-command/CI plan in `docs/release/code-signing.md`. |
+| R3 | Historical v0.1.0-alpha tag and changelog preparation | S | ☑ | Completed 24 May 2026. A corresponding published GitHub release is not verified. |
+| R4 | Courtesy outreach to Ebta Setiawan | XS | ◐ | Drafts are prepared in `docs/release/courtesy-outreach.md`; no email has been sent. |
+| R5 | v1.0.0 personal testing and handoff | — | ☑ | 30 Sep 2026 · v1.0.0 is in `main`; owner reports personal testing complete. Public release publication is separate and pending. |
+| R6 | Publish v1.0.0 public release | — | ☐ | v1.0.0 is in `main`; no public GitHub release is currently visible. |
 
 ---
 

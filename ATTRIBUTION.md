@@ -58,7 +58,7 @@ The following elements of Shollu Modern derive from or are inspired by the origi
 - All code is a fresh implementation in Rust (backend, via Tauri 2) and TypeScript/SolidJS (frontend)
 - Modern UI using Tailwind CSS, designed for current accessibility and platform conventions
 - Cross-platform support (Windows, macOS, Linux) — the original was Windows-only
-- Updated city/timezone databases
+- Local SQLite search over the original place databases, with user-selected fixed UTC offsets; the source place files do not supply timezone or daylight-saving data
 - All audio, icon, and visual assets are either freshly created, sourced from the original under its license, or sourced from compatible noncommercial sources (documented inline)
 
 ## Trademark Note

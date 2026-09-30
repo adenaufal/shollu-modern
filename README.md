@@ -1,92 +1,87 @@
 # Shollu Modern
 
-[Read in English (Baca dalam Bahasa Inggris) 🇬🇧](./README.en.md)
+[Read in English](README.en.md)
 
-Sebuah pembangunan ulang modern dan lintas platform dari **[Shollu](https://github.com/ebta/shollu)** — aplikasi pengingat waktu sholat desktop legendaris untuk umat Muslim yang aslinya diciptakan oleh **Ebta Setiawan** (2004–2012).
+Aplikasi desktop pengingat waktu sholat yang dibangun ulang dari **[Shollu](https://github.com/ebta/shollu)** karya **Ebta Setiawan** (2004–2012), menggunakan Rust, Tauri 2, dan SolidJS.
 
-Proyek ini mempertahankan 100% kecocokan logika kalkulasi astronomi asli, database tempat biner asli, paket bahasa asli, serta mesin penjadwalan alarm cron dari Delphi, dan memperbarui seluruh lapisan visualnya agar tampil premium di sistem operasi modern.
+**Status per 30 September 2026:** versi aplikasi **1.0.0** sudah berada di `main` dan dikonfirmasi berfungsi oleh pengguna pada Windows. Installer Windows lokal sudah dibuat. Distribusi publik dan signing ditunda sampai pengguna siap membagikannya; belum ada installer v1 yang diterbitkan di GitHub Releases.
 
-> **Status:** MVP `v0.1.0-alpha` telah selesai dan beroperasi 100%! Terverifikasi dengan **0 peringatan clippy** dan **100% kelulusan unit test Cargo** di Windows, macOS, dan Linux.
->
-> **[⬇ Unduh rilis](https://github.com/adenaufal/shollu-modern/releases)** · **[📚 Dokumentasi](docs/README.md)** · **[📋 Catatan perubahan](CHANGELOG.md)**
+[Panduan v1](docs/V1.md) · [Dokumentasi](docs/README.md) · [Changelog](CHANGELOG.md) · [Roadmap](docs/ROADMAP.md)
 
----
+## Tampilan
 
-## Mengapa Proyek Ini Ada
+Mode **Tenang** memakai rail ikon, kartu hitung mundur, dan day arc. Mode **Ringkas** memakai tab, tabel jadwal bulanan, inspector, dan status bar. Keduanya mengikuti handoff `design_handoff_shollu_ui` dan berbagi pengaturan serta jadwal.
 
-Aplikasi **Shollu v3.10** asli adalah aplikasi pengingat waktu sholat yang luar biasa ringan (~276 KB) untuk Windows, ditulis menggunakan Delphi dengan toolkit KOL. Aplikasi ini sangat dicintai dan menemani keseharian satu generasi umat Muslim di Indonesia pada era XP-Windows 7. Setelah 14 tahun tanpa pembaruan, Shollu asli masih dapat berjalan namun terasa kurang terintegrasi dengan antarmuka desktop masa kini serta tidak mendukung macOS/Linux secara bawaan.
+![Mode Tenang](docs/screenshots/tenang-main.png)
 
-**Shollu Modern** hadir untuk membawa fungsionalitas legendaris Shollu ke dalam kerangka desktop modern dengan antarmuka yang sangat responsif, premium, dan **100% dapat berjalan secara offline** tanpa iklan, pelacakan data (telemetri), ataupun batasan komersial.
+![Mode Ringkas](docs/screenshots/ringkas-main.png)
 
-Karya asli dan nama Mas Ebta Setiawan dihargai secara terhormat dalam proyek ini. Silakan baca berkas [ATTRIBUTION.md](ATTRIBUTION.md).
+## Fitur v1
 
----
+- Jadwal sholat dengan lima metode: ISNA, Karachi, Muslim World League, Umm Al-Qura, dan Mesir; pilihan Asar, pembulatan, dan koreksi menit.
+- Pencarian kota dari basis data `.spn` asli yang diimpor ke SQLite lokal, pratinjau lokasi sebelum simpan, dan kompas kiblat. Zona waktu berupa offset UTC tetap yang dipilih pengguna; data kota asli tidak memuat zona waktu atau aturan daylight saving.
+- Kalender bulanan, detail hari, ekspor CSV/HTML/TXT melalui dialog native, dan konversi Masehi–Hijriah dengan koreksi −1/0/+1 hari.
+- Pengingat kustom dengan buat/edit/hapus dan sakelar aktif, serta pengaturan adzan per waktu sholat. Pengingat kustom mengikuti jam komputer; pengingat sholat mengikuti zona lokasi.
+- Audio adzan bawaan Shollu3, doa setelah adzan, pratinjau per waktu sholat, pilihan file kustom, dan tombol kembali ke suara bawaan.
+- Bahasa Indonesia/English, tiga tema (light, dark, sepia), lima aksen, serta font yang disertakan untuk pemakaian offline.
+- Tray sistem, bilah melayang, drop zone, always-on-top, autostart, dan penyimpanan pengaturan lokal. Jadwal, pencarian kota, dan audio bawaan bekerja tanpa internet setelah aplikasi terpasang.
 
-## Fitur yang Telah Selesai (Setara dengan Aslinya)
+### Rekaman adzan
 
-- **Kalkulasi Waktu Sholat** (`prayer_times.rs`): Implementasi 5 metode kalkulasi astronomis tradisional (ISNA, Karachi, Muslim World League, Umm Al-Qura, Mesir) dan presisi waktu sholat yang sesuai dengan Shollu 3 asli (uji Pekanbaru).
-- **Kompas Kiblat** (`qibla.rs`): Perhitungan sudut arah Ka'bah dari titik koordinat pengguna secara sferis dilengkapi jarum kompas SVG interaktif yang berputar halus.
-- **Antarmuka Bilingual**: Lokalisasi SolidJS dinamis berbasis kamus bahasa asli `.slp`, mendukung perpindahan bahasa Inggris dan Bahasa Indonesia secara langsung.
-- **Pencari Kota Autocomplete** (`places.rs`): Konversi database tempat biner `.spn` asli ke dalam SQLite lokal. Pencarian kota autocomplete mencakup 10.000+ wilayah administratif di Indonesia dan dunia, otomatis mengisi koordinat dan zona waktu.
-- **Konversi Kalender** (`hijri.rs`): Konversi tanggal dua arah antara kalender Masehi (Gregorian) dan Hijriah beserta offset kalibrasinya.
-- **Penjadwal Alarm (Cron Engine)** (`scheduler.rs`): Mesin asinkron berbasis Tokio yang mendeteksi alarm waktu sholat, menampilkan dialog peringatan pesan tambahan, menjalankan skrip perintah OS, memutar suara adzan MP3 via Rodio/CPAL, serta mengontrol kondisi daya PC (Shutdown/Hibernate).
-- **Tema & Aksen Premium**: Kustomisasi visual loaded dengan 3 tema dasar (`light`, `dark`, dan tema parchment `sepia` yang ramah mata saat malam) serta 5 dot aksen warna (`teal` (brand), `indigo`, `emerald`, `rose`, `slate`).
-- **Angka Tabular Jitter-Free**: Tampilan hitung mundur real-time menggunakan `font-variant-numeric: tabular-nums` untuk mencegah geseran layout saat detik berdetik.
-- **Widget Layar Melayang (Overlay Windows)**:
-  - **U11 `<FloatingBar>`**: Bilah info horizontal melayang borderless yang dapat digeser untuk menampilkan hitung mundur dan jadwal sholat hari ini.
-  - **U12 `<DropZone>`**: Widget mini kotak penunjuk hitung mundur yang dapat digeser dan menempel di sudut layar (edge-snapping).
-- **Tray Sistem**: Tombol integrasi cepat tray sistem pada footer navigasi sidebar dan pengaturan.
-- **Penyimpanan Terdistribusi** (`settings.rs`): Penyimpanan konfigurasi umum berformat TOML lintas platform (bebas ketergantungan Windows Registry).
+| Waktu sholat | Rekaman bawaan |
+| --- | --- |
+| Subuh | `azan-fajr.mp3` |
+| Dzuhur dan Isya | `azan-mecca.mp3` |
+| Ashar | `azan-egypt.mp3` |
+| Magrib | `azan-dammam.mp3` |
 
----
+`dua.mp3` diputar setelah adzan dalam antrean yang sama. Tombol Hentikan membatalkan keduanya. File kustom mengganti suara adzan untuk semua waktu sholat dan tetap diikuti doa. Syuruq tidak memicu adzan. `basmallah.mp3` dan `hamdallah.mp3` sudah disertakan, dengan fungsi lanjutan ditunda di [issue #45](https://github.com/adenaufal/shollu-modern/issues/45). Asal file dan notice lisensi ada di [direktori audio](src-tauri/audio/README.md).
 
-## Teknologi Stack
+## Mencoba dan membangun aplikasi
 
-- **Tauri 2** (Rust backend & Webview window controller)
-- **SolidJS** + **TypeScript** (High-performance reactive frontend components)
-- **Tailwind CSS v4** (Modern utility styles)
-- **SQLite** (Mesin pencarian tempat lokal yang super cepat)
+Untuk mencoba sendiri, gunakan installer Windows lokal hasil build. Signing tidak menjadi syarat untuk pengujian pribadi. Paket NSIS berada di `src-tauri/target/release/bundle/nsis/`; installer terakhir berukuran sekitar **8,10 MiB** dan belum memiliki tanda tangan Authenticode.
 
----
+### Prasyarat pengembangan
 
-## Unduh Rilis Siap Pakai
+- Node.js **22.x ≥ 22.13.0** dan **pnpm 11**; versi Node CI adalah 22.13.0.
+- Rust stable dan toolchain native Tauri: Windows memerlukan C++ Build Tools, Windows SDK, dan WebView2; macOS memerlukan Xcode Command Line Tools; Linux memerlukan paket WebKitGTK, indikator tray, dan ALSA.
+- Rincian dependensi sistem dan alur kontribusi: [CONTRIBUTING.md](CONTRIBUTING.md).
 
-Installer untuk Windows, macOS, dan Linux tersedia di [halaman Releases](https://github.com/adenaufal/shollu-modern/releases). Untuk membangun sendiri dari sumber, ikuti panduan di bawah.
-
----
-
-## Pengembangan Lokal & Kompilasi (Offline)
-
-### Prasyarat
-Pastikan Anda memiliki Node.js 20+, `pnpm`, dan Rust toolchain (`cargo`, `rustup`) yang terkonfigurasi pada mesin Anda.
-
-```bash
-# Klon repositori
+```sh
 git clone https://github.com/adenaufal/shollu-modern.git
 cd shollu-modern
-
-# Instalasi dependensi JS
-pnpm install
-
-# Jalankan dalam mode pengembangan (live-reload aktif)
+pnpm install --frozen-lockfile
 pnpm tauri dev
-
-# Kompilasi paket rilis installer offline mandiri (.exe / .msi di Windows)
-pnpm tauri build
 ```
 
-Berkas kompilasi installer mandiri akan berada di direktori `src-tauri/target/release/`.
+Instalasi dependensi dan build pertama memerlukan internet. `pnpm dev` hanya menjalankan frontend; fungsi desktop memerlukan runtime Tauri.
 
----
+Untuk membuat installer Windows lokal tanpa artefak updater bertanda tangan, jalankan dari PowerShell:
 
-## Lisensi
+```powershell
+pnpm tauri build --bundles nsis --config '{"bundle":{"createUpdaterArtifacts":false}}'
+```
 
-Shollu Modern dilisensikan di bawah [Lisensi PolyForm Noncommercial 1.0.0](LICENSE.md) — sepenuhnya gratis untuk penggunaan pribadi, edukasi, keagamaan, dan komunitas non-komersial. Eksploitasi komersial sangat dilarang.
+Saat distribusi publik dibutuhkan, signing akan diotomatisasikan menjadi satu perintah atau workflow CI setelah sertifikat/provider dipilih. Lihat [catatan signing lokal dan rencana distribusi](docs/release/windows-local-signing.md).
 
----
+## Verifikasi
 
-## Penghargaan & Kredit
+```sh
+pnpm test
+pnpm build
+cargo fmt --manifest-path src-tauri/Cargo.toml --check
+cargo test --locked --manifest-path src-tauri/Cargo.toml --lib
+cargo clippy --locked --manifest-path src-tauri/Cargo.toml --lib -- -D warnings
+```
 
-- **Ebta Setiawan** — pencipta asli aplikasi pengingat waktu sholat desktop Shollu (2004–2012). Tanpa dedikasi karya beliau, proyek modernisasi ini tidak akan pernah ada.
-- Komunitas Muslim di Indonesia dan dunia yang telah menggunakan dan mendukung Shollu selama hampir dua dekade.
-- Dikembangkan dan dipelihara oleh **adenaufal** (Ade Naufal Ammar).
+Baseline v1: **38 tes Rust**, **6 tes frontend**, pemeriksaan TypeScript/build, Clippy tanpa warning, dan **17 kelompok uji desktop Windows** terhadap aplikasi release serta IPC Tauri asli. CI memeriksa frontend dan Rust pada Windows, macOS, serta Linux. Uji interaksi native dan konfirmasi pengguna dilakukan di Windows; hasil CI tidak menggantikan pengujian antarmuka native pada platform lain. Aksi shutdown/hibernasi tidak dieksekusi dalam smoke test.
+
+Petunjuk `pnpm test:desktop`, konfigurasi uji terisolasi, dan pintasan tersedia di [panduan v1](docs/V1.md).
+
+## Lisensi dan kredit
+
+Shollu Modern memakai [PolyForm Noncommercial 1.0.0](LICENSE.md). Penggunaan dan kontribusi mengikuti ketentuan nonkomersial serta notice karya asli.
+
+- **Ebta Setiawan** — pencipta Shollu asli; algoritma, basis data, paket bahasa, rekaman distribusi, dan warisan aplikasinya tetap diakui dalam [ATTRIBUTION.md](ATTRIBUTION.md).
+- **adenaufal** (Ade Naufal Ammar) — pemelihara Shollu Modern.
+- Komunitas pengguna dan kontributor Shollu.

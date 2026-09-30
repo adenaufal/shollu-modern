@@ -119,11 +119,11 @@ maghrib  = Z + U    + Add_Maghrib / 60
 isya     = Z + V_n  + Add_Isya    / 60
 ```
 
-## Rounding modes (from `Pembulatan` setting)
+## Rounding modes (`Pembulatan`)
 
-When formatting to `HH:mm` (no seconds):
+The current v1 Settings page exposes these modes for prayer-time calculation; the Tauri command applies the selected mode to each result before returning it:
 - **0** (down): truncate seconds — `HH:mm` is the floor minute
-- **1** (up): always add one minute — `HH:mm` is ceil minute
+- **1** (up): ceil to a whole minute; an exact minute stays unchanged
 - **2** (nearest): if seconds ≥ 30, add one minute; else truncate
 
 ## Edge cases to handle in port
@@ -133,6 +133,14 @@ When formatting to `HH:mm` (no seconds):
 2. **Negative altitude** (below sea level) — `sign(H) * sqrt(|H|)` correctly handles this; preserved as-is.
 
 3. **Polar/extreme latitudes** combined with extreme declinations may cause `U`, `V_d`, `V_n`, or `W` to be undefined.
+
+## Current Shollu Modern v1 implementation
+
+`src-tauri/src/prayer_times.rs` ports the calculation above and implements Karachi, ISNA, MWL, Umm al-Qura, Egypt, custom-angle methods, both madhabs, and minute adjustments (including sunrise). The Location UI exposes the five named methods; custom angles are accepted by the Tauri calculation command/API, rather than shown as a normal method choice in the UI.
+
+The pure calculation module bounds latitude/longitude/timezone inputs and uses `safe_acos`: finite arguments are clamped to [-1, 1], and non-finite arguments map to zero radians. This keeps results finite but is not a high-latitude prayer-time method. The Tauri command validates and rejects invalid coordinates, altitude, timezone, and method inputs before calling the calculation module. The fallback options in the edge-case section remain possible future work; do not read them as implemented behavior.
+
+`PrayerTimes::to_hms` is a separate helper that floors hours/minutes/seconds for display. The active `Pembulatan` setting is applied by the Tauri command in `src-tauri/src/lib.rs`: Down floors, Up ceils, and Nearest rounds to a whole minute, wrapping at midnight.
 
 ## References
 

@@ -2,6 +2,8 @@
 
 These seven MP3 recordings were copied unchanged from the user's installed Shollu3 distribution. Source: `E:\Program Files (x86)\Shollu3`. Original application: Shollu by **Ebta Setiawan**. This local source path is provenance only; runtime uses packaged resources.
 
+As of September 30, 2026, the recordings are part of the working 1.0.0 application on `main`. All seven packaged MP3 hashes were checked against the source files, and native Windows smoke testing verifies the five prayer previews, stopping the queue, custom overrides, and dua through natural completion. Public distribution and signing remain deferred.
+
 | Prayer | Default recording |
 | --- | --- |
 | Fajr / Subuh | `azan-fajr.mp3` |

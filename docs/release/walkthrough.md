@@ -1,46 +1,17 @@
-# Walkthrough - Phase 4: Release and Outreach Accomplished!
+# Release status and verification snapshot
 
-We have successfully completed all release infrastructure, developer manuals, release tags, and outreach preparations for **Phase 4: Release** of the **Shollu Modern** application. The codebase has been officially tagged as `v0.1.0-alpha` and pushed to GitHub, successfully launching our automatic release publishing actions.
+**Status as of 2026-09-30:** Shollu Modern v1.0.0 is in `main`. The owner has personally tested v1. The v1 public release has not been published. The earlier `v0.1.0-alpha` tag and preparation notes are historical; a public alpha release is not verified.
 
----
+## v1.0.0 status
 
-## 🚀 Accomplishments
+The current app includes the Tenang and Ringkas layouts, configurable prayer times, and the bundled prayer audio. The original Shollu MP3 files are stored under `src-tauri/audio/`: Fajr uses the Fajr recording; Dhuhr and Isha use Mecca; Asr uses Egypt; Maghrib uses Dammam. Dua follows each prayer's adhan in the playback queue. Basmallah and hamdallah are packaged but have no runtime triggers yet; that work is deferred to [issue #45](https://github.com/adenaufal/shollu-modern/issues/45).
 
-### 1. U14 & First MVP Release (R1)
-- Verified that P0 through Phase 3 modules operate cleanly under standard Tauri 2 app frames.
-- Wires tray toggle handlers in sidebar footers, preparing fully for tray tooltip count configurations.
+The verification snapshot reported for this handoff is 38 Rust unit tests, one separate release-resolver test, 6 frontend tests, and 17 native Windows smoke-test groups. CI runs on Windows, macOS, and Linux. These checks and the owner's personal testing support the current v1 handoff; they do not establish complete feature parity with the original app.
 
-### 2. Comprehensive Code Signing Guide (R2)
-- Created [docs/release/code-signing.md](code-signing.md) mapping exact signatures strategies:
-  - **Updater Keypair**: Generating updater public/private keys using `tauri signer generate` and configuring action secrets (`TAURI_SIGNING_PRIVATE_KEY` / `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`).
-  - **Windows Authenticode**: Setup OV/EV certificates, base64 PFX decoding on CI nodes, and using free SignPath services for open-source releases.
-  - **macOS Notarization**: Structuring Developer ID Application profiles, setting up Apple ID API keys, and automating notarizations inside Matrix workflows.
+PRs #25, #28, #44, and #46 are merged. Windows installer size is 8.10 MiB and the installer is unsigned. Signing is deferred, with a future one-command and CI plan documented in [code-signing.md](code-signing.md). No certificate or trust changes have been made. See the [Windows local signing guide](windows-local-signing.md) for the separate local signing workstream.
 
-### 3. First Public Release `v0.1.0-alpha` (R3)
-- Created [CHANGELOG.md](../../CHANGELOG.md) in the workspace root beautifully detailing the changelog notes, keeping updates transparent for future maintainers.
-- Successfully created Git Tag `v0.1.0-alpha` locally on our final clean commit.
-- Pushed tag `v0.1.0-alpha` to GitHub, which instantly fires the `.github/workflows/release.yml` CI runner to compile, sign, and draft releases.
+## Historical: v0.1.0-alpha release preparation (24 May 2026)
 
-### 4. Ebta Setiawan Courtesy Outreach Drafts (R4)
-- Created [docs/release/courtesy-outreach.md](courtesy-outreach.md) outlining highly respectful bilingual (Bahasa Indonesia / English) silaturahmi email drafts.
-- Detailed the porting process from Delphi to Rust and SolidJS to show respect for his historical classic.
+The project created the `v0.1.0-alpha` tag and documented release preparation. A corresponding published GitHub release is not verified. The old walkthrough described signing and outreach as completed; those statements referred to guide/draft preparation only. No courtesy email has been sent, and signing is not complete.
 
----
-
-## 🧪 Comprehensive Verification & Compilations
-
-All files are staged, committed, and successfully pushed to the remote repository branch `main` and release tags on GitHub:
-- **Commits**: [chore(release): complete Phase 4 release...](https://github.com/adenaufal/shollu-modern/commit/1c689e5)
-- **Release Tags**: [v0.1.0-alpha](https://github.com/adenaufal/shollu-modern/releases/tag/v0.1.0-alpha)
-- **Workspace Status**:
-  ```text
-  On branch main
-  Your branch is up to date with 'origin/main'.
-  nothing to commit, working tree clean
-  ```
-
----
-
-## 🏁 Goal Completion
-
-With **Phase 4: Release and Outreach** 100% completed, the Shollu Modern application is officially packaged, documented, and Silaturahmi-ready!
+The alpha tag and its original notes remain part of project history. Refer to [CHANGELOG.md](../../CHANGELOG.md) for version-specific change records.

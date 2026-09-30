@@ -1,6 +1,8 @@
 # UI Handoff Brief — Shollu Modern
 
-This document briefs an AI agent (or human contributor) joining the project to handle UI/UX implementation. The backend (Rust) and project foundations are in place; what's left on the visual side is documented here.
+This brief began as a pre-implementation UI handoff. **It is historical guidance, not a current task list.** As of 2026-09-30, v1.0.0 is in `main` and the owner has personally tested it. Current source files are authoritative: the SolidJS pages live in `src/components/`, with shared state in `src/state.tsx` and visual styles alongside the app. Do not follow the placeholder layout, command status, or priority sequence below as current status.
+
+The interface supports the **Tenang** and **Ringkas** layouts. If making further UI changes, inspect the running v1 and current implementation first, then use `docs/reference/ui-design.md` as design context. The owner-reported verification snapshot is 6 frontend tests and 17 native Windows smoke-test groups; CI covers Windows, macOS, and Linux.
 
 Read this whole file first. Then read `docs/reference/ui-design.md` (information architecture + screen specs) and `CLAUDE.md` (project orientation).
 
@@ -23,20 +25,22 @@ The user is **adenaufal** (Ade Naufal Ammar), an Indonesian developer. Casual ID
 | Bundler | Vite | 6.x |
 | Package manager | pnpm | 11.x |
 
+CI uses Node.js 22.13.0 and pnpm 11; use the same versions when reproducing CI locally.
+
 Don't upgrade major versions without coordination. Patch/minor upgrades are fine.
 
 ## Project layout you'll touch
 
 ```
 src/
-├── App.tsx              entry component (currently a demo placeholder — replace)
-├── App.css              Tailwind v4 import + @theme tokens (extend as needed)
-├── index.tsx            mounts <App />
-├── vite-env.d.ts
-└── assets/              static SVG / images — add your own here
+├── App.tsx              application shell and navigation
+├── App.css              global theme and layout styles
+├── state.tsx            shared application state
+├── components/          implemented pages, overlays, and UI components
+└── helpers.ts           formatting, localization, and shared types
 ```
 
-You'll add a typical structure like:
+The original proposed structure was:
 ```
 src/
 ├── components/          shared UI primitives (buttons, dialogs, cards…)
@@ -58,38 +62,55 @@ These are out of scope for the UI work:
 
 ## Backend contract — Tauri commands available
 
-Call from frontend with `invoke()` from `@tauri-apps/api/core`:
+Call registered backend commands from the frontend with `invoke()` from `@tauri-apps/api/core`. The command names and argument keys below match `src-tauri/src/lib.rs`; Tauri maps Rust argument names to camelCase at the top level. Fields inside `adjustments` and serialized Rust structs retain their snake_case names.
 
 ```ts
 import { invoke } from "@tauri-apps/api/core";
-const result = await invoke<PrayerTimes>("compute_prayer_times_demo");
+import type { PrayerTimes } from "./helpers"; // src/state.tsx
+const times = await invoke<PrayerTimes>("compute_prayer_times", {
+  dateIso: "2026-09-30",
+  latitude: -6.2088,
+  longitude: 106.8456,
+  altitude: 12,
+  timezone: 7,
+  methodId: 2, // ISNA; 1 Karachi, 3 MWL, 4 Umm Al-Qura, 5 Egypt, 6 Custom
+  madhabId: 1, // Shafii; 2 Hanafi
+  fajrAngle: null,
+  ishaAngle: null,
+  adjustments: { fajr: 0, sunrise: 0, dhuhr: 0, asr: 0, maghrib: 0, isha: 0 },
+  pembulatan: 0, // floor; 1 ceil, 2 nearest
+});
 ```
 
-### Currently implemented
+`AppSettings` includes the settings fields in `src/helpers.ts` and `src-tauri/src/settings.rs`. Date, prayer-time, city, region, language, and task return shapes are defined in the corresponding Rust modules and mirrored in `src/helpers.ts` where used.
 
-| Command | Input | Returns | Notes |
-|---|---|---|---|
-| `compute_prayer_times_demo` | — | `PrayerTimes` (see below) | Hardcoded to Jakarta + ISNA + Shafii + today. Use only for early-prototype shells. Will be removed when `compute_prayer_times` (parameterized) lands. |
+### Registered backend commands
 
-### Coming soon (see `docs/ROADMAP.md` Phase 2)
-
-| Command | Input | Returns |
+| Command | Frontend arguments | Returns |
 |---|---|---|
-| `compute_prayer_times` | `{ date_iso, location, method, madhab, adjustments }` | `PrayerTimes` |
-| `convert_gregorian_to_hijri` | `{ year, month, day, adjustment }` | `{ year, month, day, weekday }` |
-| `convert_hijri_to_gregorian` | `{ year, month, day, adjustment }` | `{ year, month, day, weekday }` |
-| `qibla_bearing` | `{ latitude, longitude }` | `{ degrees, cardinal }` |
-| `search_cities` | `{ query, limit }` | `City[]` |
+| `compute_prayer_times` | `dateIso, latitude, longitude, altitude, timezone, methodId, madhabId, fajrAngle?, ishaAngle?, adjustments, pembulatan?` | `PrayerTimes` |
+| `convert_gregorian_to_hijri` / `convert_hijri_to_gregorian` | `year, month, day, adjustment?` | `DateResult` |
+| `qibla_bearing` | `latitude, longitude` | `{ degrees, cardinal }` |
+| `format_lat_dms` / `format_lon_dms` | `latitude` / `longitude` | `string` |
+| `search_cities` | `query, limit` | `City[]` |
 | `list_regions` | — | `Region[]` |
-| `cities_by_region` | `{ region_id }` | `City[]` |
-| `get_settings` / `save_settings` / `import_legacy_settings` | — / `Settings` / — | `Settings` |
-| `get_languages` / `get_translations` | — / `{ lang_id }` | `LanguageMeta[]` / `Record<string,string>` |
-| `list_tasks` / `upsert_task` / `delete_task` | — / `Task` / `{ task_id }` | `Task[]` / `Task` / — |
-| `play_adzan` / `stop_audio` | `{ file_path }` / — | — |
+| `cities_by_region` | `regionId` | `City[]` |
+| `get_languages` | — | `LanguageMeta[]` |
+| `get_translations` | `langId` | `Record<string, string>` |
+| `get_settings` / `save_settings` | — / `settings` | `AppSettings` / `void` |
+| `list_tasks` / `save_tasks` | — / `tasks` | `ScheduledTask[]` / `void` |
+| `play_adzan` / `play_prayer_adzan` | `filePath` / `prayer` | `void` / `void` |
+| `stop_audio` / `is_audio_playing` | — / — | `void` / `boolean` |
+| `set_volume` | `volume` | `void` |
+| `toggle_floating_bar` / `toggle_drop_zone` | `show` / `show` | `void` / `void` |
+| `choose_audio_file` / `choose_task_file` | — / — | `string \| null` / `string \| null` |
+| `save_export_file` | `defaultName, content` | `boolean` |
 
-If a command you need isn't listed, **add it to ROADMAP.md as a new B-row** and flag it to the backend collaborator — don't fake/mock past the prototype stage.
+The list matches the `tauri::generate_handler!` registration in `src-tauri/src/lib.rs`. Update this table and the relevant types when that handler changes; the earlier prototype command shapes have been removed because they no longer matched the implementation.
 
-### Type shapes (TypeScript)
+### Original prototype type shapes (historical)
+
+The examples below predate the current `AppSettings` contract. They are design notes only; for current serialized fields use the types in `src/helpers.ts` and Rust definitions in `src-tauri/src/`.
 
 Mirror the Rust types in `src-tauri/src/`. Suggested location: `src/lib/types.ts`.
 
@@ -154,7 +175,9 @@ Extend this with the full design system. Suggested additions:
 
 Original used 40 BMP skin variants. **We don't replicate that.** The CSS theme system covers the spirit without the bloat.
 
-## Component priority order
+## Original component priority order (historical)
+
+The staged sequence below describes the original implementation plan, not outstanding work. The current app already has the prayer dashboard, settings, location, schedule, tasks, conversion, About page, tray, and side windows. Keep the design principles below as reference when maintaining those screens.
 
 Build in this order — earlier components unlock later ones, and the user gets a usable app fastest.
 
@@ -240,8 +263,7 @@ export default function MainPage(props: Props) {
 - No Redux, no MobX, no XState unless a complex feature genuinely needs them.
 
 ### Testing
-- Not set up yet. When you add a test framework, prefer Vitest (Vite-native).
-- Component tests with `@solidjs/testing-library`. Not blocking for MVP.
+The project currently uses Vitest (`pnpm test`) and native Windows desktop smoke tests (`pnpm test:desktop`). The current handoff snapshot reports 6 frontend tests and 17 native Windows smoke-test groups. CI runs the frontend suite and Rust checks on Windows, macOS, and Linux.
 
 ## Acceptance criteria for any component PR
 

@@ -1,6 +1,6 @@
 # Original Data File Formats
 
-The legacy Shollu uses two custom file formats. Shollu Modern will migrate both to modern, portable equivalents (JSON / SQLite) at build time. The original parsers below are documented for accurate one-time conversion.
+The original Shollu uses two custom file formats. The formats below describe the source files as observed in the legacy data and Pascal reader; they are historical format references, not a statement that Shollu Modern converts them to JSON/SQLite. The current app bundles the original `.slp` language packs and `.spn` place-name files as Tauri resources. Rust loads language resources and imports place records into its local SQLite database at runtime.
 
 ## `.slp` — Language Pack (Plain Text)
 
@@ -37,7 +37,7 @@ Isha
 - The first non-comment line `Shollu3` appears to be a magic identifier — not counted as item zero, but treat conservatively.
 - Code references like `Lang.Items[150]`, `Lang.Items[202]`, etc. throughout `Unit1.pas` map to specific indices defined by position in the language file.
 
-**Migration target:** JSON resource files keyed by stable string IDs.
+**Original proposal (not the current runtime format):** JSON resource files keyed by stable string IDs.
 ```json
 {
   "prayer.fajr": "Fajr",
@@ -47,7 +47,7 @@ Isha
 }
 ```
 
-**Tool needed:** One-time converter Python/Rust script that reads each `.slp`, strips comments, and emits one JSON file per language. Manually map line-number indices to semantic IDs by cross-referencing `Lang.Items[N]` usage in the Pascal source.
+The current runtime reads bundled `.slp` files through the Rust i18n module and exposes the selected language to the UI. No build-time JSON conversion is required by the current app.
 
 ## `.spn` — Place Names (Binary)
 
@@ -81,7 +81,7 @@ For each region (AdmCnt times):
 - `Cities.spn` — World major cities (approx. 2,341 entries)
 - `ID.SPN` — Alternative Indonesia dataset
 
-**Migration target:** SQLite database.
+**Current implementation:** Rust parses the bundled `.spn` files and initializes a local SQLite database for place search. The schema and import behavior live in `src-tauri/src/places.rs`; they are authoritative for the runtime database. The schema below is an earlier suggested shape, not the current schema.
 
 ```sql
 CREATE TABLE regions (
@@ -105,7 +105,7 @@ CREATE INDEX cities_region_idx ON cities (region_id);
 CREATE INDEX cities_name_idx ON cities (name COLLATE NOCASE);
 ```
 
-**Tool needed:** One-time Rust converter that reads each `.spn`, parses per the layout above, and populates the SQLite DB. Augment cities with IANA timezone via a separate lookup (e.g., the `tz_for_point` Rust crate) and altitude via SRTM/Open-Elevation API where missing.
+The source `.spn` data contains region and city names plus latitude/longitude; timezone and altitude remain user-configurable location settings rather than being inferred from an external lookup.
 
 ## Settings persistence
 
@@ -120,9 +120,9 @@ Keys observed in `Unit1.pas:1183-1195` and `UArea.pas:217+`:
 - `Add_Dhuhur`, `Add_Maghrib`, `Add_Shubuh`, `Add_Asar`, `Add_Isya`
 - `Adzan` (file path), `AlwaysOnTop`, plus several skin/effect/UI prefs
 
-**Migration target:** TOML/JSON in platform-standard locations:
+**Original proposal (not current storage):** TOML/JSON in platform-standard locations:
 - Windows: `%APPDATA%\SholluModern\settings.toml`
 - macOS: `~/Library/Application Support/SholluModern/settings.toml`
 - Linux: `~/.config/shollu-modern/settings.toml`
 
-Use Tauri's built-in `tauri-plugin-store` or `dirs` crate + `serde` + `toml` for portable persistence. Provide a one-time import helper that reads the legacy registry hive on Windows and migrates values into the new file.
+The current app persists settings as TOML in `settings.toml` under `dirs::config_dir()/SholluModern` (or the directory selected by `SHOLLU_CONFIG_DIR`) through the Rust settings module. It does not use `tauri-plugin-store` or import the legacy Windows registry. See `src-tauri/src/settings.rs` for the current settings structure and persistence behavior.

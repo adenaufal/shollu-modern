@@ -1,92 +1,87 @@
-# Shollu Modern (English Edition)
+# Shollu Modern
 
-[Baca dalam Bahasa Indonesia (Read in Indonesian) 🇮🇩](./README.md)
+[Baca dalam Bahasa Indonesia](README.md)
 
-A modern, cross-platform revival of [Shollu](https://github.com/ebta/shollu) — the beloved desktop prayer times reminder for Muslims originally created by **Ebta Setiawan** (2004–2012). 
+A desktop prayer reminder rebuilt from **[Shollu](https://github.com/ebta/shollu)** by **Ebta Setiawan** (2004–2012), using Rust, Tauri 2, and SolidJS.
 
-This rebuild preserves 100% of the legacy calculations, binary places databases, language packs, and cron task schedulers, modernizing the visual layer for contemporary systems.
+**Status as of September 30, 2026:** application version **1.0.0** is on `main` and the user has confirmed it works on Windows. A local Windows installer has been built. Public distribution and signing are deferred until the user is ready to share it; no v1 installer has been published on GitHub Releases.
 
-> **Status:** MVP `v0.1.0-alpha` completed & fully operational! Verified with 0 Clippy warnings and 100% passing Cargo test suites across Windows, macOS, and Linux.
->
-> **[⬇ Download](https://github.com/adenaufal/shollu-modern/releases)** · **[📚 Documentation](docs/README.md)** · **[📋 Changelog](CHANGELOG.md)**
+[v1 guide (Indonesian)](docs/V1.md) · [Documentation](docs/README.md) · [Changelog](CHANGELOG.md) · [Roadmap](docs/ROADMAP.md)
 
----
+## Interface
 
-## Why This Exists
+**Tenang** uses an icon rail, countdown cards, and a day arc. **Ringkas** uses tabs, a monthly schedule ledger, an inspector, and a status bar. Both follow the `design_handoff_shollu_ui` handoff and share settings and schedules.
 
-The original **Shollu v3.10** was an incredibly lightweight (~276 KB) prayer-times app for Windows, built in Delphi using the KOL toolkit. It was used and loved by a generation of Indonesian Muslims. After 14 years without updates, it still runs but lacks native macOS/Linux support and feels out of place on modern systems. 
+![Tenang mode](docs/screenshots/tenang-main.png)
 
-**Shollu Modern** brings all of its features forward into a high-performance desktop framework with a premium, responsive user interface. It preserves the exact spirit of the original: lightweight, focused, 100% offline-capable, and completely free of telemetry, tracking, or ads.
+![Ringkas mode](docs/screenshots/ringkas-main.png)
 
-The original work and its author Ebta Setiawan are prominently credited. See [ATTRIBUTION.md](ATTRIBUTION.md).
+## v1 features
 
----
+- Five prayer calculation methods: ISNA, Karachi, Muslim World League, Umm Al-Qura, and Egypt; Asr options, rounding, and minute adjustments.
+- Offline city search from the original `.spn` databases imported into local SQLite, location previews before saving, and a Qibla compass. The timezone is a user-selected fixed UTC offset; original city data does not contain timezones or daylight-saving rules.
+- Monthly calendars, selected-day details, native CSV/HTML/TXT export, and Gregorian–Hijri conversion with −1/0/+1 day adjustments.
+- Custom reminder creation/editing/deletion and enable switches, plus per-prayer adhan settings. Custom reminders use the computer's clock; prayer reminders use the selected location's timezone.
+- Bundled original Shollu3 adhan recordings, dua after adhan, per-prayer previews, custom audio files, and a reset to bundled recordings.
+- Indonesian/English, three themes (light, dark, sepia), five accents, and bundled offline fonts.
+- System tray, floating bar, drop zone, always-on-top, autostart, and local settings persistence. Prayer schedules, city search, and bundled audio work without internet once installed.
 
-## Completed Features (Parity with Original)
+### Adhan recordings
 
-- **Prayer Calculations** (`prayer_times.rs`): Mapped the 5 traditional calculation methods (ISNA, Karachi, Muslim World League, Umm Al-Qura, Egypt General Authority) and matched legacy Pekanbaru times.
-- **Qibla Compass** (`qibla.rs`): Spherical Mecca bearing calculations with cardinal direction mapping and smooth rotational SVG compass needles.
-- **Bilingual Interface**: High-fidelity SolidJS localization matching the original's legacy `.slp` translation files, supporting English and Bahasa Indonesia toggles on-the-fly.
-- **City Autocomplete Picker** (`places.rs`): Ported the original binary `.spn` place databases to a local SQLite structure. Includes real-time autocomplete searching for 10,000+ administrative regions, automatically filling in coordinates and timezone offsets.
-- **Calendar Converters** (`hijri.rs`): Julian Day conversions between Gregorian and Hijri calendars, with offsets calibrations.
-- **Task Scheduler** (`scheduler.rs`): Cron-like async engine checking trigger criteria, displaying warning modals, launching command scripts, playing adzan MP3 audio via thread-safe CPAL/Rodio playbacks, and handling PC power states (Shutdown/Hibernate).
-- **Premium Themes & Accents**: Standard-compliant styling loaded with 3 theme modes (`light`, `dark`, and a warm, eye-friendly `sepia` parchment) and 5 accent dots selectors (`teal` (brand), `indigo`, `emerald`, `rose`, `slate`).
-- **Tabular Numerals**: Countdown clock displays utilize `font-variant-numeric: tabular-nums` to ensure zero layout shifts during ticking.
-- **Multi-Window Overlay Widgets**:
-  - **U11 `<FloatingBar>`**: A draggable, borderless horizontal info strip showing ticking count clocks and compact schedules.
-  - **U12 `<DropZone>`**: A draggable, edge-snapping mini square overlay count clock widget.
-- **System Tray**: Wires system tray toggles in the sidebar footer and Settings page.
-- **Settings Persistence** (`settings.rs`): Fully persisted cross-platform TOML configurations mapping startup loads.
+| Prayer | Bundled recording |
+| --- | --- |
+| Fajr | `azan-fajr.mp3` |
+| Dhuhr and Isha | `azan-mecca.mp3` |
+| Asr | `azan-egypt.mp3` |
+| Maghrib | `azan-dammam.mp3` |
 
----
+`dua.mp3` follows the adhan in the same queue. Stop cancels both. A custom file overrides the adhan recording for all prayers and still precedes dua. Sunrise never triggers adhan. `basmallah.mp3` and `hamdallah.mp3` are included, with runtime behavior deferred in [issue #45](https://github.com/adenaufal/shollu-modern/issues/45). Provenance and original license notices are documented in [the audio directory](src-tauri/audio/README.md).
 
-## Tech Stack
+## Try or build the application
 
-- **Tauri 2** (Rust backend core & WebView window runner)
-- **SolidJS** + **TypeScript** (High-precision frontend components)
-- **Tailwind CSS v4** (Modern utility styles)
-- **SQLite** (Fast, local relational city queries)
+For personal testing, use a locally built Windows installer. Signing is not required for private testing. NSIS packages are output to `src-tauri/target/release/bundle/nsis/`; the latest local installer is about **8.10 MiB** and has no Authenticode signature.
 
----
+### Development prerequisites
 
-## Ready-Made Downloads
+- Node.js **22.x ≥ 22.13.0** and **pnpm 11**; CI uses Node 22.13.0.
+- Stable Rust and native Tauri tooling: Windows needs C++ Build Tools, Windows SDK, and WebView2; macOS needs Xcode Command Line Tools; Linux needs WebKitGTK, tray indicator, and ALSA packages.
+- System dependencies and contribution instructions: [CONTRIBUTING.md](CONTRIBUTING.md).
 
-Installers for Windows, macOS, and Linux are available on the [Releases page](https://github.com/adenaufal/shollu-modern/releases). To build from source, follow the guide below.
-
----
-
-## Local Development & Compilation (Offline)
-
-### Prerequisites
-Make sure you have Node.js 20+, `pnpm`, and the Rust toolchain (`cargo`, `rustup`) configured.
-
-```bash
-# Clone the repository
+```sh
 git clone https://github.com/adenaufal/shollu-modern.git
 cd shollu-modern
-
-# Install JS dependencies
-pnpm install
-
-# Run in development mode (live-reload active)
+pnpm install --frozen-lockfile
 pnpm tauri dev
-
-# Compile optimized standalone offline installer (.exe / .msi on Windows)
-pnpm tauri build
 ```
 
-The compiled binaries will be output at `src-tauri/target/release/`.
+Dependency installation and the initial build require internet access. `pnpm dev` runs only the frontend; desktop functionality requires the Tauri runtime.
 
----
+To create a local Windows installer without signed updater artifacts, run in PowerShell:
 
-## License
+```powershell
+pnpm tauri build --bundles nsis --config '{"bundle":{"createUpdaterArtifacts":false}}'
+```
 
-Shollu Modern is licensed under the [PolyForm Noncommercial 1.0.0 License](LICENSE.md) — completely free for personal, educational, religious, and non-commercial community use. Commercial exploitation is strictly prohibited.
+When public distribution is requested, signing will be automated as one command or a CI workflow after selecting a certificate/provider. See [the local signing guide and distribution note](docs/release/windows-local-signing.md).
 
----
+## Verification
 
-## Credits & Attributions
+```sh
+pnpm test
+pnpm build
+cargo fmt --manifest-path src-tauri/Cargo.toml --check
+cargo test --locked --manifest-path src-tauri/Cargo.toml --lib
+cargo clippy --locked --manifest-path src-tauri/Cargo.toml --lib -- -D warnings
+```
 
-- **Ebta Setiawan** — the pioneering author of the original Shollu app (2004-2012). Without his software, this modernization project would not exist.
-- The Indonesian and global Muslim developer community who used, supported, and loved Shollu for nearly two decades.
-- Contributed and maintained by **adenaufal** (Ade Naufal Ammar).
+The v1 baseline has **38 Rust tests**, **6 frontend tests**, TypeScript/production build checks, Clippy with warnings denied, and **17 Windows desktop smoke groups** against the release application and real Tauri IPC. CI checks frontend and Rust on Windows, macOS, and Linux. Native interaction testing and user confirmation took place on Windows; CI does not replace native UI testing on the other platforms. Shutdown/hibernate actions are not executed by the smoke test.
+
+See [the v1 guide](docs/V1.md) for `pnpm test:desktop`, isolated configuration, and keyboard shortcuts.
+
+## License and credits
+
+Shollu Modern uses [PolyForm Noncommercial 1.0.0](LICENSE.md). Usage and contributions must respect its noncommercial terms and the original notices.
+
+- **Ebta Setiawan** — original Shollu author; its algorithms, databases, language packs, distribution recordings, and heritage remain credited in [ATTRIBUTION.md](ATTRIBUTION.md).
+- **adenaufal** (Ade Naufal Ammar) — Shollu Modern maintainer.
+- The Shollu user and contributor community.

@@ -2,6 +2,21 @@
 
 Installer `.exe` memakai Windows Authenticode. Kunci `TAURI_SIGNING_PRIVATE_KEY` hanya menandatangani artefak updater Tauri; kunci itu tidak memberikan identitas penerbit pada installer Windows.
 
+## Catatan untuk distribusi publik nanti
+
+Keputusan pengguna pada 30 September 2026: coba aplikasi sendiri dahulu menggunakan installer lokal yang sudah tersedia. Signing dan distribusi publik ditunda.
+
+Saat pengguna ingin membagikan aplikasi ke publik, otomatisasikan proses menjadi satu perintah atau workflow CI setelah sertifikat/provider signing dipilih:
+
+- Bangun aplikasi, tandatangani executable sebelum bundling, lalu tandatangani installer NSIS dengan timestamp.
+- Verifikasi signature dan identitas penerbit pada keduanya; hitung checksum setelah signing.
+- Bila memakai updater, buat dan verifikasi artefak updater dengan kunci Tauri yang sesuai secara terpisah.
+- Ambil kredensial dari certificate store atau secret yang sesuai; simpan private key/password di luar repository.
+
+Konfigurasi contoh `src-tauri/tauri.windows-signing.example.json` menjadi titik awal otomatisasi. Catatan ini merupakan rencana pekerjaan berikutnya, bukan instruksi untuk menerbitkan release sekarang.
+
+## Pilihan sertifikat
+
 Gunakan sertifikat **code signing** yang memiliki private key dan dapat diakses oleh SignTool. Sertifikat SSL tidak cocok. Sertifikat dari CA/token/cloud mengikuti petunjuk penyedia; penyedia yang memakai alat khusus dapat dihubungkan melalui `bundle.windows.signCommand`. Tanda tangan yang valid tetap dapat menampilkan peringatan SmartScreen ketika reputasi penerbit/file belum terbentuk. Lihat [panduan resmi Tauri](https://v2.tauri.app/distribute/sign/windows/).
 
 ## Sertifikat lokal yang tersedia di Windows certificate store
