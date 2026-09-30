@@ -1,0 +1,24 @@
+Shollu
+copyrights ©2004-2012 by Ebta Setiawan 
+All rights reserved
+
+Assalamu'alaikum Warahmatullaahi Wabarakaatuh
+
+DESKRIPSI
+
+Program ini bertujuan memberi peringatan kepada pengguna komputer bahwa waktu sholat telah tiba atau sebentar lagi tiba. Sehingga pengguna bisa bersegera untuk mempersiapkan diri untuk menunaikan sholat.
+
+Berbeda dengan versi 2.15 ke bawah, mulai versi 3.00 shollu menggunakan koordinat wilayah ( garis lintang dan garis bujur), ketinggian dan beberapa kriteria lainnya. Pengguna hanya perlu setting sekali dan jadwal otomatis akan selalu update. Shollu dilengkapi dengan wilayah-wilayah di Indonesia dan kota-kota besar di dunia. Untuk wilayah lainnya bisa download file tambahan, bisa dilihat dalam help file.
+
+Sejalan dengan perkembangannya, maka fasilitas-fasilitas shollu semakin bertambah, untuk lebih jelasnya bisa melihat langsung di program atau Membaca help file.
+
+Semoga program ini bisa memberikan sesuatu yang bermanfaat bagi kaum muslimin di mana saja.
+
+
+LISENSI
+
+Program Shollu di release sebagai freeware (sejak versi 3.09 menjadi Open Source) anda bebas mendistribusikannya dan bahkan dianjurkan menyebarkannya ke saudara sesama muslim. Jazakumullah khoiron kepada anda yang ikut menyebarluaskan program ini.
+
+Izin diberikan secara gratis kepada siapa saja yang menggunakan program, copy, menyebarkan, menyertakan dalam download di web site,CD atau media lainnya. Bagi yang ingin mengembangkannya kami persilahkan, dengan tetap memperhatikan etika dan cara yang baik. Untuk informasi lebih lengkap silahkan langsung email ke ebta.setiawan@gmail.com atau kunjungi http://ebsoft.web.id dan juga https://code.google.com/p/shollu/
+
+DISCLAIMER : Jika dengan pemakaian software ini ada kejadian yang menyebabkan rusaknya sistem komputer anda, bukan menjadi tanggungjawab kami, tetapi kami menerima masukan perbaikan dan saran untuk perkembangan softwre ini. Silahkan hubungi lewat email 

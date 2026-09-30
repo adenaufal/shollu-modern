@@ -2,7 +2,7 @@
 
 This guide describes the complete setup for code signing and notarizing the **Shollu Modern** application cross-platform (Windows & macOS) installers inside the Tauri 2 build pipeline.
 
-Signing your installers ensures that users will not see scary operating system warnings (like Windows SmartScreen or macOS Gatekeeper blocks) upon downloading and installing Shollu Modern.
+Signing verifies publisher identity and file integrity. Windows SmartScreen may still warn about a newly signed file until its reputation is established; macOS also requires notarization for normal Developer ID distribution.
 
 ---
 
@@ -39,7 +39,7 @@ Save your signing details into your GitHub repository settings under **Settings 
 
 ## 2. Windows Authenticode Signing
 
-To prevent **Windows SmartScreen** alerts, you need an OV (Organization Validated) or EV (Extended Validation) Code Signing Certificate from a trusted Certificate Authority (e.g. Sectigo, DigiCert).
+For local signing of both the application executable and NSIS installer, follow the [Windows local signing guide](windows-local-signing.md). It includes certificate-store signing, an optional Tauri configuration, signature verification, and a self-signed route for private testing.
 
 ### Option A: Using SignPath (Recommended for Open Source)
 [SignPath](https://signpath.org/) provides free code signing certificates and services for active open-source projects.
@@ -47,27 +47,9 @@ To prevent **Windows SmartScreen** alerts, you need an OV (Organization Validate
 2. Configure SignPath App Connector inside your GitHub workflow.
 3. Replace the Tauri build step or use SignPath's Action to sign the compiled `.exe` or `.msi` installers.
 
-### Option B: Local / CI signing with a PFX certificate
-If you have a `.pfx` certificate file:
-1. Export the PFX file as a base64 string:
-   ```powershell
-   [Convert]::ToBase64String([System.IO.File]::ReadAllBytes("path_to_cert.pfx")) | Out-File cert_base64.txt
-   ```
-2. Save the base64 string to GitHub Secrets as `WIN_SIGNING_CERT_BASE64`.
-3. Save the certificate password as `WIN_SIGNING_CERT_PASSWORD`.
-4. In your GitHub workflow, decode the PFX file back to disk:
-   ```yaml
-   - name: Decode PFX Certificate
-     run: |
-       echo "${{ secrets.WIN_SIGNING_CERT_BASE64 }}" > cert.pfx.base64
-       certutil -decode cert.pfx.base64 cert.pfx
-   ```
-5. Pass the PFX configuration to Tauri's bundler by setting env variables in your workflow:
-   ```yaml
-   env:
-     TAURI_SIGNING_IDENTITY: "path/to/cert.pfx"
-     TAURI_SIGNING_PASSWORD: "${{ secrets.WIN_SIGNING_CERT_PASSWORD }}"
-   ```
+### Option B: Local certificate store or provider-specific signer
+
+Import an exportable PFX only if your certificate provider supports it, then configure `bundle.windows.certificateThumbprint`, `digestAlgorithm`, `timestampUrl`, and `tsp` as shown in the local guide. For modern hardware-token/cloud certificates, follow the provider's tooling and use `bundle.windows.signCommand` when required. `TAURI_SIGNING_IDENTITY` and `TAURI_SIGNING_PASSWORD` do not configure Windows Authenticode signing.
 
 ---
 

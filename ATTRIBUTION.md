@@ -51,6 +51,7 @@ The following elements of Shollu Modern derive from or are inspired by the origi
 - Hijri ↔ Masehi calendar conversion
 - The "Shollu" name itself, used here with attribution and clear "Modern" suffix to signal community continuation rather than official authorship by Ebta Setiawan
 - Concept, feature set, and user experience design
+- Seven unmodified MP3 files from the original Shollu3 distribution: four adhan recordings, dua, basmallah, and hamdallah. Their provenance, prayer mapping, and preserved original license notice are documented in [the audio resource directory](src-tauri/audio/README.md).
 
 ## What Is New in Shollu Modern
 

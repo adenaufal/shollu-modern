@@ -258,6 +258,28 @@ try {
   await invoke('stop_audio');
   await assert.rejects(invoke('set_volume', { volume: 2 }));
   note('Real WAV decode/play/stop and volume validation');
+  await navigate('Settings');
+  await expect(page.getByText('Bundled Shollu3 audio', { exact: true })).toBeVisible();
+  for (const prayer of ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha']) {
+    await page.getByLabel('Preview prayer', { exact: true }).selectOption(prayer);
+    await page.getByRole('button', { name: '▶ Test audio', exact: true }).click();
+    await expect(page.getByRole('button', { name: 'Stop', exact: true })).toBeEnabled();
+    await expect.poll(() => invoke('is_audio_playing')).toBe(true);
+    await page.getByRole('button', { name: 'Stop', exact: true }).click();
+    assert.equal(await invoke('is_audio_playing'), false);
+  }
+  await assert.rejects(invoke('play_prayer_adzan', { prayer: 'sunrise' }));
+  await invoke('save_settings', { settings: { ...(await invoke('get_settings')), adzan_file_path: audioPath } });
+  await expect(page.getByText('silent-test.wav', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '▶ Test audio', exact: true }).click();
+  await pause(500);
+  assert.equal(await invoke('is_audio_playing'), true, 'Dua must continue after the 0.1-second custom adhan');
+  await expect.poll(() => invoke('is_audio_playing'), { timeout: 45_000 }).toBe(false);
+  await expect(page.getByRole('button', { name: '▶ Test audio', exact: true })).toBeEnabled();
+  await page.getByRole('button', { name: 'Use bundled audio', exact: true }).click();
+  await expect(page.getByText('Bundled Shollu3 audio', { exact: true })).toBeVisible();
+  assert.equal((await invoke('get_settings')).adzan_file_path, '');
+  note('All five original adhan previews, queued dua completion, stop, invalid prayer and bundled reset');
   await page.setViewportSize({ width: 600, height: 480 });
   for (const mode of ['tenang', 'ringkas']) {
     await invoke('save_settings', { settings: { ...(await invoke('get_settings')), layout_mode: mode } });
