@@ -17,11 +17,15 @@ export function SchedulePage(props: SchedulePageProps) {
   const defaultYear = today.getFullYear();
   const defaultMonth = String(today.getMonth() + 1).padStart(2, "0");
 
-  const [startDate, setStartDate] = createSignal<string>(`${defaultYear}-${defaultMonth}-01`);
-  
+  const [startDate, setStartDate] = createSignal<string>(
+    `${defaultYear}-${defaultMonth}-01`,
+  );
+
   // Get last day of current month
   const lastDay = new Date(defaultYear, today.getMonth() + 1, 0).getDate();
-  const [endDate, setEndDate] = createSignal<string>(`${defaultYear}-${defaultMonth}-${String(lastDay).padStart(2, "0")}`);
+  const [endDate, setEndDate] = createSignal<string>(
+    `${defaultYear}-${defaultMonth}-${String(lastDay).padStart(2, "0")}`,
+  );
 
   const [schedule, setSchedule] = createSignal<DayPrayerTimes[]>([]);
   const [loading, setLoading] = createSignal<boolean>(false);
@@ -46,7 +50,7 @@ export function SchedulePage(props: SchedulePageProps) {
     try {
       const start = new Date(startDate());
       const end = new Date(endDate());
-      
+
       const dates: string[] = [];
       const curr = new Date(start);
       while (curr <= end) {
@@ -67,10 +71,10 @@ export function SchedulePage(props: SchedulePageProps) {
             madhabId: locSettings.madhab,
             fajrAngle: null,
             ishaAngle: null,
-            adjustments: locSettings.adjustments
+            adjustments: locSettings.adjustments,
           });
           return { dateIso, times };
-        })
+        }),
       );
 
       setSchedule(results);
@@ -89,7 +93,8 @@ export function SchedulePage(props: SchedulePageProps) {
 
   // Re-generate when dates change (after settings are loaded)
   createEffect(() => {
-    startDate(); endDate();
+    startDate();
+    endDate();
     if (settings()) {
       generateSchedule();
     }
@@ -109,7 +114,10 @@ export function SchedulePage(props: SchedulePageProps) {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", `Shollu_Schedule_${startDate()}_to_${endDate()}.csv`);
+    link.setAttribute(
+      "download",
+      `Shollu_Schedule_${startDate()}_to_${endDate()}.csv`,
+    );
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -197,16 +205,18 @@ export function SchedulePage(props: SchedulePageProps) {
   };
 
   return (
-    <div class="content-scroll animate-fade-in space-y-4">
+    <div class="page-stack page-stack-wide animate-fade-in">
       {/* Date selector options Card */}
       <div class="card border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl p-5 shadow-sm space-y-4">
         <h3 class="text-sm font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase select-none">
           {props.lang === "Indonesia" ? "Rentang Tanggal" : "Date Range"}
         </h3>
-        
+
         <div class="field-row">
           <div class="field">
-            <span class="field-label select-none">{props.lang === "Indonesia" ? "Dari Tanggal" : "From"}</span>
+            <label class="field-label select-none">
+              {props.lang === "Indonesia" ? "Dari Tanggal" : "From"}
+            </label>
             <input
               type="date"
               value={startDate()}
@@ -215,7 +225,9 @@ export function SchedulePage(props: SchedulePageProps) {
             />
           </div>
           <div class="field">
-            <span class="field-label select-none">{props.lang === "Indonesia" ? "Sampai Tanggal" : "To"}</span>
+            <label class="field-label select-none">
+              {props.lang === "Indonesia" ? "Sampai Tanggal" : "To"}
+            </label>
             <input
               type="date"
               value={endDate()}
@@ -232,8 +244,12 @@ export function SchedulePage(props: SchedulePageProps) {
             class="btn btn-primary select-none text-xs font-semibold px-4 py-2"
           >
             {loading()
-              ? (props.lang === "Indonesia" ? "Memuat..." : "Generating...")
-              : (props.lang === "Indonesia" ? "Tampilkan Jadwal" : "Generate Schedule")}
+              ? props.lang === "Indonesia"
+                ? "Memuat..."
+                : "Generating..."
+              : props.lang === "Indonesia"
+                ? "Tampilkan Jadwal"
+                : "Generate Schedule"}
           </button>
           <button
             onClick={handleExportCSV}
@@ -255,11 +271,10 @@ export function SchedulePage(props: SchedulePageProps) {
       {/* Grid of Results */}
       <Show when={schedule().length > 0}>
         <div class="prayer-grid border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm bg-white dark:bg-slate-900">
-          <div
-            class="prayer-grid-header grid text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase bg-slate-50 dark:bg-slate-950/20 border-bottom border-slate-200 dark:border-slate-800 select-none"
-            style={{ "grid-template-columns": "110px repeat(6, 1fr)" }}
-          >
-            <div class="gh-cell">{props.lang === "Indonesia" ? "Tanggal" : "Date"}</div>
+          <div class="prayer-grid-header schedule-grid grid text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase bg-slate-50 dark:bg-slate-950/20 border-b border-slate-200 dark:border-slate-800 select-none">
+            <div class="gh-cell">
+              {props.lang === "Indonesia" ? "Tanggal" : "Date"}
+            </div>
             <div class="gh-cell">Fajr</div>
             <div class="gh-cell">Shurook</div>
             <div class="gh-cell">Dhuhr</div>
@@ -271,10 +286,7 @@ export function SchedulePage(props: SchedulePageProps) {
           <div class="max-h-[300px] overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
             <For each={schedule()}>
               {(day) => (
-                <div
-                  class="prayer-row grid text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40"
-                  style={{ "grid-template-columns": "110px repeat(6, 1fr)" }}
-                >
+                <div class="prayer-row schedule-grid grid text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40">
                   <div class="gr-cell font-bold text-xs text-slate-500 dark:text-slate-400">
                     {day.dateIso}
                   </div>

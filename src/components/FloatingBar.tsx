@@ -1,65 +1,27 @@
-import { createSignal, onMount, onCleanup } from "solid-js";
+import { createSignal, onMount, onCleanup, Show } from "solid-js";
 import { invoke } from "@tauri-apps/api/core";
-
-interface LocationSettings {
-  name: string;
-  latitude: number;
-  longitude: number;
-  altitude: number;
-  timezone: number;
-}
-
-interface Adjustments {
-  fajr: number;
-  sunrise: number;
-  dhuhr: number;
-  asr: number;
-  maghrib: number;
-  isha: number;
-}
-
-interface AppSettings {
-  location: LocationSettings;
-  method: number;
-  madhab: number;
-  adjustments: Adjustments;
-  pembulatan: number;
-  language: string;
-  skin: string;
-}
-
-interface PrayerTimes {
-  fajr: number;
-  sunrise: number;
-  dhuhr: number;
-  asr: number;
-  maghrib: number;
-  isha: number;
-}
-
-function formatHours(hours: number): string {
-  if (!Number.isFinite(hours)) return "--:--";
-  const h = Math.floor(hours);
-  const m = Math.floor((hours - h) * 60);
-  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
-}
+import {
+  formatHours,
+  PRAYER_NAMES,
+  toLocalDateIso,
+  addLocalDays,
+} from "../helpers";
+import type { AppSettings, PrayerTimes } from "../helpers";
 
 export function FloatingBar() {
   const [settings, setSettings] = createSignal<AppSettings | null>(null);
   const [todayTimes, setTodayTimes] = createSignal<PrayerTimes | null>(null);
-  const [tomorrowTimes, setTomorrowTimes] = createSignal<PrayerTimes | null>(null);
+  const [nextPrayerName, setNextPrayerName] = createSignal<string>("—");
+  const [countdownString, setCountdownString] =
+    createSignal<string>("--:--:--");
 
-  const [nextPrayerName, setNextPrayerName] = createSignal<string>("--");
-  const [countdownString, setCountdownString] = createSignal<string>("--:--:--");
-  
-  let tickerInterval: any;
+  let tickerInterval: ReturnType<typeof setInterval> | undefined;
 
   const initData = async () => {
     try {
       const activeSettings = await invoke<AppSettings>("get_settings");
       setSettings(activeSettings);
 
-      // Sync styles to document root
       if (activeSettings.skin && activeSettings.skin !== "default") {
         const parts = activeSettings.skin.split("-");
         if (parts.length === 2) {
@@ -69,11 +31,11 @@ export function FloatingBar() {
       }
 
       const today = new Date();
-      const todayIso = today.toISOString().split("T")[0];
-      const tomorrowIso = new Date(Date.now() + 86400000).toISOString().split("T")[0];
+      const todayIso = toLocalDateIso(today);
+      const tomorrowIso = toLocalDateIso(addLocalDays(today, 1));
 
-      const fetchTimes = async (dateIso: string) => {
-        return invoke<PrayerTimes>("compute_prayer_times", {
+      const fetchTimes = (dateIso: string) =>
+        invoke<PrayerTimes>("compute_prayer_times", {
           dateIso,
           latitude: activeSettings.location.latitude,
           longitude: activeSettings.location.longitude,
@@ -83,18 +45,15 @@ export function FloatingBar() {
           madhabId: activeSettings.madhab,
           fajrAngle: null,
           ishaAngle: null,
-          adjustments: activeSettings.adjustments
+          adjustments: activeSettings.adjustments,
         });
-      };
 
       const [currToday, tomorrow] = await Promise.all([
         fetchTimes(todayIso),
-        fetchTimes(tomorrowIso)
+        fetchTimes(tomorrowIso),
       ]);
 
       setTodayTimes(currToday);
-      setTomorrowTimes(tomorrow);
-
       startTicker(currToday, tomorrow);
     } catch (e) {
       console.error("FloatingBar data initialization failed:", e);
@@ -106,11 +65,25 @@ export function FloatingBar() {
 
     const updateTicker = () => {
       const now = new Date();
-      const currentDecimalHours = now.getHours() + now.getMinutes() / 60 + now.getSeconds() / 3600;
+      const currentDecimalHours =
+        now.getHours() + now.getMinutes() / 60 + now.getSeconds() / 3600;
 
-      const prayerNames = ["Fajr", "Sunrise", "Dhuhr", "Asr", "Maghrib", "Isha"];
-      const todayHours = [todayT.fajr, todayT.sunrise, todayT.dhuhr, todayT.asr, todayT.maghrib, todayT.isha];
-      const tomorrowHours = [tomorrowT.fajr, tomorrowT.sunrise, tomorrowT.dhuhr, tomorrowT.asr, tomorrowT.maghrib, tomorrowT.isha];
+      const todayHours = [
+        todayT.fajr,
+        todayT.sunrise,
+        todayT.dhuhr,
+        todayT.asr,
+        todayT.maghrib,
+        todayT.isha,
+      ];
+      const tomorrowHours = [
+        tomorrowT.fajr,
+        tomorrowT.sunrise,
+        tomorrowT.dhuhr,
+        tomorrowT.asr,
+        tomorrowT.maghrib,
+        tomorrowT.isha,
+      ];
 
       let targetPrayerIdx = -1;
       let isTomorrow = false;
@@ -127,17 +100,18 @@ export function FloatingBar() {
         isTomorrow = true;
       }
 
-      setNextPrayerName(prayerNames[targetPrayerIdx]);
+      setNextPrayerName(PRAYER_NAMES[targetPrayerIdx]);
 
-      const targetHours = isTomorrow ? tomorrowHours[targetPrayerIdx] : todayHours[targetPrayerIdx];
+      const targetHours = isTomorrow
+        ? tomorrowHours[targetPrayerIdx]
+        : todayHours[targetPrayerIdx];
       const targetTimeTotalSecs = Math.floor(targetHours * 3600);
       const currentTimeTotalSecs = Math.floor(currentDecimalHours * 3600);
 
       let deltaSecs = targetTimeTotalSecs - currentTimeTotalSecs;
       if (isTomorrow) {
-        deltaSecs = (86400 - currentTimeTotalSecs) + targetTimeTotalSecs;
+        deltaSecs = 86400 - currentTimeTotalSecs + targetTimeTotalSecs;
       }
-
       if (deltaSecs < 0) deltaSecs = 0;
 
       const h = Math.floor(deltaSecs / 3600);
@@ -145,7 +119,7 @@ export function FloatingBar() {
       const s = deltaSecs % 60;
 
       setCountdownString(
-        `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`
+        `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`,
       );
     };
 
@@ -169,55 +143,99 @@ export function FloatingBar() {
     if (tickerInterval) clearInterval(tickerInterval);
   });
 
+  const activeClass = (name: string) =>
+    nextPrayerName() === name ? "floating-accent" : "text-subtle";
+
   return (
     <div
       data-tauri-drag-region
-      class="w-screen h-screen flex items-center justify-between px-4 bg-white/90 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800/80 backdrop-blur-md rounded-lg overflow-hidden select-none select-none text-slate-800 dark:text-slate-200"
+      class="floating-shell bar"
       style={{ "-webkit-app-region": "drag" } as any}
     >
-      {/* Brand & Location */}
-      <div data-tauri-drag-region class="flex items-center gap-2">
-        <img data-tauri-drag-region src="/icon-32.png" alt="" class="w-5 h-5 rounded" />
-        <span data-tauri-drag-region class="text-xs font-bold tracking-tight">
-          Shollu · <span class="text-teal-600 dark:text-teal-400">{settings()?.location.name ?? "Pekanbaru"}</span>
+      <div
+        data-tauri-drag-region
+        style={{ display: "flex", "align-items": "center", gap: "8px" }}
+      >
+        <img
+          data-tauri-drag-region
+          src="/icon-32.png"
+          alt=""
+          width="20"
+          height="20"
+          style={{ "border-radius": "4px" }}
+        />
+        <span
+          data-tauri-drag-region
+          style={{ "font-size": "12px", "font-weight": "700" }}
+        >
+          Shollu ·{" "}
+          <span class="floating-accent">
+            {settings()?.location.name ?? "—"}
+          </span>
         </span>
       </div>
 
-      {/* Countdown strip */}
-      <div data-tauri-drag-region class="flex items-center gap-2 font-semibold text-xs text-slate-700 dark:text-slate-300">
-        <span data-tauri-drag-region>{settings()?.language === "Indonesia" ? "Berikutnya" : "Next"}: <span class="font-bold text-teal-600 dark:text-teal-400">{nextPrayerName()}</span></span>
-        <span data-tauri-drag-region class="font-bold tabular text-teal-500 text-sm tracking-tight">{countdownString()}</span>
+      <div
+        data-tauri-drag-region
+        style={{
+          display: "flex",
+          "align-items": "center",
+          gap: "8px",
+          "font-size": "12px",
+          "font-weight": "600",
+        }}
+      >
+        <span data-tauri-drag-region>
+          {settings()?.language === "Indonesia" ? "Berikutnya" : "Next"}:{" "}
+          <span class="floating-accent">{nextPrayerName()}</span>
+        </span>
+        <span
+          data-tauri-drag-region
+          class="floating-accent tabular"
+          style={{ "font-size": "13px" }}
+        >
+          {countdownString()}
+        </span>
       </div>
 
-      {/* Compact times strip */}
-      <div data-tauri-drag-region class="flex items-center gap-4 text-[10px] font-bold text-slate-400 dark:text-slate-500">
+      <div
+        data-tauri-drag-region
+        style={{
+          display: "flex",
+          "align-items": "center",
+          gap: "12px",
+          "font-size": "10px",
+          "font-weight": "700",
+        }}
+      >
         <Show when={todayTimes()}>
           {(times) => (
             <>
-              <span data-tauri-drag-region class={nextPrayerName() === "Fajr" ? "text-teal-600 dark:text-teal-400 font-extrabold" : ""}>
+              <span data-tauri-drag-region class={activeClass("Fajr")}>
                 Fajr {formatHours(times().fajr)}
               </span>
-              <span data-tauri-drag-region class={nextPrayerName() === "Dhuhr" ? "text-teal-600 dark:text-teal-400 font-extrabold" : ""}>
+              <span data-tauri-drag-region class={activeClass("Dhuhr")}>
                 Dhuhr {formatHours(times().dhuhr)}
               </span>
-              <span data-tauri-drag-region class={nextPrayerName() === "Asr" ? "text-teal-600 dark:text-teal-400 font-extrabold" : ""}>
+              <span data-tauri-drag-region class={activeClass("Asr")}>
                 Asr {formatHours(times().asr)}
               </span>
-              <span data-tauri-drag-region class={nextPrayerName() === "Maghrib" ? "text-teal-600 dark:text-teal-400 font-extrabold" : ""}>
+              <span data-tauri-drag-region class={activeClass("Maghrib")}>
                 Maghrib {formatHours(times().maghrib)}
               </span>
-              <span data-tauri-drag-region class={nextPrayerName() === "Isha" ? "text-teal-600 dark:text-teal-400 font-extrabold" : ""}>
+              <span data-tauri-drag-region class={activeClass("Isha")}>
                 Isha {formatHours(times().isha)}
               </span>
             </>
           )}
         </Show>
 
-        {/* Close Button */}
         <button
+          type="button"
           onClick={handleClose}
           style={{ "-webkit-app-region": "no-drag" } as any}
-          class="text-xs font-bold text-slate-400 hover:text-red-500 dark:text-slate-600 dark:hover:text-red-400 transition ml-2 border-none bg-transparent cursor-pointer"
+          class="floating-close"
+          aria-label="Close floating bar"
         >
           ✕
         </button>
@@ -225,4 +243,5 @@ export function FloatingBar() {
     </div>
   );
 }
+
 export default FloatingBar;

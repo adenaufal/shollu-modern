@@ -8,8 +8,8 @@ pub struct LanguageMeta {
 }
 
 /// Convert legacy language pack index to stable semantic string ID
-pub fn get_key_for_index(index: usize) -> &'static str {
-    match index {
+pub fn get_key_for_index(index: usize) -> Option<&'static str> {
+    let key = match index {
         0 => "prayer.fajr",
         1 => "prayer.sunrise",
         2 => "prayer.dhuhr",
@@ -235,8 +235,10 @@ pub fn get_key_for_index(index: usize) -> &'static str {
         223 => "setting.always_on_top",
         224 => "setting.hijri_correction",
         225 => "setting.remaining_time",
-        _ => "unknown",
-    }
+        _ => return None,
+    };
+
+    Some(key)
 }
 
 /// Parse a legacy `.slp` language pack file
@@ -267,8 +269,7 @@ pub fn parse_slp_file(file_path: &Path) -> Result<HashMap<String, String>, Strin
             continue;
         }
 
-        let key = get_key_for_index(index);
-        if key != "unknown" {
+        if let Some(key) = get_key_for_index(index) {
             map.insert(key.to_string(), trimmed.to_string());
         }
         index += 1;
@@ -321,6 +322,13 @@ mod tests {
             p = PathBuf::from("src-tauri/Languages");
         }
         p
+    }
+
+    #[test]
+    fn test_key_for_index_handles_unknown_indices() {
+        assert_eq!(get_key_for_index(0), Some("prayer.fajr"));
+        assert_eq!(get_key_for_index(89), None);
+        assert_eq!(get_key_for_index(usize::MAX), None);
     }
 
     #[test]

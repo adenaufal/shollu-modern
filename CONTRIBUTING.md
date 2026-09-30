@@ -84,9 +84,9 @@ Open an issue tagged `enhancement` describing the feature, the use case, and (if
 
 In rough priority:
 
-1. **Backend modules** — porting remaining Pascal modules to Rust (`hijri.rs`, `places.rs`, `scheduler.rs`, `audio.rs`, `settings.rs`). See `docs/module-survey.md`.
-2. **UI components** — building Solid components per `docs/ui-design.md` (MainPage, LocationSettings, CityPicker, etc.).
-3. **Data migration** — converting original `.slp` (language) and `.spn` (city) files to JSON/SQLite (see `docs/data-formats.md`).
+1. **Backend modules** — porting remaining Pascal modules to Rust (`hijri.rs`, `places.rs`, `scheduler.rs`, `audio.rs`, `settings.rs`). See `docs/reference/module-survey.md`.
+2. **UI components** — building Solid components per `docs/reference/ui-design.md` (MainPage, LocationSettings, CityPicker, etc.).
+3. **Data migration** — converting original `.slp` (language) and `.spn` (city) files to JSON/SQLite (see `docs/reference/data-formats.md`).
 4. **Localization** — additional language translations beyond Indonesian/English (Aceh, Sunda, Jawa, Banyumasan, Palembang, etc.).
 5. **Testing** — reference test cases against the original Shollu3.exe behavior for high latitudes, edge cases, calendar conversion.
 6. **Accessibility** — keyboard navigation, ARIA labels, screen-reader testing, contrast audits.

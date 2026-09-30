@@ -75,6 +75,8 @@ impl Method {
 #[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
 pub struct Adjustments {
     pub fajr: i32,
+    #[serde(default)]
+    pub sunrise: i32,
     pub dhuhr: i32,
     pub asr: i32,
     pub maghrib: i32,
@@ -85,8 +87,16 @@ pub struct Adjustments {
 pub struct Location {
     pub latitude: f64,
     pub longitude: f64,
-    pub altitude: i32,
+    pub altitude: f64,
     pub tz_hours: f64,
+}
+
+fn safe_acos(value: f64) -> f64 {
+    if value.is_finite() {
+        value.clamp(-1.0, 1.0).acos()
+    } else {
+        0.0
+    }
 }
 
 pub fn compute(
@@ -99,10 +109,30 @@ pub fn compute(
     let (fajr_angle, isha_angle) = method.angles();
     let sh = madhab.shadow_factor();
 
-    let b = location.latitude;
-    let l = location.longitude;
-    let tz = location.tz_hours;
-    let h = location.altitude as f64;
+    // Keep invalid external settings from reaching trigonometric functions. The
+    // pole clamp avoids a zero cosine denominator, while safe_acos below also
+    // gives finite values during polar day/night when the angle is undefined.
+    let b = if location.latitude.is_finite() {
+        location.latitude.clamp(-89.999999, 89.999999)
+    } else {
+        0.0
+    };
+    let l = if location.longitude.is_finite() {
+        location.longitude.clamp(-180.0, 180.0)
+    } else {
+        0.0
+    };
+    let tz = if location.tz_hours.is_finite() {
+        location.tz_hours.clamp(-12.0, 14.0)
+    } else {
+        0.0
+    };
+    // Finite negative altitudes retain the original signum/sqrt behavior.
+    let h = if location.altitude.is_finite() {
+        location.altitude
+    } else {
+        0.0
+    };
 
     let bt = (2.0 * PI * day_of_year as f64) / 365.0;
 
@@ -130,26 +160,32 @@ pub fn compute(
 
     let altitude_term = (-0.8333 - 0.0347 * h.signum() * h.abs().sqrt()).to_radians();
     let u = (180.0 / (15.0 * PI))
-        * ((altitude_term.sin() - d_rad.sin() * b_rad.sin()) / (d_rad.cos() * b_rad.cos())).acos();
+        * safe_acos(
+            (altitude_term.sin() - d_rad.sin() * b_rad.sin()) / (d_rad.cos() * b_rad.cos()),
+        );
 
     let v_d = (180.0 / (15.0 * PI))
-        * ((-fajr_angle.to_radians().sin() - d_rad.sin() * b_rad.sin())
-            / (d_rad.cos() * b_rad.cos()))
-        .acos();
+        * safe_acos(
+            (-fajr_angle.to_radians().sin() - d_rad.sin() * b_rad.sin())
+                / (d_rad.cos() * b_rad.cos()),
+        );
 
     let v_n = (180.0 / (15.0 * PI))
-        * ((-isha_angle.to_radians().sin() - d_rad.sin() * b_rad.sin())
-            / (d_rad.cos() * b_rad.cos()))
-        .acos();
+        * safe_acos(
+            (-isha_angle.to_radians().sin() - d_rad.sin() * b_rad.sin())
+                / (d_rad.cos() * b_rad.cos()),
+        );
 
     let asr_altitude = (1.0 / (sh + ((b - d).abs().to_radians()).tan())).atan();
     let w = (180.0 / (15.0 * PI))
-        * ((asr_altitude.sin() - d_rad.sin() * b_rad.sin()) / (d_rad.cos() * b_rad.cos())).acos();
+        * safe_acos(
+            (asr_altitude.sin() - d_rad.sin() * b_rad.sin()) / (d_rad.cos() * b_rad.cos()),
+        );
 
     const ONE_MINUTE_AS_HOURS: f64 = 1.0 / 60.0;
     PrayerTimes {
         fajr: z - v_d + adjustments.fajr as f64 * ONE_MINUTE_AS_HOURS,
-        sunrise: z - u,
+        sunrise: z - u + adjustments.sunrise as f64 * ONE_MINUTE_AS_HOURS,
         dhuhr: z + adjustments.dhuhr as f64 * ONE_MINUTE_AS_HOURS,
         asr: z + w + adjustments.asr as f64 * ONE_MINUTE_AS_HOURS,
         maghrib: z + u + adjustments.maghrib as f64 * ONE_MINUTE_AS_HOURS,
@@ -168,7 +204,7 @@ mod tests {
             Location {
                 latitude: -6.2088,
                 longitude: 106.8456,
-                altitude: 7,
+                altitude: 7.0,
                 tz_hours: 7.0,
             },
             Method::Isna,
@@ -189,7 +225,7 @@ mod tests {
             Location {
                 latitude: 21.4225,
                 longitude: 39.8262,
-                altitude: 277,
+                altitude: 277.0,
                 tz_hours: 3.0,
             },
             Method::UmmAlQura,
@@ -210,6 +246,65 @@ mod tests {
         assert_eq!(m, 30);
     }
 
+    #[test]
+    fn poles_and_non_finite_location_values_remain_finite() {
+        let times = compute(
+            172,
+            Location {
+                latitude: 90.0,
+                longitude: f64::NAN,
+                altitude: f64::INFINITY,
+                tz_hours: f64::NEG_INFINITY,
+            },
+            Method::Isna,
+            Madhab::Shafii,
+            Adjustments::default(),
+        );
+
+        assert!(
+            [
+                times.fajr,
+                times.sunrise,
+                times.dhuhr,
+                times.asr,
+                times.maghrib,
+                times.isha,
+            ]
+            .iter()
+            .all(|time| time.is_finite())
+        );
+    }
+
+    #[test]
+    fn sunrise_adjustment_shifts_time_by_expected_minutes() {
+        let location = Location {
+            latitude: -6.2088,
+            longitude: 106.8456,
+            altitude: 7.0,
+            tz_hours: 7.0,
+        };
+        let baseline = compute(
+            1,
+            location,
+            Method::Isna,
+            Madhab::Shafii,
+            Adjustments::default(),
+        );
+        let adjusted = compute(
+            1,
+            location,
+            Method::Isna,
+            Madhab::Shafii,
+            Adjustments {
+                sunrise: 7,
+                ..Adjustments::default()
+            },
+        );
+
+        let expected_shift = 7.0 / 60.0;
+        assert!((adjusted.sunrise - baseline.sunrise - expected_shift).abs() < 1e-12);
+    }
+
     fn fmt(hours: f64) -> String {
         let (h, m, s) = PrayerTimes::to_hms(hours);
         format!("{:02}:{:02}:{:02}", h, m, s)
@@ -228,12 +323,19 @@ mod tests {
             Location {
                 latitude: 0.53333,
                 longitude: 101.449,
-                altitude: 0,
+                altitude: 0.0,
                 tz_hours: 7.0,
             },
             Method::Custom { fajr_angle: 19.5, isha_angle: 17.5 },
             Madhab::Shafii,
-            Adjustments { fajr: 0, dhuhr: 5, asr: 0, maghrib: 3, isha: 0 },
+            Adjustments {
+                fajr: 0,
+                sunrise: 0,
+                dhuhr: 5,
+                asr: 0,
+                maghrib: 3,
+                isha: 0,
+            },
         );
 
         // Shollu3.exe displayed values (HH:mm:ss, Pembulatan=Kebawah):
@@ -297,7 +399,7 @@ mod tests {
         for (label, doy, lat, lon, alt, tz, method, madhab) in cases {
             let t = compute(
                 *doy,
-                Location { latitude: *lat, longitude: *lon, altitude: *alt, tz_hours: *tz },
+                Location { latitude: *lat, longitude: *lon, altitude: *alt as f64, tz_hours: *tz },
                 *method,
                 *madhab,
                 Adjustments::default(),

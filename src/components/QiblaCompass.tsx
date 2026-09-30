@@ -1,5 +1,3 @@
-import { createMemo } from "solid-js";
-
 interface QiblaCompassProps {
   deg?: number;
   size?: number;
@@ -10,7 +8,13 @@ export function QiblaCompass(props: QiblaCompassProps) {
   const deg = () => props.deg ?? 293.81;
 
   return (
-    <svg width={size()} height={size()} viewBox="0 0 52 52" fill="none" class="select-none">
+    <svg
+      width={size()}
+      height={size()}
+      viewBox="0 0 52 52"
+      fill="none"
+      class="select-none"
+    >
       {/* Outer Circle */}
       <circle
         cx="26"
@@ -67,7 +71,11 @@ export function QiblaCompass(props: QiblaCompassProps) {
         {/* North Pointer (pointing to Mecca) */}
         <polygon points="0,-18 2.5,-6 0,-9 -2.5,-6" fill="var(--accent-500)" />
         {/* South Pointer */}
-        <polygon points="0,18 2.5,6 0,9 -2.5,6" fill="var(--fg-muted)" opacity="0.35" />
+        <polygon
+          points="0,18 2.5,6 0,9 -2.5,6"
+          fill="var(--fg-muted)"
+          opacity="0.35"
+        />
       </g>
       {/* Center Pivot */}
       <circle cx="26" cy="26" r="2" fill="var(--fg-muted)" />

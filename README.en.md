@@ -7,6 +7,8 @@ A modern, cross-platform revival of [Shollu](https://github.com/ebta/shollu) —
 This rebuild preserves 100% of the legacy calculations, binary places databases, language packs, and cron task schedulers, modernizing the visual layer for contemporary systems.
 
 > **Status:** MVP `v0.1.0-alpha` completed & fully operational! Verified with 0 Clippy warnings and 100% passing Cargo test suites across Windows, macOS, and Linux.
+>
+> **[⬇ Download](https://github.com/adenaufal/shollu-modern/releases)** · **[📚 Documentation](docs/README.md)** · **[📋 Changelog](CHANGELOG.md)**
 
 ---
 
@@ -44,6 +46,12 @@ The original work and its author Ebta Setiawan are prominently credited. See [AT
 - **SolidJS** + **TypeScript** (High-precision frontend components)
 - **Tailwind CSS v4** (Modern utility styles)
 - **SQLite** (Fast, local relational city queries)
+
+---
+
+## Ready-Made Downloads
+
+Installers for Windows, macOS, and Linux are available on the [Releases page](https://github.com/adenaufal/shollu-modern/releases). To build from source, follow the guide below.
 
 ---
 

@@ -2,13 +2,13 @@
 
 This document briefs an AI agent (or human contributor) joining the project to handle UI/UX implementation. The backend (Rust) and project foundations are in place; what's left on the visual side is documented here.
 
-Read this whole file first. Then read `docs/ui-design.md` (information architecture + screen specs) and `CLAUDE.md` (project orientation).
+Read this whole file first. Then read `docs/reference/ui-design.md` (information architecture + screen specs) and `CLAUDE.md` (project orientation).
 
 ---
 
 ## What you're working on
 
-**Shollu Modern** is reviving [Shollu](https://github.com/ebta/shollu), Ebta Setiawan's beloved Indonesian prayer-times reminder app (Delphi + KOL, 2004-2012, last update 14 years ago). The original is functional but visually rooted in the Windows XP/Vista era. Your job: build the modern UI per `docs/ui-design.md`, on top of a clean Tauri 2 + SolidJS + Tailwind v4 foundation that already exists.
+**Shollu Modern** is reviving [Shollu](https://github.com/ebta/shollu), Ebta Setiawan's beloved Indonesian prayer-times reminder app (Delphi + KOL, 2004-2012, last update 14 years ago). The original is functional but visually rooted in the Windows XP/Vista era. Your job: build the modern UI per `docs/reference/ui-design.md`, on top of a clean Tauri 2 + SolidJS + Tailwind v4 foundation that already exists.
 
 The user is **adenaufal** (Ade Naufal Ammar), an Indonesian developer. Casual ID/EN code-switching welcome.
 
@@ -163,7 +163,7 @@ Build in this order — earlier components unlock later ones, and the user gets 
 1. **U0 Theming system** — set up `data-theme` switch + dark/light + Tailwind tokens. Demonstrate by toggling.
 2. **U1 `<AppShell>`** — sidebar nav (8 items: Main / Location / Schedule / Tasks / Convert / Settings / About + room for spillover) + content area + responsive collapse below 720px width.
 3. **U2 `<About>`** — easiest page. Static content from `ATTRIBUTION.md`, ID/EN toggle, Ebta credit prominent. Link out to ebsoft.web.id.
-4. **U3 `<MainPage>`** — the everyday view. See `docs/ui-design.md` for the layout. Wire to `compute_prayer_times_demo` initially; swap to parameterized command once available. Include hero countdown ("NEXT Asr in 2h 14m"), 3-day grid (Yesterday/Today/Tomorrow), qibla compass (inline SVG).
+4. **U3 `<MainPage>`** — the everyday view. See `docs/reference/ui-design.md` for the layout. Wire to `compute_prayer_times_demo` initially; swap to parameterized command once available. Include hero countdown ("NEXT Asr in 2h 14m"), 3-day grid (Yesterday/Today/Tomorrow), qibla compass (inline SVG).
 
 After Tier 1, the app is demoable. Open a PR, get feedback.
 
@@ -177,7 +177,7 @@ After Tier 1, the app is demoable. Open a PR, get feedback.
 
 8. **U7 `<Settings>`** — general prefs (theme, language, audio, format, autostart, density).
 9. **U13 i18n integration** — Solid context with locale switch. Default Indonesian or English based on OS locale.
-10. **U14 `<Tray>` (logic)** — wire `tauri-plugin-tray`. Tooltip = next prayer countdown. Popup menu mirrors `docs/ui-design.md` spec.
+10. **U14 `<Tray>` (logic)** — wire `tauri-plugin-tray`. Tooltip = next prayer countdown. Popup menu mirrors `docs/reference/ui-design.md` spec.
 
 ### Tier 4 — scheduling + side windows
 
@@ -278,9 +278,9 @@ Common decisions you might hit:
 
 - Project orientation: `CLAUDE.md`
 - Roadmap status: `docs/ROADMAP.md`
-- UI spec details: `docs/ui-design.md`
+- UI spec details: `docs/reference/ui-design.md`
 - Pascal source for behavioral reference: `F:\dev\projects\shollu\` (read-only)
-- Algorithm details: `docs/prayer-time-algorithm.md`
-- Data file formats: `docs/data-formats.md`
+- Algorithm details: `docs/reference/prayer-time-algorithm.md`
+- Data file formats: `docs/reference/data-formats.md`
 
 Good luck. The original Shollu was loved by a generation of Indonesian Muslims. Making the new one feel modern *and* respectful of that lineage is the assignment.

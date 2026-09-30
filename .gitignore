@@ -58,3 +58,9 @@ coverage/
 *.icloud
 
 # pnpm-lock.yaml is intentionally NOT ignored — commit it for reproducible installs
+
+# Agent runtime artifacts (Pi subagent session transcripts/inputs/outputs)
+.pi-subagents/
+
+# Playwright/smoke-test screenshots
+.smoke/
