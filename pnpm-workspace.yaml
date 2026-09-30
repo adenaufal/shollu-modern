@@ -1,3 +1,9 @@
+allowBuilds:
+  esbuild: true
+
+onlyBuiltDependencies:
+  - esbuild
+
 # Keep CI's 24-hour release-age policy without relaxing dependency checks.
 minimumReleaseAge: 1440
 overrides:
