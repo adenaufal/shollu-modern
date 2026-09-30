@@ -10,12 +10,14 @@ import './prayer-pages.css'
 
 const TIME_KEYS = ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha'] as const
 
-function CompactMain(props: { lang: () => string }) {
+function CompactMain(props: { lang: () => string; selected: () => string; setSelected: (value: string) => void; visibleMonth: () => string; setVisibleMonth: (value: string) => void }) {
   const app = useAppState()
   const id = () => props.lang() === 'Indonesia'
   const [rows, setRows] = createSignal<{ iso: string; times: PrayerTimes }[]>([])
-  const [selected, setSelected] = createSignal(app.today())
-  const [visibleMonth, setVisibleMonth] = createSignal(`${app.today().slice(0, 7)}-01`)
+  const selected = props.selected
+  const setSelected = props.setSelected
+  const visibleMonth = props.visibleMonth
+  const setVisibleMonth = props.setVisibleMonth
   const [pendingExport, setPendingExport] = createSignal(false)
   let monthRequest = 0
   const today = () => app.today()
@@ -129,6 +131,8 @@ export function MainPage(props: { lang?: string }) {
   const app = useAppState()
   const lang = () => props.lang ?? app.lang()
   const id = () => lang() === 'Indonesia'
+  const [selected, setSelected] = createSignal(app.today())
+  const [visibleMonth, setVisibleMonth] = createSignal(`${app.today().slice(0, 7)}-01`)
   const [tasks, setTasks] = createSignal<ScheduledTask[]>([])
   let unlistenTasks: (() => void) | undefined
   let disposed = false
@@ -203,7 +207,7 @@ export function MainPage(props: { lang?: string }) {
   const dateLabel = () => new Intl.DateTimeFormat(id() ? 'id-ID' : 'en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(now())
 
   return <div class={`prayer-page-main ${app.layoutMode()}`}>
-    <Show when={app.layoutMode() === 'tenang'} fallback={<CompactMain lang={lang}/> }>
+    <Show when={app.layoutMode() === 'tenang'} fallback={<CompactMain lang={lang} selected={selected} setSelected={setSelected} visibleMonth={visibleMonth} setVisibleMonth={setVisibleMonth}/> }>
     <Show when={app.error()}><div class="status-banner tone-error" role="alert">{app.error()} <button class="btn btn-secondary" onClick={() => void app.refresh()}>{id() ? 'Coba lagi' : 'Retry'}</button></div></Show>
     <Show when={app.loading()}><div class="prayer-skeleton skeleton-pulse"><div/><div/><div/></div></Show>
     <Show when={!app.loading() && times()}>

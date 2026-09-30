@@ -130,6 +130,16 @@ try {
   await expect.poll(() => page.locator('.compact-main-table tbody tr').count()).toBeGreaterThanOrEqual(28);
   note('Three themes, five-accent control, bilingual UI, mode shortcut and restart persistence');
   await page.screenshot({ path: path.join(artifacts, 'ringkas-main.png') });
+  await page.getByRole('button', { name: 'Previous month', exact: true }).click();
+  const retainedMonth = await page.locator('.compact-main-month strong').innerText();
+  const retainedDay = await page.locator('.compact-selected-date').innerText();
+  await page.keyboard.press('Control+Shift+M');
+  await expect(page.locator('.calm-hero')).toBeVisible();
+  await page.keyboard.press('Control+Shift+M');
+  await expect(page.locator('.compact-main-month strong')).toHaveText(retainedMonth);
+  await expect(page.locator('.compact-selected-date')).toHaveText(retainedDay);
+  await page.getByRole('button', { name: 'Next month', exact: true }).click();
+  note('Selected month and day survive switching display modes');
   for (const name of ['Schedule', 'Location', 'Reminders', 'Convert', 'Settings', 'About']) {
     await navigate(name);
     await expect(page.locator('#main-content')).not.toBeEmpty();
