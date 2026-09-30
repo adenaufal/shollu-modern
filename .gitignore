@@ -16,7 +16,6 @@ out/
 
 # Tauri
 src-tauri/target/
-src-tauri/Cargo.lock
 src-tauri/gen/schemas/
 
 # Rust
@@ -64,3 +63,6 @@ coverage/
 
 # Playwright/smoke-test screenshots
 .smoke/
+.worktrees/
+test-results/
+playwright-report/

@@ -1,86 +1,29 @@
-interface AboutPageProps {
-  lang: string;
-}
+import { openUrl } from '@tauri-apps/plugin-opener'
+import { Show } from 'solid-js'
+import { useAppState } from '../state'
+import './utility-pages.css'
 
-export function AboutPage(props: AboutPageProps) {
-  return (
-    <div class="page-stack animate-fade-in" style={{ "text-align": "center" }}>
-      <div class="about-hero">
-        <div class="about-icon">
-          <img src="/icon-128.png" alt="Shollu Modern" width="64" height="64" />
-        </div>
-        <h2 class="about-title">Shollu Modern</h2>
-        <p class="about-ver">v0.1.0-alpha · PolyForm Noncommercial 1.0.0</p>
-      </div>
-
-      <div class="about-credit">
-        <div class="about-credit-title">
-          {props.lang === "Indonesia"
-            ? "Berdasarkan karya"
-            : "Based on work by"}
-        </div>
-        <h3 class="about-credit-name">Ebta Setiawan</h3>
-        <div
-          style={{
-            display: "flex",
-            gap: "12px",
-            "margin-top": "4px",
-            "align-items": "center",
-            "justify-content": "center",
-          }}
-        >
-          <a
-            class="about-credit-link"
-            href="https://ebsoft.web.id"
-            target="_blank"
-            rel="noreferrer"
-          >
-            ebsoft.web.id
-          </a>
-          <span class="text-subtle" aria-hidden="true">
-            ·
-          </span>
-          <a
-            class="about-credit-link"
-            href="https://github.com/ebta/shollu"
-            target="_blank"
-            rel="noreferrer"
-          >
-            github.com/ebta/shollu
-          </a>
-        </div>
-        <p class="about-body" style={{ "margin-top": "12px" }}>
-          {props.lang === "Indonesia"
-            ? "Shollu mula-mula dikembangkan dari tahun 2004 hingga 2012 oleh Ebta Setiawan sebagai aplikasi pengingat waktu sholat freeware yang legendaris untuk platform Windows. Program aslinya ditulis dalam Delphi dengan pustaka KOL, menghasilkan executable mandiri super efisien berukuran hanya ~276 KB."
-            : "Shollu was originally developed from 2004 to 2012 by Ebta Setiawan as a legendary freeware prayer-times reminder application for the Windows platform. The original program was written in Delphi using the KOL library, producing a super-efficient self-contained executable of just ~276 KB."}
-        </p>
-      </div>
-
-      <div class="about-credit">
-        <div class="about-credit-title">
-          {props.lang === "Indonesia"
-            ? "Modernisasi Komunitas"
-            : "Community Rebuild"}
-        </div>
-        <p class="about-body">
-          {props.lang === "Indonesia"
-            ? "Shollu Modern adalah reimplementasi open-source berbasis komunitas yang dibangun menggunakan Tauri 2 + SolidJS untuk sistem operasi Windows, macOS, dan Linux. Akurasi kalkulasi waktu sholat telah divalidasi penuh terhadap aplikasi Shollu v3.10 asli dengan selisih maksimum hanya 11 detik."
-            : "Shollu Modern is a community-driven, open-source modernization built using Tauri 2 + SolidJS for Windows, macOS, and Linux. The prayer time calculation algorithms have been fully validated against the original Shollu v3.10 with a maximum deviation of only 11 seconds."}
-        </p>
-      </div>
-
-      <div style={{ "padding-top": "8px" }}>
-        <a
-          href="https://github.com/adenaufal/shollu-modern"
-          target="_blank"
-          rel="noreferrer"
-          class="btn btn-secondary"
-        >
-          {props.lang === "Indonesia"
-            ? "Kunjungi Repositori"
-            : "Visit Repository"}
-        </a>
-      </div>
+export function AboutPage(props: { lang: string }) {
+  const app = useAppState()
+  const id = () => props.lang === 'Indonesia'
+  const visit = (url: string) => { void openUrl(url).catch(() => window.open(url, '_blank', 'noopener,noreferrer')) }
+  return <div class="utility-page about-page" classList={{ 'layout-ringkas': app.layoutMode() === 'ringkas' }}>
+    <Show when={app.layoutMode() === 'ringkas'} fallback={<>
+    <div class="about-identity"><div class="about-app-icon"><img src="/icon-128.png" alt=""/><span>◷</span></div><div><p class="utility-kicker">{id() ? 'TENTANG APLIKASI' : 'ABOUT THIS APP'}</p><h2>Shollu Modern</h2><p class="about-version"><span>v1.0.0</span><i/> {id() ? 'Aplikasi pengingat waktu sholat' : 'Prayer times companion'}</p></div></div>
+    <div class="about-content">
+      <section class="u-card credit-card"><div class="u-card-heading"><div><p class="utility-kicker">{id() ? 'BERDASARKAN KARYA' : 'BASED ON THE WORK OF'}</p><h3>Ebta Setiawan</h3></div><span class="credit-years">2004 — 2012</span></div><p>{id() ? 'Shollu Modern melanjutkan karya Shollu, aplikasi pengingat waktu sholat yang dikembangkan Ebta Setiawan. Modernisasi komunitas ini menjaga nama dan kontribusi pencipta aslinya tetap terlihat.' : 'Shollu Modern continues the work of Shollu, the prayer-time reminder created by Ebta Setiawan. This community modernization keeps the original creator’s name and contribution visible.'}</p><div class="about-links"><button onClick={() => visit('https://ebsoft.web.id')}>ebsoft.web.id <span>↗</span></button><button onClick={() => visit('https://github.com/ebta/shollu')}>Shollu original source <span>↗</span></button></div></section>
+      <section class="u-card about-project"><p class="utility-kicker">{id() ? 'PROYEK KOMUNITAS' : 'COMMUNITY PROJECT'}</p><h3>{id() ? 'Dibangun untuk penggunaan personal' : 'Made for personal use'}</h3><p>{id() ? 'Shollu Modern adalah modernisasi komunitas lintas platform. Proyek ini berada di bawah lisensi PolyForm Noncommercial 1.0.0.' : 'Shollu Modern is a community-built, cross-platform modernization. The project is licensed under PolyForm Noncommercial 1.0.0.'}</p><div class="about-links"><button onClick={() => visit('https://github.com/adenaufal/shollu-modern')}>{id() ? 'Repositori proyek' : 'Project repository'} <span>↗</span></button><button onClick={() => visit('https://polyformproject.org/licenses/noncommercial/1.0.0/')}>PolyForm Noncommercial 1.0.0 <span>↗</span></button></div></section>
+      <section class="about-footnote"><span>✳</span><p>{id() ? 'Terima kasih kepada Ebta Setiawan atas karya asli yang menjadi dasar aplikasi ini.' : 'With gratitude to Ebta Setiawan for the original work that made this app possible.'}</p></section>
     </div>
-  );
+    </>}>
+      <div class="compact-about">
+        <main><div class="about-identity compact-about-identity"><div class="about-app-icon"><img src="/icon-128.png" alt=""/><span>◷</span></div><div><p class="utility-kicker">{id() ? 'TENTANG APLIKASI' : 'ABOUT THIS APP'}</p><h2>Shollu Modern</h2><p class="about-version"><span>v1.0.0</span><i/>{id() ? 'Aplikasi pengingat waktu sholat' : 'Prayer times companion'}</p></div></div>
+          <section class="u-card credit-card"><div class="u-card-heading"><div><p class="utility-kicker">{id() ? 'BERDASARKAN KARYA' : 'BASED ON THE WORK OF'}</p><h3>Ebta Setiawan</h3></div><span class="credit-years">2004 — 2012</span></div><p>{id() ? 'Shollu Modern melanjutkan karya Shollu, aplikasi pengingat waktu sholat yang dikembangkan Ebta Setiawan. Modernisasi komunitas ini menjaga nama dan kontribusi pencipta aslinya tetap terlihat.' : 'Shollu Modern continues the work of Shollu, the prayer-time reminder created by Ebta Setiawan. This community modernization keeps the original creator’s name and contribution visible.'}</p><div class="about-links"><button onClick={() => visit('https://ebsoft.web.id')}>ebsoft.web.id <span>↗</span></button><button onClick={() => visit('https://github.com/ebta/shollu')}>Shollu original source <span>↗</span></button></div></section>
+          <section class="u-card compact-about-metadata"><div class="u-card-heading"><div><h3>Metadata</h3><p>{id() ? 'Rilis dan lisensi proyek' : 'Release and project license'}</p></div></div><div class="about-meta-row"><span>{id() ? 'Versi' : 'Version'}</span><strong>1.0.0</strong></div><div class="about-meta-row"><span>{id() ? 'Mesin' : 'Engine'}</span><strong>Tauri 2 · SolidJS</strong></div><div class="about-meta-row"><span>{id() ? 'Warisan' : 'Heritage'}</span><strong>Shollu v3.10</strong></div><div class="about-meta-row"><span>{id() ? 'Basis data tempat' : 'Place database'}</span><strong>.spn</strong></div><div class="about-meta-row"><span>{id() ? 'Metode hitung' : 'Prayer methods'}</span><strong>Karachi · ISNA · MWL · Umm Al-Qura · Egypt</strong></div><div class="about-meta-row"><span>{id() ? 'Platform' : 'Platforms'}</span><strong>Windows · macOS · Linux</strong></div><div class="about-meta-row"><span>{id() ? 'Lisensi' : 'License'}</span><strong>PolyForm Noncommercial 1.0.0</strong></div><div class="about-links"><button onClick={() => visit('https://github.com/adenaufal/shollu-modern')}>{id() ? 'Repositori proyek' : 'Project repository'} <span>↗</span></button><button onClick={() => visit('https://polyformproject.org/licenses/noncommercial/1.0.0/')}>{id() ? 'Baca lisensi' : 'Read license'} <span>↗</span></button></div></section>
+          <p class="about-footnote"><span>✳</span>{id() ? 'Terima kasih kepada Ebta Setiawan atas karya asli yang menjadi dasar aplikasi ini.' : 'With gratitude to Ebta Setiawan for the original work that made this app possible.'}</p>
+        </main>
+        <aside class="u-card compact-about-inspector"><div class="inspector-top"><div><p class="utility-kicker">{id() ? 'RIWAYAT' : 'PROJECT HISTORY'}</p><h3>{id() ? 'Catatan rilis' : 'Release notes'}</h3></div></div><div class="about-release"><span class="release-dot"/><div><strong>v1.0.0</strong><small>{id() ? 'Shollu Modern' : 'Shollu Modern'}</small></div></div><p class="about-release-copy">{id() ? 'Antarmuka desktop untuk jadwal sholat, konversi kalender, dan pengingat.' : 'Desktop interface for prayer schedules, calendar conversion, and reminders.'}</p><div class="about-release"><span class="release-dot muted"/><div><strong>v0.1.0-alpha</strong><small>{id() ? 'Rilis komunitas awal' : 'Initial community release'}</small></div></div><button class="u-button full-button" onClick={() => visit('https://github.com/adenaufal/shollu-modern/blob/main/CHANGELOG.md')}>{id() ? 'Lihat changelog ↗' : 'View changelog ↗'}</button></aside>
+      </div>
+    </Show>
+  </div>
 }

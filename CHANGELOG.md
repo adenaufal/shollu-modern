@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.0] — 2026-09-30
+
+### Added
+- Tenang and Ringkas display modes recreated from the design handoff, with shared settings, a command palette, keyboard shortcuts, and offline fonts.
+- Live location previews with save/revert, a 42-cell prayer calendar, monthly ledgers, selected-day inspectors, and native CSV/HTML/text exports.
+- Per-prayer adhan switches, reminder editing, native desktop notifications, and persistent floating-bar/drop-zone visibility.
+- Isolated desktop verification through `SHOLLU_CONFIG_DIR`, frontend unit tests, and a Windows smoke script that exercises real Tauri commands.
+
+### Fixed
+- Qibla bearings across quadrants and validation of coordinates, calendar dates, task inputs, and audio paths.
+- Hijri adjustment round trips, city-timezone prayer reminders, local-time custom reminders, and once/start reminder persistence.
+- Atomic settings/task writes, runtime application of window settings, and bundled offline city/language resources.
+- Window routing and invalid-coordinate handling from PRs #28 and #25.
+
+### Release notes
+- Adhan audio uses a user-selected local file; no recording is bundled.
+- See [v1.0 guide](docs/V1.md) for verification, packaging, keyboard shortcuts, and platform limits.
+
 ## [0.1.0-alpha] — 2026-05-24
 
 This is the first pre-release MVP of the modernized Shollu application! It ports 100% of the legacy Delphi calculations, database schemas, language packs, and cron task schedulers to a lightning-fast Rust + SolidJS + Tauri desktop frame.

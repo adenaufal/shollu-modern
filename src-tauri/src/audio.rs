@@ -20,18 +20,21 @@ enum Command {
     SetVolume(f32),
 }
 
-static CMD_TX: OnceLock<Mutex<Sender<Command>>> = OnceLock::new();
+static CMD_TX: OnceLock<Result<Mutex<Sender<Command>>, String>> = OnceLock::new();
 
 /// Lazily spawn the audio worker thread and return its command sender.
-fn cmd_tx() -> &'static Mutex<Sender<Command>> {
-    CMD_TX.get_or_init(|| {
-        let (tx, rx) = mpsc::channel::<Command>();
-        thread::Builder::new()
-            .name("shollu-audio".into())
-            .spawn(move || audio_worker(rx))
-            .expect("failed to spawn audio worker thread");
-        Mutex::new(tx)
-    })
+fn cmd_tx() -> Result<&'static Mutex<Sender<Command>>, String> {
+    CMD_TX
+        .get_or_init(|| {
+            let (tx, rx) = mpsc::channel::<Command>();
+            thread::Builder::new()
+                .name("shollu-audio".into())
+                .spawn(move || audio_worker(rx))
+                .map_err(|error| format!("Failed to start audio worker: {}", error))?;
+            Ok(Mutex::new(tx))
+        })
+        .as_ref()
+        .map_err(Clone::clone)
 }
 
 /// Background worker that owns the `OutputStream` and `Sink` for its entire
@@ -86,7 +89,7 @@ fn audio_worker(rx: Receiver<Command>) {
 /// Start playing an audio file (MP3, WAV, OGG).
 pub fn play_audio(file_path: &str) -> Result<(), String> {
     let (reply_tx, reply_rx) = mpsc::channel();
-    let tx = cmd_tx()
+    let tx = cmd_tx()?
         .lock()
         .map_err(|_| "Audio command channel is poisoned".to_string())?;
     tx.send(Command::Play {
@@ -101,15 +104,21 @@ pub fn play_audio(file_path: &str) -> Result<(), String> {
 
 /// Stop any active audio playback.
 pub fn stop_audio() {
-    if let Ok(tx) = cmd_tx().lock() {
-        let _ = tx.send(Command::Stop);
+    if let Ok(tx) = cmd_tx() {
+        if let Ok(tx) = tx.lock() {
+            let _ = tx.send(Command::Stop);
+        }
     }
 }
 
 /// Adjust the volume of the active player (value between 0.0 and 1.0).
 pub fn set_volume(volume: f32) {
-    if let Ok(tx) = cmd_tx().lock() {
-        let _ = tx.send(Command::SetVolume(volume));
+    if volume.is_finite() {
+        if let Ok(tx) = cmd_tx() {
+            if let Ok(tx) = tx.lock() {
+                let _ = tx.send(Command::SetVolume(volume.clamp(0.0, 1.0)));
+            }
+        }
     }
 }
 

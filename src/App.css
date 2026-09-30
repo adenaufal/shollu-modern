@@ -1,5 +1,19 @@
 @import "tailwindcss";
 
+/* Bundled Latin fonts keep the desktop app entirely offline. */
+@font-face {
+  font-family: "Inter"; font-style: normal; font-weight: 100 900; font-display: swap;
+  src: url("@fontsource-variable/inter/files/inter-latin-wght-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Inter Tight"; font-style: normal; font-weight: 100 900; font-display: swap;
+  src: url("@fontsource-variable/inter-tight/files/inter-tight-latin-wght-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "JetBrains Mono"; font-style: normal; font-weight: 100 800; font-display: swap;
+  src: url("@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2") format("woff2");
+}
+
 /* Map Tailwind dark: to app theme attribute (sepia still relies on design tokens) */
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 

@@ -18,15 +18,16 @@ export function addLocalDays(date: Date, days: number): Date {
 // Format decimal hours to "HH:MM" string
 export function formatHours(hours: number): string {
   if (!Number.isFinite(hours)) return "--:--";
-  const h = Math.floor(hours);
-  const m = Math.floor((hours - h) * 60);
+  const minutes = ((Math.floor(hours * 60 + 1e-8) % 1440) + 1440) % 1440;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
 
 // Format decimal hours to "HH:MM:SS" string
 export function formatHoursFull(hours: number): string {
   if (!Number.isFinite(hours)) return "--:--:--";
-  const totalSecs = Math.floor(hours * 3600);
+  const totalSecs = ((Math.floor(hours * 3600 + 1e-8) % 86400) + 86400) % 86400;
   const h = Math.floor(totalSecs / 3600);
   const m = Math.floor((totalSecs % 3600) / 60);
   const s = totalSecs % 60;
@@ -215,10 +216,46 @@ export interface AppSettings {
   skin: string;
   adzan_sound_enabled: boolean;
   adzan_file_path: string;
+  adzan_prayers: { fajr: boolean; dhuhr: boolean; asr: boolean; maghrib: boolean; isha: boolean };
   always_on_top: boolean;
   autostart: boolean;
   floating_bar_visible: boolean;
   drop_zone_visible: boolean;
+  layout_mode: LayoutMode;
+  hijri_adjustment: number;
+}
+
+export type LayoutMode = "tenang" | "ringkas";
+export type PageId = "main" | "location" | "schedule" | "tasks" | "convert" | "settings" | "about";
+
+export function prayerLabel(name: string, lang: string): string {
+  const names: Record<string, string> = {
+    Fajr: "Subuh", Sunrise: "Syuruq", Dhuhr: "Dzuhur", Asr: "Ashar",
+    Maghrib: "Maghrib", Isha: "Isya",
+    fajr: "Subuh", sunrise: "Syuruq", dhuhr: "Dzuhur", asr: "Ashar",
+    maghrib: "Maghrib", isha: "Isya",
+  };
+  if (lang === "Indonesia") return names[name] ?? name;
+  return name.charAt(0).toUpperCase() + name.slice(1);
+}
+
+/** Wall clock in the selected fixed UTC offset, independent of the host zone. */
+export function locationClock(instant: Date, timezone: number): Date {
+  const shifted = new Date(instant.getTime() + timezone * 3_600_000);
+  return new Date(shifted.getUTCFullYear(), shifted.getUTCMonth(), shifted.getUTCDate(),
+    shifted.getUTCHours(), shifted.getUTCMinutes(), shifted.getUTCSeconds());
+}
+
+/** Compare leaves, so a single correction is one unsaved change. */
+export function countChanges(previous: unknown, next: unknown): number {
+  if (previous === next) return 0;
+  if (previous && next && typeof previous === "object" && typeof next === "object") {
+    const a = previous as Record<string, unknown>;
+    const b = next as Record<string, unknown>;
+    return [...new Set([...Object.keys(a), ...Object.keys(b)])]
+      .reduce((sum, key) => sum + countChanges(a[key], b[key]), 0);
+  }
+  return 1;
 }
 
 export interface PrayerTimes {

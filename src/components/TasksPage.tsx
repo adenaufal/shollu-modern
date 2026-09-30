@@ -1,524 +1,142 @@
-import { createSignal, createEffect, For, Show } from "solid-js";
-import { invoke } from "@tauri-apps/api/core";
-import type { ScheduledTask } from "../helpers";
+import { createSignal, For, onCleanup, onMount, Show } from 'solid-js'
+import { invoke } from '@tauri-apps/api/core'
+import { listen } from '@tauri-apps/api/event'
+import { Portal } from 'solid-js/web'
+import { formatHours, prayerLabel, type ScheduledTask } from '../helpers'
+import { useAppState } from '../state'
+import './utility-pages.css'
 
-interface TasksPageProps {
-  lang: string;
-}
+type Frequency = 'Daily' | 'Weekly' | 'Monthly' | 'Once' | 'Start'
+type TaskType = 'Info' | 'Warning' | 'MovingText' | 'Command' | 'Shutdown' | 'Hibernate' | 'Multimedia'
+const frequencies: Frequency[] = ['Daily', 'Weekly', 'Monthly', 'Once', 'Start']
+const taskTypes: TaskType[] = ['Info', 'Warning', 'MovingText', 'Command', 'Shutdown', 'Hibernate', 'Multimedia']
+const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
-export function TasksPage(props: TasksPageProps) {
-  const [tasks, setTasks] = createSignal<ScheduledTask[]>([]);
-  const [loading, setLoading] = createSignal<boolean>(false);
+const emptyTask = (): Omit<ScheduledTask, 'id' | 'enabled'> => ({ name: '', task_type: 'Info', frequency: 'Daily', time: '12:00', day_of_week: 1, day_of_month: 1, month: 1, message: '', file_path: null })
 
-  // Form states for creating a new task
-  const [name, setName] = createSignal<string>("");
-  const [taskType, setTaskType] = createSignal<string>("Info");
-  const [frequency, setFrequency] = createSignal<string>("Daily");
-  const [time, setTime] = createSignal<string>("12:00");
-  const [dayOfWeek, setDayOfWeek] = createSignal<number>(1); // Sunday
-  const [dayOfMonth, setDayOfMonth] = createSignal<number>(1);
-  const [month, setMonth] = createSignal<number>(1);
-  const [message, setMessage] = createSignal<string>("");
-  const [filePath, setFilePath] = createSignal<string>("");
+export function TasksPage(props: { lang: string }) {
+  const app = useAppState()
+  const id = () => props.lang === 'Indonesia'
+  const [tasks, setTasks] = createSignal<ScheduledTask[]>([])
+  const [form, setForm] = createSignal(emptyTask())
+  const [selected, setSelected] = createSignal<string | null>(null)
+  const [loading, setLoading] = createSignal(true)
+  const [saving, setSaving] = createSignal(false)
+  const [error, setError] = createSignal('')
+  const [formError, setFormError] = createSignal('')
+  const [formOpen, setFormOpen] = createSignal(false)
+  const [editingId, setEditingId] = createSignal<string | null>(null)
+  let tasksRevision = 0
+  let disposed = false
+  let unlistenTasks: (() => void) | undefined
+  let formElement: HTMLFormElement | undefined
 
-  // Load all tasks from backend
-  const loadTasks = async () => {
-    setLoading(true);
+  const load = async () => {
+    const revision = tasksRevision
+    setLoading(true); setError('')
+    try { const loaded = await invoke<ScheduledTask[]>('list_tasks'); if (revision === tasksRevision) setTasks(loaded) }
+    catch { setError(id() ? 'Pengingat gagal dimuat.' : 'Could not load reminders.') }
+    finally { setLoading(false) }
+  }
+  void load()
+  const handleSave = () => { if (formOpen()) formElement?.requestSubmit() }
+  onMount(() => {
+    window.addEventListener('shollu-save', handleSave)
+    void listen<ScheduledTask[]>('tasks-changed', event => { tasksRevision++; setTasks(event.payload); setError('') })
+      .then(unlisten => disposed ? unlisten() : (unlistenTasks = unlisten))
+      .catch(() => {})
+  })
+  onCleanup(() => { disposed = true; window.removeEventListener('shollu-save', handleSave); unlistenTasks?.() })
+  const saveList = async (next: ScheduledTask[]) => {
+    setSaving(true); setError('')
+    try { await invoke('save_tasks', { tasks: next }); tasksRevision++; setTasks(next); return true }
+    catch { setError(id() ? 'Perubahan gagal disimpan. Coba lagi.' : 'Could not save changes. Try again.'); return false }
+    finally { setSaving(false) }
+  }
+  const toggle = (task: ScheduledTask) => saveList(tasks().map(item => item.id === task.id ? { ...item, enabled: !item.enabled } : item))
+  const remove = async (task: ScheduledTask) => {
+    if (await saveList(tasks().filter(item => item.id !== task.id))) setSelected(null)
+  }
+  const updateForm = (patch: Partial<ReturnType<typeof emptyTask>>) => setForm(current => ({ ...current, ...patch }))
+  const chooseTaskFile = async () => {
     try {
-      const res = await invoke<ScheduledTask[]>("list_tasks");
-      setTasks(res);
-    } catch (e) {
-      console.error("Failed to load tasks:", e);
-    } finally {
-      setLoading(false);
+      const file = await invoke<string | null>('choose_task_file')
+      if (file) updateForm({ file_path: file })
+    } catch { setFormError(id() ? 'Pemilih berkas tidak tersedia.' : 'File picker is unavailable.') }
+  }
+  const add = async (event: SubmitEvent) => {
+    event.preventDefault(); setFormError('')
+    const value = form()
+    if (!value.name.trim()) { setFormError(id() ? 'Nama pengingat wajib diisi.' : 'Enter a reminder name.'); return }
+    if (['Info', 'Warning', 'MovingText'].includes(value.task_type) && !value.message.trim()) { setFormError(id() ? 'Isi pesan pengingat.' : 'Enter a reminder message.'); return }
+    if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(value.time)) { setFormError(id() ? 'Pilih waktu yang valid.' : 'Choose a valid time.'); return }
+    if (value.frequency === 'Weekly' && (!Number.isInteger(value.day_of_week) || (value.day_of_week ?? 0) < 1 || (value.day_of_week ?? 0) > 7)) { setFormError(id() ? 'Pilih hari yang valid.' : 'Choose a valid weekday.'); return }
+    if (['Monthly', 'Once'].includes(value.frequency) && (!Number.isInteger(value.day_of_month) || (value.day_of_month ?? 0) < 1 || (value.day_of_month ?? 0) > 31)) { setFormError(id() ? 'Tanggal harus antara 1 dan 31.' : 'Day of month must be from 1 to 31.'); return }
+    if (value.frequency === 'Once' && (!Number.isInteger(value.month) || (value.month ?? 0) < 1 || (value.month ?? 0) > 12)) { setFormError(id() ? 'Bulan harus antara 1 dan 12.' : 'Month must be from 1 to 12.'); return }
+    if (['Command', 'Multimedia'].includes(value.task_type) && !value.file_path) { setFormError(id() ? 'Pilih berkas untuk jenis pengingat ini.' : 'Choose a file for this reminder type.'); return }
+    const candidate: ScheduledTask = {
+      ...value, id: editingId() ?? crypto.randomUUID(), name: value.name.trim(), message: value.message.trim(),
+      day_of_week: value.frequency === 'Weekly' ? value.day_of_week : null,
+      day_of_month: ['Monthly', 'Once'].includes(value.frequency) ? value.day_of_month : null,
+      month: value.frequency === 'Once' ? value.month : null,
+      file_path: value.file_path || null, enabled: true,
     }
-  };
+    const next = editingId() ? tasks().map(task => task.id === editingId() ? { ...candidate, enabled: task.enabled } : task) : [...tasks(), candidate]
+    if (await saveList(next)) { setForm(emptyTask()); setFormOpen(false); setEditingId(null); setSelected(candidate.id) }
+  }
+  const edit = (task: ScheduledTask) => {
+    setEditingId(task.id)
+    setForm({ ...task })
+    setFormOpen(true)
+    setFormError('')
+  }
+  const cancelForm = () => { setFormOpen(false); setEditingId(null); setForm(emptyTask()); setFormError('') }
+  const clock = (value?: number) => value == null || !Number.isFinite(value) ? '—' : formatHours(value)
+  const togglePrayer = async (name: 'fajr' | 'dhuhr' | 'asr' | 'maghrib' | 'isha') => {
+    const current = app.settings()?.adzan_prayers
+    if (!current) return
+    try { await app.saveSettings({ adzan_prayers: { ...current, [name]: !current[name] } }) }
+    catch { setError(id() ? 'Pengaturan adzan gagal disimpan. Coba lagi.' : 'Could not save prayer alarm settings. Try again.') }
+  }
+  const frequencyLabel = (frequency: string) => ({ Daily: id() ? 'Setiap hari' : 'Daily', Weekly: id() ? 'Mingguan' : 'Weekly', Monthly: id() ? 'Bulanan' : 'Monthly', Once: id() ? 'Sekali' : 'Once', Start: id() ? 'Saat mulai' : 'At startup' }[frequency] ?? frequency)
+  const typeLabel = (type: string) => ({ Info: id() ? 'Info' : 'Info', Warning: id() ? 'Peringatan' : 'Warning', MovingText: id() ? 'Teks berjalan' : 'Moving text', Command: id() ? 'Perintah' : 'Command', Shutdown: id() ? 'Matikan' : 'Shutdown', Hibernate: id() ? 'Hibernasi' : 'Hibernate', Multimedia: id() ? 'Multimedia' : 'Multimedia' }[type] ?? type)
+  const inspectorContent = () => {
+    const task = tasks().find(item => item.id === selected())
+    if (!task) return <div class="inspector-empty"><span>◷</span><strong>{id() ? 'Detail pengingat' : 'Reminder details'}</strong><p>{id() ? 'Pilih pengingat untuk melihat jadwal dan aksinya.' : 'Select a reminder to view its schedule and action.'}</p><button class="u-button primary" onClick={() => setFormOpen(true)}>＋ {id() ? 'Buat baru' : 'Create new'}</button></div>
+    return <div><div class="inspector-top"><div><span class="utility-kicker">{id() ? 'PENGINGAT' : 'REMINDER'}</span><h3>{task.name}</h3></div><button class="u-icon-button" aria-label={id() ? 'Tutup detail' : 'Close details'} onClick={() => setSelected(null)}>×</button></div><div class="inspector-detail"><span>{id() ? 'Jenis' : 'Type'}</span><strong>{typeLabel(task.task_type)}</strong></div><div class="inspector-detail"><span>{id() ? 'Jadwal' : 'Schedule'}</span><strong>{frequencyLabel(task.frequency)}</strong></div><div class="inspector-detail"><span>{id() ? 'Waktu' : 'Time'}</span><strong class="mono-time">{task.time}</strong></div><Show when={task.message}><div class="inspector-message"><span>{id() ? 'Pesan' : 'Message'}</span><p>{task.message}</p></div></Show><Show when={task.file_path}><div class="inspector-message"><span>{id() ? 'Berkas' : 'File'}</span><p class="file-path">{task.file_path}</p></div></Show><div class="inspector-actions"><button class="u-button" onClick={() => edit(task)}>{id() ? 'Ubah' : 'Edit'}</button><button class="u-button" onClick={() => void toggle(task)}>{task.enabled ? (id() ? 'Nonaktifkan' : 'Disable') : (id() ? 'Aktifkan' : 'Enable')}</button><button class="u-button danger" onClick={() => void remove(task)}>{id() ? 'Hapus' : 'Delete'}</button></div></div>
+  }
 
-  createEffect(() => {
-    loadTasks();
-  });
-
-  // Toggle enabled/disabled state of a task
-  const handleToggleTask = async (taskId: string) => {
-    const list = tasks();
-    const updated = list.map((t) => {
-      if (t.id === taskId) {
-        return { ...t, enabled: !t.enabled };
-      }
-      return t;
-    });
-
-    try {
-      await invoke("save_tasks", { tasks: updated });
-      setTasks(updated);
-    } catch (e) {
-      console.error("Failed to toggle task active state:", e);
-    }
-  };
-
-  // Delete a task
-  const handleDeleteTask = async (taskId: string) => {
-    const confirmMsg =
-      props.lang === "Indonesia"
-        ? "Apakah Anda yakin ingin menghapus pengingat ini?"
-        : "Are you sure you want to delete this task reminder?";
-    if (!window.confirm(confirmMsg)) return;
-
-    const list = tasks();
-    const filtered = list.filter((t) => t.id !== taskId);
-
-    try {
-      await invoke("save_tasks", { tasks: filtered });
-      setTasks(filtered);
-    } catch (e) {
-      console.error("Failed to delete task:", e);
-    }
-  };
-
-  // Create a new task
-  const handleAddTask = async (e: Event) => {
-    e.preventDefault();
-    if (!name().trim()) {
-      alert(
-        props.lang === "Indonesia"
-          ? "Nama pengingat tidak boleh kosong!"
-          : "Task name cannot be empty!",
-      );
-      return;
-    }
-
-    const newTask: ScheduledTask = {
-      id: String(Date.now()),
-      name: name().trim(),
-      task_type: taskType(),
-      frequency: frequency(),
-      time: time(),
-      day_of_week: frequency() === "Weekly" ? dayOfWeek() : null,
-      day_of_month:
-        frequency() === "Monthly" || frequency() === "Once"
-          ? dayOfMonth()
-          : null,
-      month: frequency() === "Once" ? month() : null,
-      message: message().trim(),
-      file_path: filePath().trim() ? filePath().trim() : null,
-      enabled: true,
-    };
-
-    const updated = [...tasks(), newTask];
-
-    try {
-      await invoke("save_tasks", { tasks: updated });
-      setTasks(updated);
-
-      // Clear form inputs
-      setName("");
-      setMessage("");
-      setFilePath("");
-      alert(
-        props.lang === "Indonesia"
-          ? "Pengingat berhasil ditambahkan!"
-          : "Task successfully added!",
-      );
-    } catch (e) {
-      console.error("Failed to add new task:", e);
-    }
-  };
-
-  const getTaskTypeColorClass = (type: string) => {
-    switch (type) {
-      case "Multimedia":
-        return "badge-multimedia";
-      case "Info":
-        return "badge-info";
-      case "Warning":
-        return "badge-warning";
-      case "Shutdown":
-        return "bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400";
-      case "Hibernate":
-        return "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400";
-      default:
-        return "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300";
-    }
-  };
-
-  return (
-    <div class="page-stack page-stack-wide animate-fade-in">
-      {/* Existing Tasks Listing */}
-      <div class="space-y-2 select-none">
-        <h3 class="text-xs font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase select-none">
-          {props.lang === "Indonesia"
-            ? "Daftar Pengingat Aktif"
-            : "Active Scheduled Alarms"}
-        </h3>
-
-        <Show when={loading()}>
-          <div
-            class="page-stack skeleton-pulse"
-            aria-busy="true"
-            aria-live="polite"
-          >
-            <For each={[0, 1]}>
-              {() => (
-                <div
-                  class="skeleton-block"
-                  style={{
-                    height: "80px",
-                    "border-radius": "var(--radius-lg)",
-                  }}
-                />
-              )}
-            </For>
-          </div>
+  return <div class="utility-page task-page" classList={{ 'layout-ringkas': app.layoutMode() === 'ringkas' }}>
+    <Show when={app.layoutMode() === 'tenang'}><Portal mount={document.getElementById('page-actions')!}><button class="u-button primary" onClick={() => { setFormOpen(true); setEditingId(null); setForm(emptyTask()); setFormError('') }}>＋ {id() ? 'Pengingat baru' : 'New reminder'}</button></Portal></Show>
+    <section class="u-card prayer-alarm-card"><div class="u-card-heading"><div><h3>{id() ? 'Alarm waktu sholat' : 'Prayer alarms'}</h3><p>{id() ? 'Pilih waktu sholat untuk pengingat adzan.' : 'Choose which prayer times trigger the adhan.'}</p></div><button class={`u-switch ${app.settings()?.adzan_sound_enabled ? 'on' : ''}`} role="switch" aria-checked={app.settings()?.adzan_sound_enabled ?? false} aria-label={id() ? 'Aktifkan audio adzan' : 'Enable adhan audio'} onClick={() => void app.saveSettings({ adzan_sound_enabled: !app.settings()?.adzan_sound_enabled }).catch(() => setError(id() ? 'Pengaturan audio gagal disimpan.' : 'Could not save audio settings.'))}><i/></button></div><div class="prayer-alarm-grid"><For each={['fajr','sunrise','dhuhr','asr','maghrib','isha'] as const}>{name => { const allowed = name !== 'sunrise'; const enabled = () => allowed && !!app.settings()?.adzan_prayers?.[name as 'fajr'|'dhuhr'|'asr'|'maghrib'|'isha']; return <div class={`prayer-alarm-tile ${enabled() ? 'enabled' : ''} ${!allowed ? 'disabled' : ''}`}><div><span>{prayerLabel(name, props.lang)}</span><strong>{clock(app.todayTimes()?.[name])}</strong></div><button class={`u-switch ${enabled() ? 'on' : ''}`} disabled={!allowed} role="switch" aria-checked={enabled()} aria-label={`${prayerLabel(name, props.lang)}${!allowed ? (id() ? ' tidak tersedia untuk adzan' : ' (no adhan)') : ''}`} onClick={() => allowed && void togglePrayer(name as 'fajr'|'dhuhr'|'asr'|'maghrib'|'isha')}><i/></button><Show when={!allowed}><small>{id() ? 'Tanpa adzan' : 'No adhan'}</small></Show></div> }}</For></div><div class="prayer-alarm-foot"><span>{app.settings()?.adzan_file_path?.split(/[\\/]/).pop() || (id() ? 'Berkas audio belum dipilih' : 'No audio file selected')}</span><button class="u-button" onClick={() => app.navigate('settings')}>{id() ? 'Atur audio…' : 'Set up audio…'}</button></div></section>
+    <div class="tasks-layout">
+      <section class="u-card task-list-card"><div class="u-card-heading"><div><h3>{id() ? 'Pengingat kustom' : 'Custom reminders'}</h3><p>{tasks().filter(t => t.enabled).length} {id() ? 'aktif' : 'active'} · {tasks().length} {id() ? 'total' : 'total'}</p></div><div class="task-heading-actions"><Show when={app.layoutMode() === 'ringkas'}><button class="u-button primary" onClick={() => { setFormOpen(true); setEditingId(null); setForm(emptyTask()); setFormError('') }}>＋ {id() ? 'Baru' : 'New'}</button></Show><button class="u-icon-button" onClick={load} aria-label={id() ? 'Muat ulang' : 'Reload'} title={id() ? 'Muat ulang' : 'Reload'}>↻</button></div></div>
+        <Show when={loading()}><div class="task-empty" aria-busy="true">{id() ? 'Memuat pengingat…' : 'Loading reminders…'}</div></Show>
+        <Show when={!loading() && !tasks().length}><div class="task-empty"><span class="empty-glyph">◷</span><strong>{id() ? 'Belum ada pengingat' : 'No reminders yet'}</strong><span>{id() ? 'Buat pengingat untuk menampilkan aksi terjadwal di sini.' : 'Create a reminder to see its schedule here.'}</span><button class="u-button" onClick={() => setFormOpen(true)}>{id() ? 'Buat pengingat' : 'Create reminder'}</button></div></Show>
+        <Show when={!loading() && tasks().length}><div class="task-items"><For each={tasks()}>{task => <div role="group" aria-label={task.name} tabindex="0" class={`task-item ${selected() === task.id ? 'selected' : ''}`} onClick={() => setSelected(task.id)} onKeyDown={event => { if (event.target === event.currentTarget && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); setSelected(task.id) } }}>
+          <span class={`task-type-icon type-${task.task_type.toLowerCase()}`}>{task.task_type === 'Shutdown' ? '⏻' : task.task_type === 'Multimedia' ? '♫' : task.task_type === 'Command' ? '⌘' : '◷'}</span>
+          <span class="task-main"><strong>{task.name}</strong><span>{frequencyLabel(task.frequency)} · {task.time}{task.message ? ` · ${task.message}` : ''}</span></span>
+          <span class={`task-badge badge-${task.task_type.toLowerCase()}`}>{typeLabel(task.task_type)}</span>
+          <button disabled={saving()} class={`u-switch ${task.enabled ? 'on' : ''}`} role="switch" aria-checked={task.enabled} aria-label={`${task.enabled ? (id() ? 'Nonaktifkan ' : 'Disable ') : (id() ? 'Aktifkan ' : 'Enable ')}${task.name}`} onClick={event => { event.stopPropagation(); void toggle(task) }}><i/></button>
+          <span class="task-chevron">›</span>
+        </div>}</For></div></Show>
+        <div class="tray-note"><span>ⓘ</span>{id() ? 'Pengingat tetap berjalan dari tray meski jendela ditutup.' : 'Reminders continue from the system tray when the window is closed.'}</div>
+      </section>
+      <aside class="u-card task-inspector"><Show when={formOpen()} fallback={inspectorContent()}>
+          <form ref={formElement} class="task-form" onSubmit={add}><div class="inspector-top"><div><span class="utility-kicker">{editingId() ? (id() ? 'UBAH PENGINGAT' : 'EDIT REMINDER') : (id() ? 'PENGINGAT BARU' : 'NEW REMINDER')}</span><h3>{editingId() ? (id() ? 'Ubah pengingat' : 'Edit reminder') : (id() ? 'Buat pengingat' : 'Create reminder')}</h3></div><button type="button" class="u-icon-button" aria-label={id() ? 'Tutup formulir' : 'Close form'} onClick={cancelForm}>×</button></div>
+            <label class="u-field">{id() ? 'Nama' : 'Name'}<input value={form().name} onInput={e => updateForm({ name: e.currentTarget.value })} placeholder={id() ? 'Nama pengingat' : 'Reminder name'} maxlength="80"/></label>
+            <label class="u-field">{id() ? 'Jenis tindakan' : 'Action type'}<select value={form().task_type} onChange={e => updateForm({ task_type: e.currentTarget.value as TaskType })}><For each={taskTypes}>{type => <option value={type}>{typeLabel(type)}</option>}</For></select></label>
+            <label class="u-field">{id() ? 'Frekuensi' : 'Frequency'}<select value={form().frequency} onChange={e => updateForm({ frequency: e.currentTarget.value as Frequency })}><For each={frequencies}>{frequency => <option value={frequency}>{frequencyLabel(frequency)}</option>}</For></select></label>
+            <Show when={form().frequency !== 'Start'}><label class="u-field">{id() ? 'Waktu' : 'Time'}<input type="time" value={form().time} onInput={e => updateForm({ time: e.currentTarget.value })}/></label></Show>
+            <Show when={form().frequency === 'Weekly'}><label class="u-field">{id() ? 'Hari' : 'Day'}<select value={form().day_of_week ?? 1} onChange={e => updateForm({ day_of_week: Number(e.currentTarget.value) })}><For each={weekdays}>{(day, i) => <option value={i() + 1}>{id() ? ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'][i()] : day}</option>}</For></select></label></Show>
+            <Show when={['Monthly', 'Once'].includes(form().frequency)}><label class="u-field">{id() ? 'Tanggal' : 'Day of month'}<input type="number" min="1" max="31" value={form().day_of_month ?? 1} onInput={e => updateForm({ day_of_month: Number(e.currentTarget.value) })}/></label></Show>
+            <Show when={form().frequency === 'Once'}><label class="u-field">{id() ? 'Bulan' : 'Month'}<input type="number" min="1" max="12" value={form().month ?? 1} onInput={e => updateForm({ month: Number(e.currentTarget.value) })}/></label></Show>
+            <Show when={['Info', 'Warning', 'MovingText'].includes(form().task_type)}><label class="u-field">{id() ? 'Pesan' : 'Message'}<textarea value={form().message} onInput={e => updateForm({ message: e.currentTarget.value })} rows="2" maxlength="240"/></label></Show>
+            <Show when={['Command', 'Multimedia'].includes(form().task_type)}><div class="u-field"><label>{id() ? 'Berkas' : 'File'}</label><div class="file-picker"><span title={form().file_path ?? ''}>{form().file_path || (id() ? 'Belum ada berkas dipilih' : 'No file selected')}</span><button type="button" class="u-button" onClick={chooseTaskFile}>{id() ? 'Pilih…' : 'Choose…'}</button></div></div></Show>
+            <Show when={formError()}><div class="u-alert error" role="alert">{formError()}</div></Show><button class="u-button primary full-button" type="submit" disabled={saving()}>{saving() ? (id() ? 'Menyimpan…' : 'Saving…') : (editingId() ? (id() ? 'Simpan perubahan' : 'Save changes') : (id() ? 'Simpan pengingat' : 'Save reminder'))}</button>
+          </form>
         </Show>
-
-        <Show when={tasks().length === 0}>
-          <div class="card text-center border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl p-8 shadow-sm">
-            <p class="text-sm text-slate-500 dark:text-slate-400">
-              {props.lang === "Indonesia"
-                ? "Belum ada jadwal pengingat tambahan yang dibuat."
-                : "No scheduled alarm tasks created yet."}
-            </p>
-          </div>
-        </Show>
-
-        <Show when={tasks().length > 0}>
-          <div class="prayer-grid border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm bg-white dark:bg-slate-900 divide-y divide-slate-100 dark:divide-slate-800">
-            <For each={tasks()}>
-              {(t) => (
-                <div class="prayer-row grid p-3 task-row align-center select-none">
-                  <div class="gr-cell flex-col items-start gap-1 select-none">
-                    <span class="font-bold text-[13px] text-slate-800 dark:text-slate-200">
-                      {t.name}
-                    </span>
-                    <span class="text-[11px] text-slate-500 dark:text-slate-400">
-                      {t.frequency} @ {t.time}
-                      {t.message ? ` · "${t.message.substring(0, 20)}..."` : ""}
-                    </span>
-                  </div>
-                  <div class="gr-cell justify-center">
-                    <span
-                      class={`text-[10px] font-bold px-2 py-1 rounded select-none ${getTaskTypeColorClass(t.task_type)}`}
-                    >
-                      {t.task_type}
-                    </span>
-                  </div>
-                  {/* Enabled Toggle switch */}
-                  <div class="gr-cell justify-center">
-                    <button
-                      type="button"
-                      role="switch"
-                      aria-checked={t.enabled}
-                      aria-label={
-                        props.lang === "Indonesia"
-                          ? `Aktifkan pengingat ${t.name}`
-                          : `Enable reminder ${t.name}`
-                      }
-                      onClick={() => handleToggleTask(t.id)}
-                      class={`toggle-pill ${t.enabled ? "active" : ""}`}
-                    >
-                      <span class="toggle-knob" aria-hidden="true" />
-                    </button>
-                  </div>
-                  <div class="gr-cell justify-end">
-                    <button
-                      onClick={() => handleDeleteTask(t.id)}
-                      class="btn btn-ghost select-none text-xs text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/20 px-2 py-1"
-                    >
-                      {props.lang === "Indonesia" ? "Hapus" : "Delete"}
-                    </button>
-                  </div>
-                </div>
-              )}
-            </For>
-          </div>
-        </Show>
-      </div>
-
-      {/* Task Creation Form Editor */}
-      <div class="card border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl p-5 shadow-sm space-y-4">
-        <h4 class="text-xs font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase select-none">
-          {props.lang === "Indonesia"
-            ? "Buat Pengingat Baru"
-            : "Create New Alarm Task"}
-        </h4>
-
-        <form onSubmit={handleAddTask} class="space-y-3">
-          <div class="field-row">
-            <div class="field">
-              <label class="field-label select-none">
-                {props.lang === "Indonesia" ? "Nama Pengingat" : "Task Name"}
-              </label>
-              <input
-                type="text"
-                placeholder={
-                  props.lang === "Indonesia"
-                    ? "Contoh: Sholat Fajr"
-                    : "Example: Morning Fajr alert"
-                }
-                value={name()}
-                onInput={(e) => setName(e.currentTarget.value)}
-                class="field-input text-slate-800 dark:text-slate-200"
-              />
-            </div>
-            <div class="field">
-              <label class="field-label select-none">
-                {props.lang === "Indonesia" ? "Tipe Tindakan" : "Action Type"}
-              </label>
-              <select
-                value={taskType()}
-                onChange={(e) => setTaskType(e.currentTarget.value)}
-                class="date-select text-slate-800 dark:text-slate-200"
-              >
-                <option value="Info">
-                  {props.lang === "Indonesia"
-                    ? "Tampilkan Informasi"
-                    : "Show Information"}
-                </option>
-                <option value="Warning">
-                  {props.lang === "Indonesia"
-                    ? "Tampilkan Peringatan"
-                    : "Show Warning"}
-                </option>
-                <option value="Multimedia">
-                  {props.lang === "Indonesia"
-                    ? "Putar Suara (Adzan)"
-                    : "Play Sound (Adzan)"}
-                </option>
-                <option value="Command">
-                  {props.lang === "Indonesia"
-                    ? "Eksekusi Script/Command"
-                    : "Execute Command Script"}
-                </option>
-                <option value="Shutdown">
-                  {props.lang === "Indonesia" ? "Shutdown PC" : "Shutdown PC"}
-                </option>
-                <option value="Hibernate">
-                  {props.lang === "Indonesia" ? "Hibernate PC" : "Hibernate PC"}
-                </option>
-              </select>
-            </div>
-          </div>
-
-          <div class="field-row">
-            <div class="field">
-              <label class="field-label select-none">
-                {props.lang === "Indonesia" ? "Pemicu Waktu" : "Trigger Time"}
-              </label>
-              <input
-                type="time"
-                value={time()}
-                onInput={(e) => setTime(e.currentTarget.value)}
-                class="field-input text-slate-800 dark:text-slate-200"
-              />
-            </div>
-            <div class="field">
-              <label class="field-label select-none">
-                {props.lang === "Indonesia" ? "Frekuensi" : "Frequency"}
-              </label>
-              <select
-                value={frequency()}
-                onChange={(e) => setFrequency(e.currentTarget.value)}
-                class="date-select text-slate-800 dark:text-slate-200"
-              >
-                <option value="Daily">
-                  {props.lang === "Indonesia" ? "Setiap Hari" : "Daily"}
-                </option>
-                <option value="Weekly">
-                  {props.lang === "Indonesia" ? "Mingguan" : "Weekly"}
-                </option>
-                <option value="Monthly">
-                  {props.lang === "Indonesia" ? "Bulanan" : "Monthly"}
-                </option>
-                <option value="Once">
-                  {props.lang === "Indonesia" ? "Sekali Saja" : "Once"}
-                </option>
-                <option value="Start">
-                  {props.lang === "Indonesia"
-                    ? "Saat Aplikasi Start"
-                    : "When App Starts"}
-                </option>
-              </select>
-            </div>
-          </div>
-
-          {/* Conditional Weekly Options */}
-          <Show when={frequency() === "Weekly"}>
-            <div class="field animate-fade-in">
-              <label class="field-label select-none">
-                {props.lang === "Indonesia"
-                  ? "Pilih Hari"
-                  : "Select Day of Week"}
-              </label>
-              <select
-                value={dayOfWeek()}
-                onChange={(e) => setDayOfWeek(parseInt(e.currentTarget.value))}
-                class="date-select text-slate-800 dark:text-slate-200"
-              >
-                <option value={1}>
-                  {props.lang === "Indonesia" ? "Ahad" : "Sunday"}
-                </option>
-                <option value={2}>
-                  {props.lang === "Indonesia" ? "Senin" : "Monday"}
-                </option>
-                <option value={3}>
-                  {props.lang === "Indonesia" ? "Selasa" : "Tuesday"}
-                </option>
-                <option value={4}>
-                  {props.lang === "Indonesia" ? "Rabu" : "Wednesday"}
-                </option>
-                <option value={5}>
-                  {props.lang === "Indonesia" ? "Kamis" : "Thursday"}
-                </option>
-                <option value={6}>
-                  {props.lang === "Indonesia" ? "Jumat" : "Friday"}
-                </option>
-                <option value={7}>
-                  {props.lang === "Indonesia" ? "Sabtu" : "Saturday"}
-                </option>
-              </select>
-            </div>
-          </Show>
-
-          {/* Conditional Monthly/Once Options */}
-          <Show when={frequency() === "Monthly" || frequency() === "Once"}>
-            <div class="field-row animate-fade-in">
-              <div class="field">
-                <label class="field-label select-none">
-                  {props.lang === "Indonesia"
-                    ? "Tanggal Bulanan (1-31)"
-                    : "Day of Month (1-31)"}
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  max="31"
-                  value={dayOfMonth()}
-                  onInput={(e) =>
-                    setDayOfMonth(parseInt(e.currentTarget.value))
-                  }
-                  class="field-input text-slate-800 dark:text-slate-200"
-                />
-              </div>
-              <Show when={frequency() === "Once"}>
-                <div class="field">
-                  <label class="field-label select-none">
-                    {props.lang === "Indonesia"
-                      ? "Pilih Bulan"
-                      : "Select Month"}
-                  </label>
-                  <select
-                    value={month()}
-                    onChange={(e) => setMonth(parseInt(e.currentTarget.value))}
-                    class="date-select text-slate-800 dark:text-slate-200"
-                  >
-                    <option value={1}>
-                      1 - {props.lang === "Indonesia" ? "Januari" : "January"}
-                    </option>
-                    <option value={2}>
-                      2 - {props.lang === "Indonesia" ? "Februari" : "February"}
-                    </option>
-                    <option value={3}>
-                      3 - {props.lang === "Indonesia" ? "Maret" : "March"}
-                    </option>
-                    <option value={4}>
-                      4 - {props.lang === "Indonesia" ? "April" : "April"}
-                    </option>
-                    <option value={5}>
-                      5 - {props.lang === "Indonesia" ? "Mei" : "May"}
-                    </option>
-                    <option value={6}>
-                      6 - {props.lang === "Indonesia" ? "Juni" : "June"}
-                    </option>
-                    <option value={7}>
-                      7 - {props.lang === "Indonesia" ? "Juli" : "July"}
-                    </option>
-                    <option value={8}>
-                      8 - {props.lang === "Indonesia" ? "Agustus" : "August"}
-                    </option>
-                    <option value={9}>
-                      9 -{" "}
-                      {props.lang === "Indonesia" ? "September" : "September"}
-                    </option>
-                    <option value={10}>
-                      10 - {props.lang === "Indonesia" ? "Oktober" : "October"}
-                    </option>
-                    <option value={11}>
-                      11 -{" "}
-                      {props.lang === "Indonesia" ? "November" : "November"}
-                    </option>
-                    <option value={12}>
-                      12 -{" "}
-                      {props.lang === "Indonesia" ? "Desember" : "December"}
-                    </option>
-                  </select>
-                </div>
-              </Show>
-            </div>
-          </Show>
-
-          {/* Conditional message field for Info/Warning alerts */}
-          <Show when={taskType() === "Info" || taskType() === "Warning"}>
-            <div class="field animate-fade-in">
-              <label class="field-label select-none">
-                {props.lang === "Indonesia"
-                  ? "Pesan Notifikasi"
-                  : "Notification Message"}
-              </label>
-              <textarea
-                placeholder={
-                  props.lang === "Indonesia"
-                    ? "Ketik pesan alarm di sini..."
-                    : "Type custom alarm alert text here..."
-                }
-                value={message()}
-                onInput={(e) => setMessage(e.currentTarget.value)}
-                class="field-input text-slate-800 dark:text-slate-200 h-16 resize-none"
-              />
-            </div>
-          </Show>
-
-          {/* Conditional file path field for Command/Multimedia player */}
-          <Show when={taskType() === "Multimedia" || taskType() === "Command"}>
-            <div class="field animate-fade-in">
-              <label class="field-label select-none">
-                {taskType() === "Multimedia"
-                  ? props.lang === "Indonesia"
-                    ? "Path File Audio (MP3/WAV/OGG)"
-                    : "Audio File Path (MP3/WAV/OGG)"
-                  : props.lang === "Indonesia"
-                    ? "Script Command / Program Path"
-                    : "Script Command / Program Path"}
-              </label>
-              <input
-                type="text"
-                placeholder={
-                  taskType() === "Multimedia"
-                    ? props.lang === "Indonesia"
-                      ? "C:\\Users\\...\\Downloads\\adzan.mp3"
-                      : "C:\\Users\\...\\Downloads\\adzan.mp3"
-                    : props.lang === "Indonesia"
-                      ? "echo 'Time to pray!'"
-                      : "echo 'Time to pray!'"
-                }
-                value={filePath()}
-                onInput={(e) => setFilePath(e.currentTarget.value)}
-                class="field-input text-slate-800 dark:text-slate-200"
-              />
-            </div>
-          </Show>
-
-          <div class="flex select-none justify-end pt-2">
-            <button
-              type="submit"
-              class="btn btn-primary select-none text-xs font-semibold px-4 py-2"
-            >
-              {props.lang === "Indonesia"
-                ? "Simpan Jadwal Pengingat"
-                : "Save Task Reminder"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
+        </aside>
+    </div><Show when={error()}><div class="u-alert error" role="alert">{error()}<button onClick={load}>{id() ? 'Coba lagi' : 'Retry'}</button></div></Show>
+  </div>
 }
