@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Added
+- Original Shollu3 adhan recordings mapped to the five prayers, followed by `dua.mp3`, with bundled/custom audio previews and a reset to bundled defaults.
+- Basmallah and hamdallah recordings preserved for future behavior tracked in issue #45.
+- Local Windows Authenticode signing instructions and an optional signing configuration example.
+
 ## [1.0.0] — 2026-09-30
 
 ### Added

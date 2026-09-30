@@ -332,6 +332,7 @@
 .audio-info small { color:var(--fg-subtle); font-size:8px; }
 .audio-actions { display:flex; align-items:center; gap:7px; }
 .audio-actions>span { margin-left:auto; color:var(--fg-subtle); font-size:8.5px; }
+.settings-card #audio-preview-prayer { min-width:0; max-width:100%; padding:6px 8px; color:var(--fg); background:var(--surface); border:1px solid var(--border); border-radius:6px; font:10px 'JetBrains Mono',monospace; }
 .settings-card>.u-card-heading>.u-switch { flex:0 0 auto; }
 .setting-toggle-row { padding:9px 0; }
 .about-page { max-width:720px; }

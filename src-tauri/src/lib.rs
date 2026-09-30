@@ -400,9 +400,36 @@ fn play_adzan(file_path: String) -> Result<(), String> {
     audio::play_audio(&file_path)
 }
 
+fn play_prayer_adzan_inner(
+    app: &tauri::AppHandle,
+    prayer: &str,
+    settings: &settings::AppSettings,
+) -> Result<(), String> {
+    let resource_dir = app.path().resource_dir().map_err(|error| {
+        format!(
+            "Could not resolve bundled audio resource directory: {}",
+            error
+        )
+    })?;
+    let custom_adhan = (!settings.adzan_file_path.trim().is_empty())
+        .then(|| PathBuf::from(settings.adzan_file_path.trim()));
+    let sequence = audio::prayer_audio_sequence(&resource_dir, prayer, custom_adhan.as_deref())?;
+    audio::play_sequence(&sequence)
+}
+
+#[tauri::command]
+fn play_prayer_adzan(app: tauri::AppHandle, prayer: String) -> Result<(), String> {
+    play_prayer_adzan_inner(&app, &prayer, &settings::load_settings())
+}
+
 #[tauri::command]
 fn stop_audio() {
     audio::stop_audio();
+}
+
+#[tauri::command]
+fn is_audio_playing() -> Result<bool, String> {
+    audio::is_playing()
 }
 
 #[tauri::command]
@@ -840,36 +867,32 @@ pub fn run() {
                             && total_minutes % 60 == minute
                             && fired_prayers.insert((name.clone(), date))
                         {
-                            let sound_path = settings.adzan_file_path.trim();
                             let should_play = settings.adzan_sound_enabled
-                                && settings.adzan_prayers.enabled(&name)
-                                && !sound_path.is_empty()
-                                && std::path::Path::new(sound_path).is_file();
-                            if settings.adzan_sound_enabled
-                                && settings.adzan_prayers.enabled(&name)
-                                && !sound_path.is_empty()
-                                && !std::path::Path::new(sound_path).is_file()
-                            {
-                                let _ = app_handle.emit(
-                                    "task-error",
-                                    serde_json::json!({"taskId": format!("prayer-{}", name.to_lowercase()), "message": "Configured adhan audio file was not found"}),
-                                );
-                            }
+                                && settings.adzan_prayers.enabled(&name);
                             let reminder = scheduler::ScheduledTask {
                                 id: format!("prayer-{}-{}", name.to_lowercase(), date),
                                 name: format!("{} prayer", name),
-                                task_type: if should_play { "Multimedia" } else { "Info" }
-                                    .to_string(),
+                                task_type: "Info".to_string(),
                                 frequency: "Daily".to_string(),
                                 time: format!("{:02}:{:02}", hour, minute),
                                 day_of_week: None,
                                 day_of_month: None,
                                 month: None,
                                 message: format!("It is time for {} prayer", name),
-                                file_path: should_play.then(|| sound_path.to_string()),
+                                file_path: None,
                                 enabled: true,
                             };
                             dispatch_task(&app_handle, reminder);
+                            if should_play {
+                                if let Err(error) =
+                                    play_prayer_adzan_inner(&app_handle, &name, &settings)
+                                {
+                                    let _ = app_handle.emit(
+                                        "task-error",
+                                        serde_json::json!({"taskId": format!("prayer-{}", name.to_lowercase()), "message": error}),
+                                    );
+                                }
+                            }
                         }
                     }
 
@@ -916,7 +939,9 @@ pub fn run() {
             list_tasks,
             save_tasks,
             play_adzan,
+            play_prayer_adzan,
             stop_audio,
+            is_audio_playing,
             set_volume,
             toggle_floating_bar,
             toggle_drop_zone,
@@ -948,8 +973,10 @@ mod command_tests {
 
     #[test]
     fn prayer_switches_are_independent() {
-        let mut prayers = settings::AdzanPrayers::default();
-        prayers.fajr = false;
+        let prayers = settings::AdzanPrayers {
+            fajr: false,
+            ..settings::AdzanPrayers::default()
+        };
         assert!(!prayers.enabled("Fajr"));
         assert!(prayers.enabled("Dhuhr"));
         assert!(!prayers.enabled("Sunrise"));

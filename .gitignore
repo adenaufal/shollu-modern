@@ -38,6 +38,9 @@ Thumbs.db
 .env
 .env.local
 .env.*.local
+src-tauri/tauri.windows-signing.local.json
+*.pfx
+*.p12
 
 # Logs
 npm-debug.log*
