@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; background: oklch(0.93 0.005 210); color: oklch(0.181 0.012 210); font-family: Inter, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  a { color: oklch(0.52 0.14 208); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  @keyframes goldpulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</helmet>
+
+<div style="padding:28px;display:flex;flex-direction:column;gap:22px;align-items:flex-start;background:oklch(0.93 0.005 210);min-height:100%">
+
+  <div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11px;letter-spacing:0.04em;text-transform:uppercase;color:oklch(0.567 0.028 210)">Recreation · main window · light theme / teal accent</div>
+
+  <div style="width:1000px;height:680px;display:flex;background:oklch(0.985 0.004 210);border:1px solid oklch(0.9 0.01 208);border-radius:10px;overflow:hidden;box-shadow:0 8px 24px oklch(0 0 0 / 0.12), 0 2px 6px oklch(0 0 0 / 0.06)">
+
+    <aside style="width:220px;flex-shrink:0;display:flex;flex-direction:column;background:oklch(0.97 0.005 208);border-right:1px solid oklch(0.9 0.01 208);overflow:hidden">
+      <div style="padding:12px 10px;display:flex;align-items:center;gap:9px;border-bottom:1px solid oklch(0.9 0.01 208);flex-shrink:0;overflow:hidden">
+        <img src="public/icon-32.png" alt="" width="26" height="26" style="width:26px;height:26px;flex-shrink:0;border-radius:8px" />
+        <div style="white-space:nowrap;overflow:hidden">
+          <div style="font-family:'Inter Tight',sans-serif;font-size:13.5px;font-weight:700;color:oklch(0.181 0.012 210);letter-spacing:-0.01em">Shollu</div>
+          <div style="font-size:10px;color:oklch(0.567 0.028 210)">Modern</div>
+        </div>
+      </div>
+
+      <nav style="flex:1;padding:12px 0;display:flex;flex-direction:column;gap:2px;overflow-y:auto" aria-label="Navigasi utama">
+        <button type="button" onClick="{{ goMain }}" style="display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:7px;cursor:pointer;font-size:13px;font-family:Inter,system-ui,sans-serif;white-space:nowrap;overflow:hidden;border:none;text-align:left;width:100%;background:{{ navBgMain }};color:{{ navFgMain }};font-weight:{{ navWtMain }}">
+          <span style="width:16px;height:16px;flex-shrink:0;display:flex;align-items:center;justify-content:center" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></span>
+          <span>Utama</span>
+        </button>
+        <button type="button" onClick="{{ goLocation }}" style="display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:7px;cursor:pointer;font-size:13px;font-family:Inter,system-ui,sans-serif;white-space:nowrap;overflow:hidden;border:none;text-align:left;width:100%;background:{{ navBgLocation }};color:{{ navFgLocation }};font-weight:{{ navWtLocation }}">
+          <span style="width:16px;height:16px;flex-shrink:0;display:flex;align-items:center;justify-content:center" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"></path><circle cx="12" cy="10" r="3"></circle></svg></span>
+          <span>Lokasi</span>
+        </button>
+        <button type="button" onClick="{{ goSchedule }}" style="display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:7px;cursor:pointer;font-size:13px;font-family:Inter,system-ui,sans-serif;white-space:nowrap;overflow:hidden;border:none;text-align:left;width:100%;background:{{ navBgSchedule }};color:{{ navFgSchedule }};font-weight:{{ navWtSchedule }}">
+          <span style="width:16px;height:16px;flex-shrink:0;display:flex;align-items:center;justify-content:center" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></span>
+          <span>Jadwal</span>
+        </button>
+        <button type="button" onClick="{{ goTasks }}" style="display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:7px;cursor:pointer;font-size:13px;font-family:Inter,system-ui,sans-serif;white-space:nowrap;overflow:hidden;border:none;text-align:left;width:100%;background:{{ navBgTasks }};color:{{ navFgTasks }};font-weight:{{ navWtTasks }}">
+          <span style="width:16px;height:16px;flex-shrink:0;display:flex;align-items:center;justify-content:center" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"></path></svg></span>
+          <span>Pengingat</span>
+        </button>
+        <button type="button" onClick="{{ goConvert }}" style="display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:7px;cursor:pointer;font-size:13px;font-family:Inter,system-ui,sans-serif;white-space:nowrap;overflow:hidden;border:none;text-align:left;width:100%;background:{{ navBgConvert }};color:{{ navFgConvert }};font-weight:{{ navWtConvert }}">
+          <span style="width:16px;height:16px;flex-shrink:0;display:flex;align-items:center;justify-content:center" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3L4 7l4 4"></path><path d="M4 7h16"></path><path d="M16 21l4-4-4-4"></path><path d="M20 17H4"></path></svg></span>
+          <span>Konversi</span>
+        </button>
+        <button type="button" onClick="{{ goSettings }}" style="display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:7px;cursor:pointer;font-size:13px;font-family:Inter,system-ui,sans-serif;white-space:nowrap;overflow:hidden;border:none;text-align:left;width:100%;background:{{ navBgSettings }};color:{{ navFgSettings }};font-weight:{{ navWtSettings }}">
+          <span style="width:16px;height:16px;flex-shrink:0;display:flex;align-items:center;justify-content:center" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"></path></svg></span>
+          <span>Pengaturan</span>
+        </button>
+        <button type="button" onClick="{{ goAbout }}" style="display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:7px;cursor:pointer;font-size:13px;font-family:Inter,system-ui,sans-serif;white-space:nowrap;overflow:hidden;border:none;text-align:left;width:100%;background:{{ navBgAbout }};color:{{ navFgAbout }};font-weight:{{ navWtAbout }}">
+          <span style="width:16px;height:16px;flex-shrink:0;display:flex;align-items:center;justify-content:center" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg></span>
+          <span>Tentang</span>
+        </button>
+      </nav>
+
+      <div style="padding:8px 5px 10px;border-top:1px solid oklch(0.9 0.01 208);flex-shrink:0;overflow:hidden">
+        <button type="button" style="display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:7px;cursor:pointer;font-size:12px;font-weight:500;color:oklch(0.567 0.028 210);white-space:nowrap;overflow:hidden;border:none;background:none;text-align:left;width:100%;font-family:Inter,system-ui,sans-serif" style-hover="background:oklch(0.94 0.01 208);color:oklch(0.181 0.012 210)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          <span>Sembunyikan</span>
+        </button>
+      </div>
+    </aside>
+
+    <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;background:oklch(0.985 0.004 210)">
+      <header style="height:36px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;border-bottom:1px solid oklch(0.9 0.01 208);flex-shrink:0;background:#ffffff">
+        <h1 style="font-size:13px;font-weight:600;color:oklch(0.181 0.012 210);margin:0">{{ pageTitle }}</h1>
+      </header>
+
+      <main style="flex:1;overflow-y:auto;overflow-x:hidden;padding:16px 18px">
+
+        <sc-if value="{{ isMain }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-direction:column;gap:16px;max-width:40rem;width:100%;animation:fadeIn 250ms cubic-bezier(0,0,0.2,1)">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:12px 18px;border-bottom:1px solid oklch(0.9 0.01 208);background:#ffffff;flex-shrink:0">
+              <div>
+                <div style="font-size:14px;font-weight:600;color:oklch(0.181 0.012 210)">Pekanbaru</div>
+                <div style="font-size:11px;color:oklch(0.567 0.028 210);margin-top:1px">0.5066°, 101.4378° · 12 m · UTC+7</div>
+              </div>
+              <div style="text-align:right">
+                <div style="font-size:13px;font-weight:500;color:oklch(0.181 0.012 210)">Rab, 19 Agt 2026</div>
+                <div style="font-size:11px;color:oklch(0.567 0.028 210);margin-top:1px">6 Rabi'ul Awal 1448 H</div>
+              </div>
+            </div>
+
+            <div style="background:linear-gradient(135deg, oklch(0.95 0.035 208) 0%, oklch(0.98 0.01 208) 60%, oklch(0.97 0.025 84) 100%);border:1px solid oklch(0.9 0.01 208);border-radius:10px;padding:14px 18px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <div style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:oklch(0.52 0.14 208);margin-bottom:4px">Waktu Sholat Berikutnya<span style="width:7px;height:7px;border-radius:50%;background:oklch(0.74 0.175 84);display:inline-block;margin-left:4px;animation:goldpulse 2s ease-in-out infinite" aria-hidden="true"></span></div>
+                <div style="display:flex;align-items:baseline;gap:8px;white-space:nowrap;flex-wrap:nowrap">
+                  <span style="font-family:'Inter Tight',sans-serif;font-size:24px;font-weight:700;color:oklch(0.181 0.012 210);letter-spacing:-0.02em;flex-shrink:0">{{ nextLabel }}</span>
+                  <span style="font-family:Inter,sans-serif;font-size:28px;font-weight:700;color:oklch(0.51 0.150 208);font-variant-numeric:tabular-nums;letter-spacing:-0.03em;white-space:nowrap" aria-live="polite">{{ countdown }}</span>
+                </div>
+                <div style="font-size:13px;color:oklch(0.567 0.028 210);font-variant-numeric:tabular-nums;margin-top:3px">{{ heroSub }}</div>
+              </div>
+
+              <div style="display:flex;flex-direction:column;align-items:center;gap:3px" title="Arah kiblat">
+                <span style="font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.567 0.028 210)">Kiblat</span>
+                <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
+                  <circle cx="26" cy="26" r="24" stroke="oklch(0.9 0.01 208)" stroke-width="1.5" fill="#ffffff"></circle>
+                  <text x="26" y="9" text-anchor="middle" font-size="6" font-weight="700" fill="oklch(0.567 0.028 210)" font-family="Inter, sans-serif">N</text>
+                  <text x="26" y="47" text-anchor="middle" font-size="6" fill="oklch(0.567 0.028 210)" font-family="Inter, sans-serif">S</text>
+                  <text x="7" y="28" text-anchor="middle" font-size="6" fill="oklch(0.567 0.028 210)" font-family="Inter, sans-serif">W</text>
+                  <text x="46" y="28" text-anchor="middle" font-size="6" fill="oklch(0.567 0.028 210)" font-family="Inter, sans-serif">E</text>
+                  <g transform="translate(26,26) rotate(293.81)">
+                    <polygon points="0,-18 2.5,-6 0,-9 -2.5,-6" fill="oklch(0.51 0.150 208)"></polygon>
+                    <polygon points="0,18 2.5,6 0,9 -2.5,6" fill="oklch(0.567 0.028 210)" opacity="0.35"></polygon>
+                  </g>
+                  <circle cx="26" cy="26" r="2" fill="oklch(0.567 0.028 210)"></circle>
+                </svg>
+                <span style="font-size:13px;font-weight:700;color:oklch(0.181 0.012 210);font-variant-numeric:tabular-nums">293.8° W-NW</span>
+              </div>
+            </div>
+
+            <div style="background:#ffffff;border:1px solid oklch(0.9 0.01 208);border-radius:10px;overflow:hidden;box-shadow:0 1px 2px oklch(0 0 0 / 0.06)" role="table" aria-label="Jadwal sholat 3 hari">
+              <div style="display:grid;grid-template-columns:100px 1fr 1fr 1fr;background:oklch(0.975 0.004 208);border-bottom:1px solid oklch(0.9 0.01 208)" role="row">
+                <div style="padding:7px 10px;font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.567 0.028 210)" role="columnheader">Sholat</div>
+                <div style="padding:7px 10px;font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.567 0.028 210)" role="columnheader">Kemarin</div>
+                <div style="padding:7px 10px;font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.52 0.14 208)" role="columnheader">Hari Ini</div>
+                <div style="padding:7px 10px;font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.567 0.028 210)" role="columnheader">Besok</div>
+              </div>
+
+              <div style="display:grid;grid-template-columns:100px 1fr 1fr 1fr;border-bottom:1px solid oklch(0.9 0.01 208);position:relative;background:{{ rowBgFajr }}" role="row">
+                <sc-if value="{{ isNextFajr }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:oklch(0.51 0.150 208)"></div></sc-if>
+                <div style="padding:8px 10px;font-size:12.5px;font-weight:500;color:oklch(0.567 0.028 210);display:flex;align-items:center;gap:5px" role="cell">Fajr</div>
+                <div style="padding:8px 10px;font-size:13px;font-variant-numeric:tabular-nums;font-weight:500;color:oklch(0.567 0.028 210);display:flex;align-items:center;gap:5px" role="cell">04:53</div>
+                <div style="padding:8px 10px;font-size:13px;font-variant-numeric:tabular-nums;font-weight:500;display:flex;align-items:center;gap:5px" role="cell">
+                  <sc-if value="{{ isNextFajr }}" hint-placeholder-val="{{ false }}"><span style="width:5px;height:5px;border-radius:50%;background:oklch(0.51 0.150 208);flex-shrink:0" aria-hidden="true"></span></sc-if>
+                  <span style="color:{{ todayColorFajr }};font-weight:{{ todayWtFajr }}">04:53</span>
+                  <sc-if value="{{ isDoneFajr }}" hint-placeholder-val="{{ false }}"><span style="color:oklch(0.707 0.025 210);font-size:10px" aria-label="Sudah lewat">✓</span></sc-if>
+                </div>
+                <div style="padding:8px 10px;font-size:13px;font-variant-numeric:tabular-nums;font-weight:500;color:oklch(0.567 0.028 210);display:flex;align-items:center;gap:5px" role="cell">04:53</div>
+              </div>
+
+              <div style="display:grid;grid-template-columns:100px 1fr 1fr 1fr;border-bottom:1px solid oklch(0.9 0.01 208);position:relative;background:{{ rowBgSunrise }}" role="row">
+                <sc-if value="{{ isNextSunrise }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:oklch(0.51 0.150 208)"></div></sc-if>
+                <div style="padding:8px 10px;font-size:12.5px;font-weight:500;color:oklch(0.567 0.028 210);display:flex;align-items:center;gap:5px" role="cell">Syuruq</div>
+                <div style="padding:8px 10px;font-size:13px;font-variant-numeric:tabular-nums;font-weight:500;color:oklch(0.567 0.028 210);display:flex;align-items:center;gap:5px" role="cell">06:05</div>
+                <div style="padding:8px 10px;font-size:13px;font-variant-numeric:tabular-nums;font-weight:500;display:flex;align-items:center;gap:5px" role="cell">
+                  <sc-if value="{{ isNextSunrise }}" hint-placeholder-val="{{ false }}"><span style="width:5px;height:5px;border-radius:50%;background:oklch(0.51 0.150 208);flex-shrink:0" aria-hidden="true"></span></sc-if>
+                  <span style="color:{{ todayColorSunrise }};font-weight:{{ todayWtSunrise }}">06:05</span>
+                  <sc-if value="{{ isDoneSunrise }}" hint-placeholder-val="{{ false }}"><span style="color:oklch(0.707 0.025 210);font-size:10px" aria-label="Sudah lewat">✓</span></sc-if>
+                </div>
+                <div style="padding:8px 10px;font-size:13px;font-variant-numeric:tabular-nums;font-weight:500;color:oklch(0.567 0.028 210);display:flex;align-items:center;gap:5px" role="cell">06:05</div>
+              </div>
+
+              <div style="display:grid;grid-template-columns:100px 1fr 1fr 1fr;border-bottom:1px solid oklch(0.9 0.01 208);position:relative;background:{{ rowBgDhuhr }}" role="row">
+                <sc-if value="{{ isNextDhuhr }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:oklch(0.51 0.150 208)"></div></sc-if>
+                <div style="padding:8px 10px;font-size:12.5px;font-weight:500;color:oklch(0.567 0.028 210);display:flex;align-items:center;gap:5px" role="cell">Dhuhr</div>
+                <div style="padding:8px 10px;font-size:13px;font-variant-numeric:tabular-nums;font-weight:500;color:oklch(0.567 0.028 210);display:flex;align-items:center;gap:5px" role="cell">12:12</div>
+                <div style="padding:8px 10px;font-size:13px;font-variant-numeric:tabular-nums;font-weight:500;display:flex;align-items:center;gap:5px" role="cell">
+                  <sc-if value="{{ isNextDhuhr }}" hint-placeholder-val="{{ false }}"><span style="width:5px;height:5px;border-radius:50%;background:oklch(0.51 0.150 208);flex-shrink:0" aria-hidden="true"></span></sc-if>
+                  <span style="color:{{ todayColorDhuhr }};font-weight:{{ todayWtDhuhr }}">12:12</span>
+                  <sc-if value="{{ isDoneDhuhr }}" hint-placeholder-val="{{ false }}"><span style="color:oklch(0.707 0.025 210);font-size:10px" aria-label="Sudah lewat">✓</span></sc-if>
+                </div>
+                <div style="padding:8px 10px;font-size:13px;font-variant-numeric:tabular-nums;font-weight:500;color:oklch(0.567 0.028 210);display:flex;align-items:center;gap:5px" role="cell">12:12</div>
+              </div>
+
+              <div style="display:grid;grid-template-columns:100px 1fr 1fr 1fr;border-bottom:1px solid oklch(0.9 0.01 208);position:relative;background:{{ rowBgAsr }}" role="row">
+                <sc-if value="{{ isNextAsr }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:oklch(0.51 0.150 208)"></div></sc-if>
+                <div style="padding:8px 10px;font-size:12.5px;font-weight:500;color:oklch(0.567 0.028 210);display:flex;align-items:center;gap:5px" role="cell">Asr</div>
+                <div style="padding:8px 10px;font-size:13px;font-variant-numeric:tabular-nums;font-weight:500;color:oklch(0.567 0.028 210);display:flex;align-items:center;gap:5px" role="cell">15:30</div>
+                <div style="padding:8px 10px;font-size:13px;font-variant-numeric:tabular-nums;font-weight:500;display:flex;align-items:center;gap:5px" role="cell">
+                  <sc-if value="{{ isNextAsr }}" hint-placeholder-val="{{ false }}"><span style="width:5px;height:5px;border-radius:50%;background:oklch(0.51 0.150 208);flex-shrink:0" aria-hidden="true"></span></sc-if>
+                  <span style="color:{{ todayColorAsr }};font-weight:{{ todayWtAsr }}">15:29</span>
+                  <sc-if value="{{ isDoneAsr }}" hint-placeholder-val="{{ false }}"><span style="color:oklch(0.707 0.025 210);font-size:10px" aria-label="Sudah lewat">✓</span></sc-if>
+                </div>
+                <div style="padding:8px 10px;font-size:13px;font-variant-numeric:tabular-nums;font-weight:500;color:oklch(0.567 0.028 210);display:flex;align-items:center;gap:5px" role="cell">15:29</div>
+              </div>
+
+              <div style="display:grid;grid-template-columns:100px 1fr 1fr 1fr;border-bottom:1px solid oklch(0.9 0.01 208);position:relative;background:{{ rowBgMaghrib }}" role="row">
+                <sc-if value="{{ isNextMaghrib }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:oklch(0.51 0.150 208)"></div></sc-if>
+                <div style="padding:8px 10px;font-size:12.5px;font-weight:500;color:oklch(0.567 0.028 210);display:flex;align-items:center;gap:5px" role="cell">Maghrib</div>
+                <div style="padding:8px 10px;font-size:13px;font-variant-numeric:tabular-nums;font-weight:500;color:oklch(0.567 0.028 210);display:flex;align-items:center;gap:5px" role="cell">18:17</div>
+                <div style="padding:8px 10px;font-size:13px;font-variant-numeric:tabular-nums;font-weight:500;display:flex;align-items:center;gap:5px" role="cell">
+                  <sc-if value="{{ isNextMaghrib }}" hint-placeholder-val="{{ false }}"><span style="width:5px;height:5px;border-radius:50%;background:oklch(0.51 0.150 208);flex-shrink:0" aria-hidden="true"></span></sc-if>
+                  <span style="color:{{ todayColorMaghrib }};font-weight:{{ todayWtMaghrib }}">18:17</span>
+                  <sc-if value="{{ isDoneMaghrib }}" hint-placeholder-val="{{ false }}"><span style="color:oklch(0.707 0.025 210);font-size:10px" aria-label="Sudah lewat">✓</span></sc-if>
+                </div>
+                <div style="padding:8px 10px;font-size:13px;font-variant-numeric:tabular-nums;font-weight:500;color:oklch(0.567 0.028 210);display:flex;align-items:center;gap:5px" role="cell">18:16</div>
+              </div>
+
+              <div style="display:grid;grid-template-columns:100px 1fr 1fr 1fr;position:relative;background:{{ rowBgIsha }}" role="row">
+                <sc-if value="{{ isNextIsha }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:oklch(0.51 0.150 208)"></div></sc-if>
+                <div style="padding:8px 10px;font-size:12.5px;font-weight:500;color:oklch(0.567 0.028 210);display:flex;align-items:center;gap:5px" role="cell">Isha</div>
+                <div style="padding:8px 10px;font-size:13px;font-variant-numeric:tabular-nums;font-weight:500;color:oklch(0.567 0.028 210);display:flex;align-items:center;gap:5px" role="cell">19:26</div>
+                <div style="padding:8px 10px;font-size:13px;font-variant-numeric:tabular-nums;font-weight:500;display:flex;align-items:center;gap:5px" role="cell">
+                  <sc-if value="{{ isNextIsha }}" hint-placeholder-val="{{ false }}"><span style="width:5px;height:5px;border-radius:50%;background:oklch(0.51 0.150 208);flex-shrink:0" aria-hidden="true"></span></sc-if>
+                  <span style="color:{{ todayColorIsha }};font-weight:{{ todayWtIsha }}">19:26</span>
+                  <sc-if value="{{ isDoneIsha }}" hint-placeholder-val="{{ false }}"><span style="color:oklch(0.707 0.025 210);font-size:10px" aria-label="Sudah lewat">✓</span></sc-if>
+                </div>
+                <div style="padding:8px 10px;font-size:13px;font-variant-numeric:tabular-nums;font-weight:500;color:oklch(0.567 0.028 210);display:flex;align-items:center;gap:5px" role="cell">19:25</div>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isLocation }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:16px;max-width:40rem;width:100%;animation:fadeIn 250ms cubic-bezier(0,0,0.2,1)">
+            <div style="background:#ffffff;border:1px solid oklch(0.9 0.01 208);border-radius:12px;box-shadow:0 2px 8px oklch(0 0 0 / 0.08), 0 1px 2px oklch(0 0 0 / 0.04);padding:24px;display:flex;flex-direction:column;gap:16px">
+              <h3 style="font-size:14px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.567 0.028 210);margin:0">Lokasi &amp; Koordinat</h3>
+              <div style="display:flex;flex-direction:column;gap:4px;position:relative">
+                <label style="font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.567 0.028 210)">Nama Wilayah / Kota</label>
+                <input type="text" value="Pekanbaru" placeholder="Cari kota (misal: Pekanbaru)..." style="padding:7px 10px;border-radius:6px;border:1px solid oklch(0.85 0.015 208);background:#ffffff;color:oklch(0.265 0.016 210);font-size:13px;font-family:Inter,system-ui,sans-serif;outline:none;width:100%" />
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div style="display:flex;flex-direction:column;gap:4px">
+                  <span style="font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.567 0.028 210)">Lintang (Latitude)</span>
+                  <input type="number" step="0.000001" value="0.506567" style="padding:7px 10px;border-radius:6px;border:1px solid oklch(0.85 0.015 208);background:#ffffff;color:oklch(0.265 0.016 210);font-size:13px;font-family:Inter,system-ui,sans-serif;outline:none;width:100%" />
+                </div>
+                <div style="display:flex;flex-direction:column;gap:4px">
+                  <span style="font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.567 0.028 210)">Bujur (Longitude)</span>
+                  <input type="number" step="0.000001" value="101.43779" style="padding:7px 10px;border-radius:6px;border:1px solid oklch(0.85 0.015 208);background:#ffffff;color:oklch(0.265 0.016 210);font-size:13px;font-family:Inter,system-ui,sans-serif;outline:none;width:100%" />
+                </div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div style="display:flex;flex-direction:column;gap:4px">
+                  <span style="font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.567 0.028 210)">Ketinggian (m)</span>
+                  <input type="number" value="12" style="padding:7px 10px;border-radius:6px;border:1px solid oklch(0.85 0.015 208);background:#ffffff;color:oklch(0.265 0.016 210);font-size:13px;font-family:Inter,system-ui,sans-serif;outline:none;width:100%" />
+                </div>
+                <div style="display:flex;flex-direction:column;gap:4px">
+                  <span style="font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.567 0.028 210)">Zona Waktu</span>
+                  <select style="padding:7px 10px;border-radius:6px;border:1px solid oklch(0.85 0.015 208);background:#ffffff;color:oklch(0.265 0.016 210);font-size:13px;font-family:Inter,system-ui,sans-serif;outline:none;width:100%;cursor:pointer">
+                    <option>UTC+07:00 (WIB)</option>
+                    <option>UTC+08:00 (WITA)</option>
+                    <option>UTC+09:00 (WIT)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div style="background:#ffffff;border:1px solid oklch(0.9 0.01 208);border-radius:12px;box-shadow:0 2px 8px oklch(0 0 0 / 0.08), 0 1px 2px oklch(0 0 0 / 0.04);padding:24px;display:flex;flex-direction:column;gap:12px">
+              <h3 style="font-size:14px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.567 0.028 210);margin:0">Metode Kalkulasi</h3>
+              <div style="display:flex;flex-direction:column;gap:5px">
+                <button type="button" role="radio" aria-checked="false" style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:13px;padding:4px 0;background:none;border:none;font-family:Inter,system-ui,sans-serif;text-align:left;width:100%;color:oklch(0.353 0.02 210);font-weight:500">
+                  <div style="width:15px;height:15px;border-radius:50%;border:2px solid oklch(0.85 0.015 208);flex-shrink:0"></div><span>Karachi (Univ. Ilmu Islam)</span>
+                </button>
+                <button type="button" role="radio" aria-checked="true" style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:13px;padding:4px 0;background:none;border:none;font-family:Inter,system-ui,sans-serif;text-align:left;width:100%;color:oklch(0.353 0.02 210);font-weight:500">
+                  <div style="width:15px;height:15px;border-radius:50%;border:2px solid oklch(0.51 0.150 208);background:oklch(0.51 0.150 208);flex-shrink:0;display:flex;align-items:center;justify-content:center"><div style="width:5px;height:5px;border-radius:50%;background:#ffffff"></div></div><span>ISNA (North America)</span>
+                </button>
+                <button type="button" role="radio" aria-checked="false" style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:13px;padding:4px 0;background:none;border:none;font-family:Inter,system-ui,sans-serif;text-align:left;width:100%;color:oklch(0.353 0.02 210);font-weight:500">
+                  <div style="width:15px;height:15px;border-radius:50%;border:2px solid oklch(0.85 0.015 208);flex-shrink:0"></div><span>MWL (Liga Dunia Islam)</span>
+                </button>
+                <button type="button" role="radio" aria-checked="false" style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:13px;padding:4px 0;background:none;border:none;font-family:Inter,system-ui,sans-serif;text-align:left;width:100%;color:oklch(0.353 0.02 210);font-weight:500">
+                  <div style="width:15px;height:15px;border-radius:50%;border:2px solid oklch(0.85 0.015 208);flex-shrink:0"></div><span>Umm Al-Qura (Saudi Arabia)</span>
+                </button>
+                <button type="button" role="radio" aria-checked="false" style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:13px;padding:4px 0;background:none;border:none;font-family:Inter,system-ui,sans-serif;text-align:left;width:100%;color:oklch(0.353 0.02 210);font-weight:500">
+                  <div style="width:15px;height:15px;border-radius:50%;border:2px solid oklch(0.85 0.015 208);flex-shrink:0"></div><span>Mesir (Survey Umum)</span>
+                </button>
+              </div>
+              <div style="display:flex;align-items:center;gap:16px;padding-top:8px;border-top:1px solid oklch(0.967 0.007 210)">
+                <span style="font-size:12px;font-weight:700;color:oklch(0.567 0.028 210);text-transform:uppercase">Kalkulasi Asar (Mazhab)</span>
+                <button type="button" role="radio" aria-checked="true" style="display:flex;align-items:center;gap:7px;cursor:pointer;padding:4px 0;background:none;border:none;font-family:Inter,system-ui,sans-serif;text-align:left;color:oklch(0.353 0.02 210)">
+                  <div style="width:15px;height:15px;border-radius:50%;border:2px solid oklch(0.51 0.150 208);background:oklch(0.51 0.150 208);flex-shrink:0;display:flex;align-items:center;justify-content:center"><div style="width:5px;height:5px;border-radius:50%;background:#ffffff"></div></div><span style="font-size:12px;font-weight:600">Shafi'i (Maliki, Hanbali)</span>
+                </button>
+                <button type="button" role="radio" aria-checked="false" style="display:flex;align-items:center;gap:7px;cursor:pointer;padding:4px 0;background:none;border:none;font-family:Inter,system-ui,sans-serif;text-align:left;color:oklch(0.353 0.02 210)">
+                  <div style="width:15px;height:15px;border-radius:50%;border:2px solid oklch(0.85 0.015 208);flex-shrink:0"></div><span style="font-size:12px;font-weight:600">Hanafi</span>
+                </button>
+              </div>
+            </div>
+
+            <div style="background:#ffffff;border:1px solid oklch(0.9 0.01 208);border-radius:12px;box-shadow:0 2px 8px oklch(0 0 0 / 0.08), 0 1px 2px oklch(0 0 0 / 0.04);padding:24px;display:flex;flex-direction:column;gap:12px">
+              <h3 style="font-size:14px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.567 0.028 210);margin:0">Koreksi Waktu (Menit)</h3>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+                <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.567 0.028 210);text-align:center">Fajr</span><input type="number" value="0" style="padding:7px 10px;border-radius:6px;border:1px solid oklch(0.85 0.015 208);background:#ffffff;color:oklch(0.265 0.016 210);font-size:13px;font-family:Inter,system-ui,sans-serif;outline:none;width:100%;text-align:center" /></div>
+                <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.567 0.028 210);text-align:center">Sunrise</span><input type="number" value="0" style="padding:7px 10px;border-radius:6px;border:1px solid oklch(0.85 0.015 208);background:#ffffff;color:oklch(0.265 0.016 210);font-size:13px;font-family:Inter,system-ui,sans-serif;outline:none;width:100%;text-align:center" /></div>
+                <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.567 0.028 210);text-align:center">Dhuhr</span><input type="number" value="0" style="padding:7px 10px;border-radius:6px;border:1px solid oklch(0.85 0.015 208);background:#ffffff;color:oklch(0.265 0.016 210);font-size:13px;font-family:Inter,system-ui,sans-serif;outline:none;width:100%;text-align:center" /></div>
+                <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.567 0.028 210);text-align:center">Asr</span><input type="number" value="0" style="padding:7px 10px;border-radius:6px;border:1px solid oklch(0.85 0.015 208);background:#ffffff;color:oklch(0.265 0.016 210);font-size:13px;font-family:Inter,system-ui,sans-serif;outline:none;width:100%;text-align:center" /></div>
+                <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.567 0.028 210);text-align:center">Maghrib</span><input type="number" value="0" style="padding:7px 10px;border-radius:6px;border:1px solid oklch(0.85 0.015 208);background:#ffffff;color:oklch(0.265 0.016 210);font-size:13px;font-family:Inter,system-ui,sans-serif;outline:none;width:100%;text-align:center" /></div>
+                <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.567 0.028 210);text-align:center">Isha</span><input type="number" value="0" style="padding:7px 10px;border-radius:6px;border:1px solid oklch(0.85 0.015 208);background:#ffffff;color:oklch(0.265 0.016 210);font-size:13px;font-family:Inter,system-ui,sans-serif;outline:none;width:100%;text-align:center" /></div>
+              </div>
+            </div>
+
+            <div style="display:flex;justify-content:flex-end;padding-top:8px;padding-bottom:32px">
+              <button type="button" style="display:inline-flex;align-items:center;gap:8px;padding:8px 24px;border-radius:8px;font-family:Inter,system-ui,sans-serif;font-size:12px;font-weight:600;line-height:1;border:1px solid oklch(0.51 0.150 208);background:oklch(0.51 0.150 208);color:#ffffff;box-shadow:0 1px 2px oklch(0 0 0 / 0.06);cursor:pointer" style-hover="background:oklch(0.52 0.14 208)">Simpan Lokasi</button>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isSchedule }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:16px;max-width:45rem;width:100%;animation:fadeIn 250ms cubic-bezier(0,0,0.2,1)">
+            <div style="background:#ffffff;border:1px solid oklch(0.9 0.01 208);border-radius:12px;box-shadow:0 2px 8px oklch(0 0 0 / 0.08), 0 1px 2px oklch(0 0 0 / 0.04);padding:24px;display:flex;flex-direction:column;gap:16px">
+              <h3 style="font-size:14px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.567 0.028 210);margin:0">Rentang Tanggal</h3>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div style="display:flex;flex-direction:column;gap:4px">
+                  <label style="font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.567 0.028 210)">Dari Tanggal</label>
+                  <input type="date" value="2026-08-01" style="padding:7px 10px;border-radius:6px;border:1px solid oklch(0.85 0.015 208);background:#ffffff;color:oklch(0.265 0.016 210);font-size:13px;font-family:Inter,system-ui,sans-serif;outline:none;width:100%" />
+                </div>
+                <div style="display:flex;flex-direction:column;gap:4px">
+                  <label style="font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.567 0.028 210)">Sampai Tanggal</label>
+                  <input type="date" value="2026-08-31" style="padding:7px 10px;border-radius:6px;border:1px solid oklch(0.85 0.015 208);background:#ffffff;color:oklch(0.265 0.016 210);font-size:13px;font-family:Inter,system-ui,sans-serif;outline:none;width:100%" />
+                </div>
+              </div>
+              <div style="display:flex;gap:8px">
+                <button type="button" style="display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:8px;font-family:Inter,system-ui,sans-serif;font-size:12px;font-weight:600;line-height:1;border:1px solid oklch(0.51 0.150 208);background:oklch(0.51 0.150 208);color:#ffffff;box-shadow:0 1px 2px oklch(0 0 0 / 0.06);cursor:pointer" style-hover="background:oklch(0.52 0.14 208)">Tampilkan Jadwal</button>
+                <button type="button" style="display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:8px;font-family:Inter,system-ui,sans-serif;font-size:12px;font-weight:600;line-height:1;border:1px solid oklch(0.9 0.01 208);background:#ffffff;color:oklch(0.181 0.012 210);box-shadow:0 1px 2px oklch(0 0 0 / 0.06);cursor:pointer" style-hover="background:oklch(0.94 0.01 208)">Ekspor CSV</button>
+                <button type="button" style="display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:8px;font-family:Inter,system-ui,sans-serif;font-size:12px;font-weight:600;line-height:1;border:1px solid oklch(0.9 0.01 208);background:#ffffff;color:oklch(0.181 0.012 210);box-shadow:0 1px 2px oklch(0 0 0 / 0.06);cursor:pointer" style-hover="background:oklch(0.94 0.01 208)">Cetak HTML</button>
+              </div>
+            </div>
+
+            <div style="background:#ffffff;border:1px solid oklch(0.9 0.01 208);border-radius:12px;overflow:hidden;box-shadow:0 1px 2px oklch(0 0 0 / 0.06)">
+              <div style="display:grid;grid-template-columns:110px repeat(6, 1fr);background:oklch(0.975 0.004 208);border-bottom:1px solid oklch(0.9 0.01 208)">
+                <div style="padding:7px 10px;font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.567 0.028 210)">Tanggal</div>
+                <div style="padding:7px 10px;font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.567 0.028 210)">Fajr</div>
+                <div style="padding:7px 10px;font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.567 0.028 210)">Shurook</div>
+                <div style="padding:7px 10px;font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.567 0.028 210)">Dhuhr</div>
+                <div style="padding:7px 10px;font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.567 0.028 210)">Asr</div>
+                <div style="padding:7px 10px;font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.567 0.028 210)">Maghrib</div>
+                <div style="padding:7px 10px;font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.567 0.028 210)">Isha</div>
+              </div>
+              <div style="max-height:300px;overflow-y:auto">
+                <sc-for list="{{ scheduleRows }}" as="row" hint-placeholder-count="7">
+                  <div style="display:grid;grid-template-columns:110px repeat(6, 1fr);border-bottom:1px solid oklch(0.967 0.007 210)" style-hover="background:oklch(0.975 0.004 208)">
+                    <div style="padding:8px 10px;font-size:12px;font-weight:700;color:oklch(0.567 0.028 210);display:flex;align-items:center">{{ row.date }}</div>
+                    <div style="padding:8px 10px;font-size:13px;font-variant-numeric:tabular-nums;font-weight:500;color:oklch(0.265 0.016 210);display:flex;align-items:center">{{ row.fajr }}</div>
+                    <div style="padding:8px 10px;font-size:13px;font-variant-numeric:tabular-nums;font-weight:500;color:oklch(0.265 0.016 210);display:flex;align-items:center">{{ row.sunrise }}</div>
+                    <div style="padding:8px 10px;font-size:13px;font-variant-numeric:tabular-nums;font-weight:500;color:oklch(0.265 0.016 210);display:flex;align-items:center">{{ row.dhuhr }}</div>
+                    <div style="padding:8px 10px;font-size:13px;font-variant-numeric:tabular-nums;font-weight:500;color:oklch(0.265 0.016 210);display:flex;align-items:center">{{ row.asr }}</div>
+                    <div style="padding:8px 10px;font-size:13px;font-variant-numeric:tabular-nums;font-weight:500;color:oklch(0.265 0.016 210);display:flex;align-items:center">{{ row.maghrib }}</div>
+                    <div style="padding:8px 10px;font-size:13px;font-variant-numeric:tabular-nums;font-weight:500;color:oklch(0.265 0.016 210);display:flex;align-items:center">{{ row.isha }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isTasks }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:16px;max-width:45rem;width:100%;animation:fadeIn 250ms cubic-bezier(0,0,0.2,1)">
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <h3 style="font-size:12px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.567 0.028 210);margin:0">Daftar Pengingat Aktif</h3>
+              <div style="background:#ffffff;border:1px solid oklch(0.9 0.01 208);border-radius:12px;overflow:hidden;box-shadow:0 1px 2px oklch(0 0 0 / 0.06)">
+                <div style="display:grid;grid-template-columns:1fr auto auto auto;padding:12px;border-bottom:1px solid oklch(0.967 0.007 210)">
+                  <div style="padding:8px 10px;display:flex;flex-direction:column;align-items:flex-start;gap:4px">
+                    <span style="font-weight:700;font-size:13px;color:oklch(0.265 0.016 210)">Sholat Subuh</span>
+                    <span style="font-size:11px;color:oklch(0.567 0.028 210)">Daily @ 04:45 · "Waktunya bangun untuk s..."</span>
+                  </div>
+                  <div style="padding:8px 10px;display:flex;align-items:center;justify-content:center">
+                    <span style="font-size:10px;font-weight:700;padding:4px 8px;border-radius:4px;background:oklch(0.93 0.04 230);color:oklch(0.38 0.12 230)">Info</span>
+                  </div>
+                  <div style="padding:8px 10px;display:flex;align-items:center;justify-content:center">
+                    <button type="button" role="switch" aria-checked="true" style="width:32px;height:18px;border-radius:9px;background:oklch(0.51 0.150 208);position:relative;flex-shrink:0;border:none;padding:0;cursor:pointer"><span style="width:14px;height:14px;border-radius:7px;background:#ffffff;position:absolute;top:2px;left:2px;box-shadow:0 1px 3px rgba(0,0,0,0.2);transform:translateX(14px);pointer-events:none"></span></button>
+                  </div>
+                  <div style="padding:8px 10px;display:flex;align-items:center;justify-content:flex-end">
+                    <button type="button" style="display:inline-flex;align-items:center;gap:8px;padding:4px 8px;border-radius:8px;font-family:Inter,system-ui,sans-serif;font-size:12px;font-weight:500;line-height:1;border:1px solid transparent;background:transparent;color:oklch(0.51 0.18 10);cursor:pointer" style-hover="background:oklch(0.97 0.02 10)">Hapus</button>
+                  </div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr auto auto auto;padding:12px">
+                  <div style="padding:8px 10px;display:flex;flex-direction:column;align-items:flex-start;gap:4px">
+                    <span style="font-weight:700;font-size:13px;color:oklch(0.265 0.016 210)">Adzan Maghrib</span>
+                    <span style="font-size:11px;color:oklch(0.567 0.028 210)">Daily @ 18:17</span>
+                  </div>
+                  <div style="padding:8px 10px;display:flex;align-items:center;justify-content:center">
+                    <span style="font-size:10px;font-weight:700;padding:4px 8px;border-radius:4px;background:oklch(0.95 0.05 145);color:oklch(0.38 0.14 145)">Multimedia</span>
+                  </div>
+                  <div style="padding:8px 10px;display:flex;align-items:center;justify-content:center">
+                    <button type="button" role="switch" aria-checked="false" style="width:32px;height:18px;border-radius:9px;background:oklch(0.87 0.018 210);position:relative;flex-shrink:0;border:none;padding:0;cursor:pointer"><span style="width:14px;height:14px;border-radius:7px;background:#ffffff;position:absolute;top:2px;left:2px;box-shadow:0 1px 3px rgba(0,0,0,0.2);pointer-events:none"></span></button>
+                  </div>
+                  <div style="padding:8px 10px;display:flex;align-items:center;justify-content:flex-end">
+                    <button type="button" style="display:inline-flex;align-items:center;gap:8px;padding:4px 8px;border-radius:8px;font-family:Inter,system-ui,sans-serif;font-size:12px;font-weight:500;line-height:1;border:1px solid transparent;background:transparent;color:oklch(0.51 0.18 10);cursor:pointer" style-hover="background:oklch(0.97 0.02 10)">Hapus</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div style="background:#ffffff;border:1px solid oklch(0.9 0.01 208);border-radius:12px;box-shadow:0 2px 8px oklch(0 0 0 / 0.08), 0 1px 2px oklch(0 0 0 / 0.04);padding:24px;display:flex;flex-direction:column;gap:16px">
+              <h4 style="font-size:12px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.567 0.028 210);margin:0">Buat Pengingat Baru</h4>
+              <div style="display:flex;flex-direction:column;gap:12px">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                  <div style="display:flex;flex-direction:column;gap:4px">
+                    <label style="font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.567 0.028 210)">Nama Pengingat</label>
+                    <input type="text" placeholder="Contoh: Sholat Fajr" style="padding:7px 10px;border-radius:6px;border:1px solid oklch(0.85 0.015 208);background:#ffffff;color:oklch(0.265 0.016 210);font-size:13px;font-family:Inter,system-ui,sans-serif;outline:none;width:100%" />
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:4px">
+                    <label style="font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.567 0.028 210)">Tipe Tindakan</label>
+                    <select style="padding:7px 10px;border-radius:6px;border:1px solid oklch(0.85 0.015 208);background:#ffffff;color:oklch(0.265 0.016 210);font-size:13px;font-family:Inter,system-ui,sans-serif;outline:none;width:100%;cursor:pointer">
+                      <option>Tampilkan Informasi</option>
+                      <option>Tampilkan Peringatan</option>
+                      <option>Putar Suara (Adzan)</option>
+                      <option>Eksekusi Script/Command</option>
+                      <option>Shutdown PC</option>
+                      <option>Hibernate PC</option>
+                    </select>
+                  </div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                  <div style="display:flex;flex-direction:column;gap:4px">
+                    <label style="font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.567 0.028 210)">Pemicu Waktu</label>
+                    <input type="time" value="12:00" style="padding:7px 10px;border-radius:6px;border:1px solid oklch(0.85 0.015 208);background:#ffffff;color:oklch(0.265 0.016 210);font-size:13px;font-family:Inter,system-ui,sans-serif;outline:none;width:100%" />
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:4px">
+                    <label style="font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.567 0.028 210)">Frekuensi</label>
+                    <select style="padding:7px 10px;border-radius:6px;border:1px solid oklch(0.85 0.015 208);background:#ffffff;color:oklch(0.265 0.016 210);font-size:13px;font-family:Inter,system-ui,sans-serif;outline:none;width:100%;cursor:pointer">
+                      <option>Setiap Hari</option>
+                      <option>Mingguan</option>
+                      <option>Bulanan</option>
+                      <option>Sekali Saja</option>
+                      <option>Saat Aplikasi Start</option>
+                    </select>
+                  </div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:4px">
+                  <label style="font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.567 0.028 210)">Pesan Notifikasi</label>
+                  <textarea placeholder="Ketik pesan alarm di sini..." style="padding:7px 10px;border-radius:6px;border:1px solid oklch(0.85 0.015 208);background:#ffffff;color:oklch(0.265 0.016 210);font-size:13px;font-family:Inter,system-ui,sans-serif;outline:none;width:100%;height:64px;resize:none"></textarea>
+                </div>
+                <div style="display:flex;justify-content:flex-end;padding-top:8px">
+                  <button type="button" style="display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:8px;font-family:Inter,system-ui,sans-serif;font-size:12px;font-weight:600;line-height:1;border:1px solid oklch(0.51 0.150 208);background:oklch(0.51 0.150 208);color:#ffffff;box-shadow:0 1px 2px oklch(0 0 0 / 0.06);cursor:pointer" style-hover="background:oklch(0.52 0.14 208)">Simpan Jadwal Pengingat</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isConvert }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:16px;max-width:32rem;width:100%;margin:0 auto;animation:fadeIn 250ms cubic-bezier(0,0,0.2,1)">
+            <div style="background:#ffffff;border:1px solid oklch(0.9 0.01 208);border-radius:12px;box-shadow:0 2px 8px oklch(0 0 0 / 0.08), 0 1px 2px oklch(0 0 0 / 0.04);padding:24px;display:flex;flex-direction:column;gap:16px">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <h3 style="font-size:14px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.567 0.028 210);margin:0">Masehi ➔ Hijriah</h3>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:4px">
+                <span style="font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.567 0.028 210)">Tanggal Masehi</span>
+                <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:8px">
+                  <select style="padding:7px 10px;border-radius:6px;border:1px solid oklch(0.85 0.015 208);background:#ffffff;color:oklch(0.265 0.016 210);font-size:13px;font-family:Inter,system-ui,sans-serif;outline:none;width:100%;cursor:pointer"><option>19</option></select>
+                  <select style="padding:7px 10px;border-radius:6px;border:1px solid oklch(0.85 0.015 208);background:#ffffff;color:oklch(0.265 0.016 210);font-size:13px;font-family:Inter,system-ui,sans-serif;outline:none;width:100%;cursor:pointer"><option>Agustus</option></select>
+                  <select style="padding:7px 10px;border-radius:6px;border:1px solid oklch(0.85 0.015 208);background:#ffffff;color:oklch(0.265 0.016 210);font-size:13px;font-family:Inter,system-ui,sans-serif;outline:none;width:100%;cursor:pointer"><option>2026</option></select>
+                </div>
+              </div>
+              <div style="font-size:24px;color:oklch(0.567 0.028 210);text-align:center;padding:8px 0;user-select:none">⇅</div>
+              <div style="display:flex;flex-direction:column;gap:4px">
+                <span style="font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.567 0.028 210)">Tanggal Hijriah</span>
+                <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:8px">
+                  <select style="padding:7px 10px;border-radius:6px;border:1px solid oklch(0.85 0.015 208);background:#ffffff;color:oklch(0.265 0.016 210);font-size:13px;font-family:Inter,system-ui,sans-serif;outline:none;width:100%;cursor:pointer"><option>6</option></select>
+                  <select style="padding:7px 10px;border-radius:6px;border:1px solid oklch(0.85 0.015 208);background:#ffffff;color:oklch(0.265 0.016 210);font-size:13px;font-family:Inter,system-ui,sans-serif;outline:none;width:100%;cursor:pointer"><option>Rabi'ul Awal</option></select>
+                  <select style="padding:7px 10px;border-radius:6px;border:1px solid oklch(0.85 0.015 208);background:#ffffff;color:oklch(0.265 0.016 210);font-size:13px;font-family:Inter,system-ui,sans-serif;outline:none;width:100%;cursor:pointer"><option>1448</option></select>
+                </div>
+              </div>
+              <div style="background:oklch(0.98 0.01 208);border:1px solid oklch(0.89 0.055 208);border-radius:8px;padding:12px 14px;margin-top:12px">
+                <div style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.52 0.14 208);margin-bottom:4px">Kalkulasi Hari</div>
+                <div style="font-family:'Inter Tight',sans-serif;font-size:22px;font-weight:700;color:oklch(0.181 0.012 210);letter-spacing:-0.01em;margin-top:4px">Rabu</div>
+                <div style="font-size:12px;color:oklch(0.567 0.028 210);margin-top:4px;font-weight:500">6 Rabi'ul Awal 1448 H · 19 Agustus 2026 M</div>
+              </div>
+              <div style="display:flex;gap:8px;padding-top:8px">
+                <button type="button" style="display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:8px;font-family:Inter,system-ui,sans-serif;font-size:12px;font-weight:600;line-height:1;border:1px solid oklch(0.9 0.01 208);background:#ffffff;color:oklch(0.181 0.012 210);box-shadow:0 1px 2px oklch(0 0 0 / 0.06);cursor:pointer" style-hover="background:oklch(0.94 0.01 208)">Hari Ini</button>
+              </div>
+            </div>
+
+            <div style="background:#ffffff;border:1px solid oklch(0.9 0.01 208);border-radius:12px;box-shadow:0 2px 8px oklch(0 0 0 / 0.08), 0 1px 2px oklch(0 0 0 / 0.04);padding:24px;display:flex;flex-direction:column;gap:12px">
+              <h4 style="font-size:12px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.567 0.028 210);margin:0">Penyesuaian Tanggal</h4>
+              <div style="display:flex;align-items:center;gap:12px;font-size:14px;color:oklch(0.353 0.02 210)">
+                <span>Offset Hijriah:</span>
+                <select style="padding:7px 10px;border-radius:6px;border:1px solid oklch(0.85 0.015 208);background:#ffffff;color:oklch(0.265 0.016 210);font-size:13px;font-family:Inter,system-ui,sans-serif;outline:none;width:90px;text-align:center;cursor:pointer"><option>0 hari</option></select>
+                <span style="font-size:12px;color:oklch(0.707 0.025 210)">(koreksi hilal rukyat)</span>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isSettings }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:16px;max-width:40rem;width:100%;animation:fadeIn 250ms cubic-bezier(0,0,0.2,1)">
+            <section style="margin-bottom:20px;background:#ffffff;border:1px solid oklch(0.9 0.01 208);border-radius:12px;box-shadow:0 1px 2px oklch(0 0 0 / 0.06);padding:16px 18px">
+              <div style="font-size:12px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.567 0.028 210);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid oklch(0.9 0.01 208)">Tampilan &amp; Tema</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid oklch(0.9 0.01 208)">
+                <div>
+                  <div style="font-size:13px;color:oklch(0.181 0.012 210);font-weight:500">Tema Tampilan</div>
+                  <div style="font-size:11px;color:oklch(0.567 0.028 210);margin-top:1px">Terang, Gelap, atau Sepia</div>
+                </div>
+                <div style="display:flex;gap:4px">
+                  <button type="button" style="padding:5px 8px;border-radius:5px;border:1px solid oklch(0.51 0.150 208);background:oklch(0.51 0.150 208);color:#ffffff;font-size:10px;font-weight:600;cursor:pointer;font-family:Inter,system-ui,sans-serif">Terang</button>
+                  <button type="button" style="padding:5px 8px;border-radius:5px;border:1px solid oklch(0.9 0.01 208);background:#ffffff;color:oklch(0.567 0.028 210);font-size:10px;font-weight:600;cursor:pointer;font-family:Inter,system-ui,sans-serif" style-hover="background:oklch(0.94 0.01 208);color:oklch(0.181 0.012 210)">Gelap</button>
+                  <button type="button" style="padding:5px 8px;border-radius:5px;border:1px solid oklch(0.9 0.01 208);background:#ffffff;color:oklch(0.567 0.028 210);font-size:10px;font-weight:600;cursor:pointer;font-family:Inter,system-ui,sans-serif" style-hover="background:oklch(0.94 0.01 208);color:oklch(0.181 0.012 210)">Sepia</button>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0">
+                <div>
+                  <div style="font-size:13px;color:oklch(0.181 0.012 210);font-weight:500">Warna Aksen</div>
+                  <div style="font-size:11px;color:oklch(0.567 0.028 210);margin-top:1px">Aksen aktif: <span style="color:oklch(0.181 0.012 210);font-weight:600;text-transform:capitalize">teal</span></div>
+                </div>
+                <div style="display:flex;gap:5px">
+                  <button type="button" title="Teal" aria-label="Teal" style="width:18px;height:18px;border-radius:50%;border:2px solid oklch(0.181 0.012 210);cursor:pointer;background:oklch(0.72 0.17 208);transform:scale(1.1)"></button>
+                  <button type="button" title="Indigo" aria-label="Indigo" style="width:18px;height:18px;border-radius:50%;border:2px solid transparent;cursor:pointer;background:oklch(0.67 0.18 270)"></button>
+                  <button type="button" title="Emerald" aria-label="Emerald" style="width:18px;height:18px;border-radius:50%;border:2px solid transparent;cursor:pointer;background:oklch(0.72 0.17 155)"></button>
+                  <button type="button" title="Rose" aria-label="Rose" style="width:18px;height:18px;border-radius:50%;border:2px solid transparent;cursor:pointer;background:oklch(0.70 0.18 10)"></button>
+                  <button type="button" title="Slate" aria-label="Slate" style="width:18px;height:18px;border-radius:50%;border:2px solid transparent;cursor:pointer;background:oklch(0.567 0.028 210)"></button>
+                </div>
+              </div>
+            </section>
+
+            <section style="margin-bottom:20px;background:#ffffff;border:1px solid oklch(0.9 0.01 208);border-radius:12px;box-shadow:0 1px 2px oklch(0 0 0 / 0.06);padding:16px 18px">
+              <div style="font-size:12px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.567 0.028 210);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid oklch(0.9 0.01 208)">Bahasa</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0">
+                <div style="font-size:13px;color:oklch(0.181 0.012 210);font-weight:500">Bahasa Aplikasi</div>
+                <select style="padding:7px 10px;border-radius:6px;border:1px solid oklch(0.85 0.015 208);background:#ffffff;color:oklch(0.181 0.012 210);font-size:13px;font-family:Inter,system-ui,sans-serif;outline:none;width:180px;cursor:pointer">
+                  <option>Bahasa Indonesia</option>
+                  <option>English</option>
+                </select>
+              </div>
+            </section>
+
+            <section style="margin-bottom:20px;background:#ffffff;border:1px solid oklch(0.9 0.01 208);border-radius:12px;box-shadow:0 1px 2px oklch(0 0 0 / 0.06);padding:16px 18px">
+              <div style="font-size:12px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.567 0.028 210);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid oklch(0.9 0.01 208)">Suara &amp; Adzan</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid oklch(0.9 0.01 208)">
+                <div>
+                  <div style="font-size:13px;color:oklch(0.181 0.012 210);font-weight:500">Aktifkan Suara Adzan</div>
+                  <div style="font-size:11px;color:oklch(0.567 0.028 210);margin-top:1px">Mainkan suara adzan saat waktu sholat tiba</div>
+                </div>
+                <button type="button" role="switch" aria-checked="true" style="width:32px;height:18px;border-radius:9px;background:oklch(0.51 0.150 208);position:relative;flex-shrink:0;border:none;padding:0;cursor:pointer"><span style="width:14px;height:14px;border-radius:7px;background:#ffffff;position:absolute;top:2px;left:2px;box-shadow:0 1px 3px rgba(0,0,0,0.2);transform:translateX(14px);pointer-events:none"></span></button>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0">
+                <div>
+                  <div style="font-size:13px;color:oklch(0.181 0.012 210);font-weight:500">File Adzan Kustom</div>
+                  <div style="font-size:11px;color:oklch(0.567 0.028 210);margin-top:1px;max-width:16rem;word-break:break-all">Menggunakan adzan bawaan</div>
+                </div>
+                <input type="text" placeholder="Path file suara (MP3)" style="padding:7px 10px;border-radius:6px;border:1px solid oklch(0.85 0.015 208);background:#ffffff;color:oklch(0.181 0.012 210);font-family:Inter,system-ui,sans-serif;outline:none;width:160px;font-size:12px" />
+              </div>
+            </section>
+
+            <section style="margin-bottom:20px;background:#ffffff;border:1px solid oklch(0.9 0.01 208);border-radius:12px;box-shadow:0 1px 2px oklch(0 0 0 / 0.06);padding:16px 18px">
+              <div style="font-size:12px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:oklch(0.567 0.028 210);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid oklch(0.9 0.01 208)">Sistem &amp; Integrasi</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid oklch(0.9 0.01 208)">
+                <div>
+                  <div style="font-size:13px;color:oklch(0.181 0.012 210);font-weight:500">Mulai Otomatis</div>
+                  <div style="font-size:11px;color:oklch(0.567 0.028 210);margin-top:1px">Jalankan Shollu otomatis saat login</div>
+                </div>
+                <button type="button" role="switch" aria-checked="false" style="width:32px;height:18px;border-radius:9px;background:oklch(0.87 0.018 210);position:relative;flex-shrink:0;border:none;padding:0;cursor:pointer"><span style="width:14px;height:14px;border-radius:7px;background:#ffffff;position:absolute;top:2px;left:2px;box-shadow:0 1px 3px rgba(0,0,0,0.2);pointer-events:none"></span></button>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid oklch(0.9 0.01 208)">
+                <div>
+                  <div style="font-size:13px;color:oklch(0.181 0.012 210);font-weight:500">Selalu di Atas</div>
+                  <div style="font-size:11px;color:oklch(0.567 0.028 210);margin-top:1px">Pin jendela Shollu agar tidak tertutup</div>
+                </div>
+                <button type="button" role="switch" aria-checked="false" style="width:32px;height:18px;border-radius:9px;background:oklch(0.87 0.018 210);position:relative;flex-shrink:0;border:none;padding:0;cursor:pointer"><span style="width:14px;height:14px;border-radius:7px;background:#ffffff;position:absolute;top:2px;left:2px;box-shadow:0 1px 3px rgba(0,0,0,0.2);pointer-events:none"></span></button>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid oklch(0.9 0.01 208)">
+                <div>
+                  <div style="font-size:13px;color:oklch(0.181 0.012 210);font-weight:500">Bilah Melayang</div>
+                  <div style="font-size:11px;color:oklch(0.567 0.028 210);margin-top:1px">Tampilkan strip info waktu sholat horizontal melayang</div>
+                </div>
+                <button type="button" role="switch" aria-checked="true" style="width:32px;height:18px;border-radius:9px;background:oklch(0.51 0.150 208);position:relative;flex-shrink:0;border:none;padding:0;cursor:pointer"><span style="width:14px;height:14px;border-radius:7px;background:#ffffff;position:absolute;top:2px;left:2px;box-shadow:0 1px 3px rgba(0,0,0,0.2);transform:translateX(14px);pointer-events:none"></span></button>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0">
+                <div>
+                  <div style="font-size:13px;color:oklch(0.181 0.012 210);font-weight:500">Zona Tarik (Drop Zone)</div>
+                  <div style="font-size:11px;color:oklch(0.567 0.028 210);margin-top:1px">Tampilkan widget kecil penghitung mundur melayang</div>
+                </div>
+                <button type="button" role="switch" aria-checked="false" style="width:32px;height:18px;border-radius:9px;background:oklch(0.87 0.018 210);position:relative;flex-shrink:0;border:none;padding:0;cursor:pointer"><span style="width:14px;height:14px;border-radius:7px;background:#ffffff;position:absolute;top:2px;left:2px;box-shadow:0 1px 3px rgba(0,0,0,0.2);pointer-events:none"></span></button>
+              </div>
+            </section>
+
+            <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:24px">
+              <span style="font-size:11px;font-style:italic;color:oklch(0.567 0.028 210)">Perubahan tema &amp; bahasa diterapkan langsung</span>
+              <button type="button" style="display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:8px;font-family:Inter,system-ui,sans-serif;font-size:14px;font-weight:500;line-height:1;border:1px solid oklch(0.51 0.150 208);background:oklch(0.51 0.150 208);color:#ffffff;box-shadow:0 1px 2px oklch(0 0 0 / 0.06);cursor:pointer" style-hover="background:oklch(0.52 0.14 208)">Simpan Pengaturan</button>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isAbout }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:16px;max-width:40rem;width:100%;text-align:center;animation:fadeIn 250ms cubic-bezier(0,0,0.2,1)">
+            <div style="padding:20px 0 16px">
+              <div style="width:64px;height:64px;margin:0 auto 12px;border-radius:16px;overflow:hidden;box-shadow:0 2px 8px oklch(0 0 0 / 0.08), 0 1px 2px oklch(0 0 0 / 0.04);background:#ffffff;padding:8px">
+                <img src="public/icon-128.png" alt="Shollu Modern" width="64" height="64" style="width:100%;height:100%;object-fit:contain" />
+              </div>
+              <h2 style="font-family:'Inter Tight',sans-serif;font-size:22px;font-weight:700;color:oklch(0.181 0.012 210);letter-spacing:-0.02em;margin:0">Shollu Modern</h2>
+              <p style="font-size:12px;color:oklch(0.567 0.028 210);margin:3px 0 0">v0.1.0-alpha · PolyForm Noncommercial 1.0.0</p>
+            </div>
+
+            <div style="background:#ffffff;border:1px solid oklch(0.9 0.01 208);border-radius:10px;padding:14px 16px;margin:12px 0;text-align:left">
+              <div style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.567 0.028 210);margin-bottom:6px">Berdasarkan karya</div>
+              <h3 style="font-size:16px;font-weight:600;color:oklch(0.181 0.012 210);margin:0">Ebta Setiawan</h3>
+              <div style="display:flex;gap:12px;margin-top:4px;align-items:center;justify-content:center">
+                <a href="https://ebsoft.web.id" target="_blank" rel="noreferrer" style="font-size:12px;color:oklch(0.52 0.14 208);text-decoration:none;font-weight:600">ebsoft.web.id</a>
+                <span style="color:oklch(0.567 0.028 210)" aria-hidden="true">·</span>
+                <a href="https://github.com/ebta/shollu" target="_blank" rel="noreferrer" style="font-size:12px;color:oklch(0.52 0.14 208);text-decoration:none;font-weight:600">github.com/ebta/shollu</a>
+              </div>
+              <p style="font-size:13px;color:oklch(0.567 0.028 210);line-height:1.6;margin-top:12px;text-wrap:pretty">Shollu mula-mula dikembangkan dari tahun 2004 hingga 2012 oleh Ebta Setiawan sebagai aplikasi pengingat waktu sholat freeware yang legendaris untuk platform Windows. Program aslinya ditulis dalam Delphi dengan pustaka KOL, menghasilkan executable mandiri super efisien berukuran hanya ~276 KB.</p>
+            </div>
+
+            <div style="background:#ffffff;border:1px solid oklch(0.9 0.01 208);border-radius:10px;padding:14px 16px;margin:12px 0;text-align:left">
+              <div style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.567 0.028 210);margin-bottom:6px">Modernisasi Komunitas</div>
+              <p style="font-size:13px;color:oklch(0.567 0.028 210);line-height:1.6;margin:0;text-wrap:pretty">Shollu Modern adalah reimplementasi open-source berbasis komunitas yang dibangun menggunakan Tauri 2 + SolidJS untuk sistem operasi Windows, macOS, dan Linux. Akurasi kalkulasi waktu sholat telah divalidasi penuh terhadap aplikasi Shollu v3.10 asli dengan selisih maksimum hanya 11 detik.</p>
+            </div>
+
+            <div style="padding-top:8px">
+              <a href="https://github.com/adenaufal/shollu-modern" target="_blank" rel="noreferrer" style="display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:8px;font-family:Inter,system-ui,sans-serif;font-size:14px;font-weight:500;line-height:1;border:1px solid oklch(0.9 0.01 208);background:#ffffff;color:oklch(0.181 0.012 210);box-shadow:0 1px 2px oklch(0 0 0 / 0.06);text-decoration:none">Kunjungi Repositori</a>
+            </div>
+          </div>
+        </sc-if>
+
+      </main>
+    </div>
+  </div>
+
+  <div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11px;letter-spacing:0.04em;text-transform:uppercase;color:oklch(0.567 0.028 210);margin-top:6px">Recreation · overlay windows</div>
+
+  <div style="display:flex;flex-direction:column;gap:14px;align-items:flex-start">
+    <div style="width:620px;height:40px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 14px;background:color-mix(in oklch, #ffffff 92%, transparent);border:1px solid oklch(0.9 0.01 208);border-radius:12px;color:oklch(0.181 0.012 210);backdrop-filter:blur(10px);overflow:hidden;user-select:none;box-shadow:0 8px 24px oklch(0 0 0 / 0.12), 0 2px 6px oklch(0 0 0 / 0.06)">
+      <div style="display:flex;align-items:center;gap:8px">
+        <img src="public/icon-32.png" alt="" width="20" height="20" style="border-radius:4px" />
+        <span style="font-size:12px;font-weight:700">Shollu · <span style="color:oklch(0.51 0.150 208);font-weight:700">Pekanbaru</span></span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600">
+        <span>Berikutnya: <span style="color:oklch(0.51 0.150 208);font-weight:700">{{ nextName }}</span></span>
+        <span style="color:oklch(0.51 0.150 208);font-weight:700;font-variant-numeric:tabular-nums;font-size:13px">{{ countdownClock }}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;font-size:10px;font-weight:700">
+        <span style="color:oklch(0.567 0.028 210)">Fajr 04:53</span>
+        <span style="color:oklch(0.567 0.028 210)">Dhuhr 12:12</span>
+        <span style="color:oklch(0.567 0.028 210)">Asr 15:29</span>
+        <span style="color:oklch(0.567 0.028 210)">Maghrib 18:17</span>
+        <span style="color:oklch(0.567 0.028 210)">Isha 19:26</span>
+        <button type="button" style="border:none;background:transparent;color:oklch(0.567 0.028 210);cursor:pointer;font-size:12px;font-weight:700;line-height:1;padding:4px" aria-label="Close floating bar" style-hover="color:oklch(0.6 0.2 25)">✕</button>
+      </div>
+    </div>
+
+    <div style="width:176px;height:56px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 12px;background:color-mix(in oklch, #ffffff 92%, transparent);border:1px solid oklch(0.9 0.01 208);border-radius:12px;color:oklch(0.181 0.012 210);backdrop-filter:blur(10px);overflow:hidden;user-select:none;position:relative;box-shadow:0 8px 24px oklch(0 0 0 / 0.12), 0 2px 6px oklch(0 0 0 / 0.06)">
+      <div style="display:flex;flex-direction:column;gap:2px;text-align:left">
+        <span style="font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.567 0.028 210)">Berikutnya</span>
+        <span style="font-size:12px;font-weight:800;line-height:1;letter-spacing:-0.02em;color:oklch(0.181 0.012 210)">{{ nextName }}</span>
+        <span style="font-size:10px;line-height:1;color:oklch(0.567 0.028 210)">{{ nextClock }}</span>
+      </div>
+      <div>
+        <span style="color:oklch(0.51 0.150 208);font-weight:800;font-variant-numeric:tabular-nums;font-size:18px;letter-spacing:-0.03em">{{ countdownClock }}</span>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1060,&quot;height&quot;:900}}">
+class Component extends DCLogic {
+  state = { page: "main", countdown: "--h --m --s", countdownClock: "--:--:--", nextName: "—", nextClock: "--:--", currName: "—" };
+
+  PAGES = ["main", "location", "schedule", "tasks", "convert", "settings", "about"];
+  TITLES = {
+    main: "Layar Utama",
+    location: "Pengaturan Lokasi",
+    schedule: "Pembuat Jadwal",
+    tasks: "Jadwal Pengingat",
+    convert: "Konversi Kalender",
+    settings: "Pengaturan Aplikasi",
+    about: "Tentang Shollu",
+  };
+  NAMES = ["Fajr", "Sunrise", "Dhuhr", "Asr", "Maghrib", "Isha"];
+  TODAY = [4.8833, 6.0833, 12.2, 15.4833, 18.2833, 19.4333];
+  TOMORROW = [4.8833, 6.0833, 12.2, 15.4833, 18.2666, 19.4166];
+
+  fmt(h) {
+    const hh = Math.floor(h);
+    const mm = Math.floor((h - hh) * 60 + 1e-6);
+    return String(hh).padStart(2, "0") + ":" + String(mm).padStart(2, "0");
+  }
+
+  label(n) {
+    return n === "Sunrise" ? "Syuruq" : n;
+  }
+
+  tick() {
+    const now = new Date();
+    const cur = now.getHours() + now.getMinutes() / 60 + now.getSeconds() / 3600;
+    let idx = -1;
+    let tomorrow = false;
+    for (let i = 0; i < this.TODAY.length; i++) {
+      if (cur < this.TODAY[i]) { idx = i; break; }
+    }
+    if (idx === -1) { idx = 0; tomorrow = true; }
+    const target = tomorrow ? this.TOMORROW[idx] : this.TODAY[idx];
+
+    let currIdx = -1;
+    for (let i = this.TODAY.length - 1; i >= 0; i--) {
+      if (cur >= this.TODAY[i]) { currIdx = i; break; }
+    }
+
+    const targetSecs = Math.floor(target * 3600);
+    const curSecs = Math.floor(cur * 3600);
+    let delta = tomorrow ? 86400 - curSecs + targetSecs : targetSecs - curSecs;
+    if (delta < 0) delta = 0;
+    const h = Math.floor(delta / 3600);
+    const m = Math.floor((delta % 3600) / 60);
+    const s = delta % 60;
+    const p = (v) => String(v).padStart(2, "0");
+
+    this.setState({
+      nextName: this.NAMES[idx],
+      nextClock: this.fmt(target),
+      currName: currIdx === -1 ? "Isha" : this.NAMES[currIdx],
+      countdown: p(h) + "h " + p(m) + "m " + p(s) + "s",
+      countdownClock: p(h) + ":" + p(m) + ":" + p(s),
+    });
+  }
+
+  componentDidMount() {
+    this.tick();
+    this.timer = setInterval(() => this.tick(), 1000);
+  }
+
+  componentWillUnmount() {
+    if (this.timer) clearInterval(this.timer);
+  }
+
+  isDone(name) {
+    const currIdx = this.NAMES.indexOf(this.state.currName);
+    const nameIdx = this.NAMES.indexOf(name);
+    if (this.state.currName === name) return false;
+    if (currIdx < 0 || nameIdx < 0) return false;
+    if (this.state.currName === "Isha" && this.state.nextName === "Fajr") return false;
+    return currIdx > nameIdx;
+  }
+
+  renderVals() {
+    const s = this.state;
+    const out = {
+      pageTitle: this.TITLES[s.page],
+      countdown: s.countdown,
+      countdownClock: s.countdownClock,
+      nextName: s.nextName,
+      nextLabel: this.label(s.nextName),
+      nextClock: s.nextClock,
+      heroSub: "pukul " + s.nextClock + " · saat ini: " + this.label(s.currName),
+      scheduleRows: [
+        { date: "2026-08-01", fajr: "04:56", sunrise: "06:08", dhuhr: "12:15", asr: "15:38", maghrib: "18:21", isha: "19:31" },
+        { date: "2026-08-02", fajr: "04:56", sunrise: "06:08", dhuhr: "12:15", asr: "15:37", maghrib: "18:21", isha: "19:31" },
+        { date: "2026-08-03", fajr: "04:56", sunrise: "06:08", dhuhr: "12:15", asr: "15:37", maghrib: "18:21", isha: "19:30" },
+        { date: "2026-08-04", fajr: "04:56", sunrise: "06:08", dhuhr: "12:14", asr: "15:36", maghrib: "18:20", isha: "19:30" },
+        { date: "2026-08-05", fajr: "04:56", sunrise: "06:08", dhuhr: "12:14", asr: "15:36", maghrib: "18:20", isha: "19:30" },
+        { date: "2026-08-06", fajr: "04:56", sunrise: "06:08", dhuhr: "12:14", asr: "15:35", maghrib: "18:20", isha: "19:29" },
+        { date: "2026-08-07", fajr: "04:56", sunrise: "06:07", dhuhr: "12:14", asr: "15:35", maghrib: "18:20", isha: "19:29" },
+        { date: "2026-08-08", fajr: "04:55", sunrise: "06:07", dhuhr: "12:14", asr: "15:34", maghrib: "18:19", isha: "19:29" },
+        { date: "2026-08-09", fajr: "04:55", sunrise: "06:07", dhuhr: "12:14", asr: "15:34", maghrib: "18:19", isha: "19:28" },
+      ],
+    };
+
+    const cap = (v) => v.charAt(0).toUpperCase() + v.slice(1);
+    this.PAGES.forEach((id) => {
+      const on = s.page === id;
+      out["is" + cap(id)] = on;
+      out["navBg" + cap(id)] = on ? "oklch(0.95 0.025 208)" : "transparent";
+      out["navFg" + cap(id)] = on ? "oklch(0.43 0.115 208)" : "oklch(0.567 0.028 210)";
+      out["navWt" + cap(id)] = on ? "600" : "500";
+      out["go" + cap(id)] = () => this.setState({ page: id });
+    });
+
+    this.NAMES.forEach((n) => {
+      const isNext = s.nextName === n;
+      out["isNext" + n] = isNext;
+      out["isDone" + n] = this.isDone(n);
+      out["rowBg" + n] = isNext ? "oklch(0.98 0.01 208)" : "transparent";
+      out["todayColor" + n] = isNext ? "oklch(0.52 0.14 208)" : "oklch(0.181 0.012 210)";
+      out["todayWt" + n] = isNext ? "600" : "500";
+    });
+
+    return out;
+  }
+}
+</script>
+</body>
+</html>
