@@ -4,6 +4,8 @@ import { listen } from '@tauri-apps/api/event'
 import { formatHours, getMethodName, G_MONTHS_FULL_EN, G_MONTHS_FULL_ID, prayerLabel, PRAYER_NAMES } from '../helpers'
 import type { PrayerTimes, ScheduledTask } from '../helpers'
 import { calculationKey, computeTimes, useAppState } from '../state'
+import { buildScheduleExport, saveScheduleExport } from '../schedule-export'
+import type { ExportFormat } from '../schedule-export'
 import { QiblaCompass } from './QiblaCompass'
 import { ChevronLeftIcon, ChevronRightIcon } from './Icons'
 import './prayer-pages.css'
@@ -18,7 +20,7 @@ function CompactMain(props: { lang: () => string; selected: () => string; setSel
   const setSelected = props.setSelected
   const visibleMonth = props.visibleMonth
   const setVisibleMonth = props.setVisibleMonth
-  const [pendingExport, setPendingExport] = createSignal(false)
+  const [pendingExport, setPendingExport] = createSignal<ExportFormat | null>(null)
   let monthRequest = 0
   const today = () => app.today()
   const month = () => visibleMonth().slice(0, 7)
@@ -82,30 +84,27 @@ function CompactMain(props: { lang: () => string; selected: () => string; setSel
     setVisibleMonth(iso)
     setSelected(iso)
   }
-  const saveCsv = async () => {
+  const runExport = (format: ExportFormat) => {
     const monthRows = rows().filter(row => row.iso.startsWith(month()))
-    if (!monthRows.length) { setPendingExport(true); return }
-    const content = [['Date', ...PRAYER_NAMES].join(','), ...monthRows.map(row => [row.iso, ...rowKeys.map(key => formatHours(row.times[key]))].join(','))].join('\r\n')
-    const filename = `Shollu-${month()}.csv`
-    try {
-      if (isTauri()) await invoke<boolean>('save_export_file', { defaultName: filename, content })
-      else {
-        const url = URL.createObjectURL(new Blob([content], { type: 'text/csv;charset=utf-8' }))
-        const link = document.createElement('a'); link.href = url; link.download = filename; link.click()
-        window.setTimeout(() => URL.revokeObjectURL(url), 1000)
-      }
-    } catch (cause) { app.notify(String(cause), 'error') }
+    if (!monthRows.length) { setPendingExport(format); return }
+    const file = buildScheduleExport(format, monthRows, { yearMonth: month(), monthTitle: monthTitle(), location: app.settings()?.location.name ?? '', lang: props.lang() })
+    void saveScheduleExport(file).catch(cause => app.notify(String(cause), 'error'))
   }
-  createEffect(() => { if (pendingExport() && rows().some(row => row.iso.startsWith(month()))) { setPendingExport(false); void saveCsv() } })
-  const exportEvent = () => void saveCsv()
-  onMount(() => { window.addEventListener('shollu-export', exportEvent) })
-  onCleanup(() => { window.removeEventListener('shollu-export', exportEvent); monthRequest++ })
+  createEffect(() => { const format = pendingExport(); if (format && rows().some(row => row.iso.startsWith(month()))) { setPendingExport(null); runExport(format) } })
+  const exportEvent = () => runExport('csv')
+  const onKeyDown = (event: KeyboardEvent) => {
+    if (!(event.metaKey || event.ctrlKey) || event.altKey || event.shiftKey) return
+    if (event.key === 'ArrowLeft') { event.preventDefault(); shiftMonth(-1) }
+    else if (event.key === 'ArrowRight') { event.preventDefault(); shiftMonth(1) }
+  }
+  onMount(() => { window.addEventListener('shollu-export', exportEvent); window.addEventListener('keydown', onKeyDown) })
+  onCleanup(() => { window.removeEventListener('shollu-export', exportEvent); window.removeEventListener('keydown', onKeyDown); monthRequest++ })
   const rowKeys = ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha'] as const
   return <>
   <Show when={app.error()}><div class="status-banner tone-error" role="alert">{app.error()} <button class="btn btn-secondary" onClick={() => void app.refresh()}>{id() ? 'Coba lagi' : 'Retry'}</button></div></Show>
   <Show when={!app.loading()} fallback={<div class="compact-main-skeleton skeleton-pulse"><div/><div/></div>}>
   <div class="compact-main-layout">
-    <div class="compact-main-pane"><div class="compact-main-toolbar"><div class="compact-main-month"><button class="schedule-icon-btn" onClick={() => shiftMonth(-1)} aria-label={id() ? 'Bulan sebelumnya' : 'Previous month'}><ChevronLeftIcon size={14}/></button><strong>{monthTitle()}</strong><button class="schedule-icon-btn" onClick={() => shiftMonth(1)} aria-label={id() ? 'Bulan berikutnya' : 'Next month'}><ChevronRightIcon size={14}/></button></div><button class="btn btn-secondary compact-export" onClick={() => void saveCsv()}>{id() ? 'Ekspor CSV' : 'Export CSV'}</button></div>
+    <div class="compact-main-pane"><div class="compact-main-toolbar"><div class="compact-main-month"><button class="schedule-icon-btn" onClick={() => shiftMonth(-1)} aria-label={id() ? 'Bulan sebelumnya' : 'Previous month'}><ChevronLeftIcon size={14}/></button><strong>{monthTitle()}</strong><button class="schedule-icon-btn" onClick={() => shiftMonth(1)} aria-label={id() ? 'Bulan berikutnya' : 'Next month'}><ChevronRightIcon size={14}/></button></div><div class="schedule-exports"><button class="btn btn-secondary" onClick={() => runExport('csv')}>CSV</button><button class="btn btn-secondary" onClick={() => runExport('html')}>{id() ? 'Ekspor HTML' : 'Export HTML'}</button><button class="btn btn-secondary" onClick={() => runExport('txt')}>TXT</button></div></div>
     <div class="compact-main-table-wrap"><table class="compact-main-table"><thead><tr><th>{id() ? 'Tanggal' : 'Date'}</th><For each={PRAYER_NAMES}>{name => <th>{prayerLabel(name, props.lang())}</th>}</For></tr></thead><tbody>
       <For each={rows()}>{row => <tr tabindex="0" aria-selected={row.iso === selected()} class={`${row.iso === today() ? 'today' : ''} ${row.iso === selected() ? 'selected' : ''}`} onClick={() => setSelected(row.iso)} onKeyDown={event => {
         if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelected(row.iso) }

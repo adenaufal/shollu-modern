@@ -1,9 +1,11 @@
 import { For, Show, createEffect, createMemo, createSignal, onCleanup, onMount, untrack } from 'solid-js'
 import { Portal } from 'solid-js/web'
-import { invoke, isTauri } from '@tauri-apps/api/core'
+import { invoke } from '@tauri-apps/api/core'
 import { formatHours, G_MONTHS_FULL_EN, G_MONTHS_FULL_ID, G_DAYS_EN, G_DAYS_ID, prayerLabel, PRAYER_NAMES, WEEKDAYS_EN, WEEKDAYS_ID, toLocalDateIso } from '../helpers'
 import type { DateResult, PrayerTimes } from '../helpers'
 import { calculationKey, computeTimes, useAppState } from '../state'
+import { buildScheduleExport, saveScheduleExport } from '../schedule-export'
+import type { ExportFormat } from '../schedule-export'
 import { QiblaCompass } from './QiblaCompass'
 import { ChevronLeftIcon, ChevronRightIcon } from './Icons'
 import './prayer-pages.css'
@@ -21,7 +23,7 @@ export function SchedulePage(props: { lang?: string }) {
   const [records, setRecords] = createSignal<DayRecord[]>([])
   const [selected, setSelected] = createSignal(todayIso())
   const [loading, setLoading] = createSignal(false)
-  const [pendingExport, setPendingExport] = createSignal<'csv' | 'html' | 'txt' | null>(null)
+  const [pendingExport, setPendingExport] = createSignal<ExportFormat | null>(null)
   let request = 0
   const yearMonth = () => month().slice(0, 7)
   const [year, monthNum] = [() => Number(yearMonth().slice(0, 4)), () => Number(yearMonth().slice(5, 7))]
@@ -75,42 +77,11 @@ export function SchedulePage(props: { lang?: string }) {
     if (event.key === 'ArrowLeft') { event.preventDefault(); shiftMonth(-1) }
     else if (event.key === 'ArrowRight') { event.preventDefault(); shiftMonth(1) }
   }
-  const escapeHtml = (value: string) => value.replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]!)
-  const download = (content: string, filename: string, type: string) => {
-    const url = URL.createObjectURL(new Blob([content], { type }))
-    const link = document.createElement('a')
-    link.href = url; link.download = filename; link.click()
-    window.setTimeout(() => URL.revokeObjectURL(url), 1000)
-  }
-  const saveExport = async (content: string, filename: string, type: string) => {
-    try {
-      if (isTauri()) {
-        const saved = await invoke<boolean>('save_export_file', { defaultName: filename, content })
-        if (!saved) return
-      } else download(content, filename, type)
-    } catch (cause) { app.notify(String(cause), 'error') }
-  }
-  const exportCsv = () => {
-    const monthList = monthRecords()
-    if (!monthList.length) { setPendingExport('csv'); return }
-    const lines = [['Date', ...PRAYER_NAMES].join(',')]
-    for (const row of monthList) lines.push([row.iso, ...KEYS.map(key => formatHours(row.times[key]))].join(','))
-    void saveExport(lines.join('\r\n'), `Shollu-${yearMonth()}.csv`, 'text/csv;charset=utf-8')
-  }
-  const exportTxt = () => {
-    const lines = [`${id() ? 'Jadwal Sholat' : 'Prayer schedule'} · ${monthTitle()} · ${app.settings()?.location.name ?? ''}`, '', `${id() ? 'Tanggal' : 'Date'}   ${PRAYER_NAMES.map(x => x.padEnd(9)).join(' ')}`]
-    for (const row of records().filter(x => x.iso.startsWith(yearMonth()))) lines.push(`${row.iso}   ${KEYS.map(key => formatHours(row.times[key]).padEnd(9)).join(' ')}`)
-    if (!monthRecords().length) { setPendingExport('txt'); return }
-    void saveExport(lines.join('\n'), `Shollu-${yearMonth()}.txt`, 'text/plain;charset=utf-8')
-  }
-  const exportHtml = () => {
-    const monthList = monthRecords()
-    if (!monthList.length) { setPendingExport('html'); return }
-    const rows = monthList.map(row => `<tr><td>${row.iso}</td>${KEYS.map(k => `<td>${formatHours(row.times[k])}</td>`).join('')}</tr>`).join('')
-    const title = escapeHtml(monthTitle())
-    const location = escapeHtml(app.settings()?.location.name ?? '')
-    const html = `<!doctype html><html lang="${id() ? 'id' : 'en'}"><meta charset="utf-8"><title>Shollu · ${title}</title><style>body{font:14px system-ui;margin:40px;color:#25343a}h1{font-size:22px}table{border-collapse:collapse;width:100%}th,td{text-align:left;padding:8px;border-bottom:1px solid #ddd;font-variant-numeric:tabular-nums}th{background:#f5f8f8}button{margin:0 0 18px;padding:8px 12px;border:1px solid #ccd6d8;background:white;border-radius:6px;cursor:pointer}@media print{button{display:none}body{margin:0}}</style><h1>${id() ? 'Jadwal Sholat' : 'Prayer schedule'} · ${title}</h1><p>${location}</p><button onclick="window.print()">${id() ? 'Cetak' : 'Print'}</button><table><thead><tr><th>Date</th>${PRAYER_NAMES.map(n => `<th>${escapeHtml(prayerLabel(n, lang()))}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></html>`
-    void saveExport(html, `Shollu-${yearMonth()}.html`, 'text/html;charset=utf-8')
+  const runExport = (format: ExportFormat) => {
+    const rows = monthRecords()
+    if (!rows.length) { setPendingExport(format); return }
+    const file = buildScheduleExport(format, rows, { yearMonth: yearMonth(), monthTitle: monthTitle(), location: app.settings()?.location.name ?? '', lang: lang() })
+    void saveScheduleExport(file).catch(cause => app.notify(String(cause), 'error'))
   }
   const monthRecords = () => records().filter(x => x.iso.startsWith(yearMonth()))
   const nextPrayer = () => {
@@ -126,18 +97,16 @@ export function SchedulePage(props: { lang?: string }) {
     const delta = Math.max(0, Math.floor(nextPrayer().hour * 3600 - seconds))
     return `${String(Math.floor(delta / 3600)).padStart(2, '0')}:${String(Math.floor(delta % 3600 / 60)).padStart(2, '0')}:${String(delta % 60).padStart(2, '0')}`
   }
-  const exportButtons = () => <div class="schedule-exports"><button class="btn btn-secondary" onClick={exportCsv}>CSV</button><button class="btn btn-secondary" onClick={exportHtml}>{id() ? 'Ekspor HTML' : 'Export HTML'}</button><button class="btn btn-secondary" onClick={exportTxt}>TXT</button></div>
+  const exportButtons = () => <div class="schedule-exports"><button class="btn btn-secondary" onClick={() => runExport('csv')}>CSV</button><button class="btn btn-secondary" onClick={() => runExport('html')}>{id() ? 'Ekspor HTML' : 'Export HTML'}</button><button class="btn btn-secondary" onClick={() => runExport('txt')}>TXT</button></div>
   const monthNavigation = () => <div class="schedule-month-nav"><button class="schedule-icon-btn" onClick={() => shiftMonth(-1)} aria-label={id() ? 'Bulan sebelumnya' : 'Previous month'}><ChevronLeftIcon size={15}/></button><strong>{monthTitle()}</strong><button class="schedule-icon-btn" onClick={() => shiftMonth(1)} aria-label={id() ? 'Bulan berikutnya' : 'Next month'}><ChevronRightIcon size={15}/></button><span>{id() ? 'kalender masehi' : 'gregorian calendar'}</span></div>
 
   createEffect(() => {
     const format = pendingExport()
     if (!format || loading() || !monthRecords().length) return
     setPendingExport(null)
-    if (format === 'csv') exportCsv()
-    else if (format === 'html') exportHtml()
-    else exportTxt()
+    runExport(format)
   })
-  const exportEvent = () => exportCsv()
+  const exportEvent = () => runExport('csv')
   onMount(() => {
     window.addEventListener('keydown', onKeyDown)
     window.addEventListener('shollu-export', exportEvent)
