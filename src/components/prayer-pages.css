@@ -8,7 +8,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-.prayer-page-main { height: 100%; min-height: 0; display: flex; flex-direction: column; gap: var(--space-4); }
+.prayer-page-main { min-height: 100%; display: flex; flex-direction: column; gap: var(--space-4); }
 .calm-hero, .calm-card, .calendar-card, .calendar-detail, .schedule-inspector {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -42,7 +42,7 @@
 .arc-marker.next .arc-time { margin-top:var(--space-3); font-size: var(--text-md); font-weight: 700; }
 .arc-now { position: absolute; z-index: 2; top: 24px; height:34px; width: 1px; background: var(--gold-500); }
 .arc-now > span { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); color: var(--gold-500); font-size: var(--text-2xs); font-weight: 800; white-space: nowrap; }
-.calm-main-grid { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(250px, 1fr); gap: var(--space-4); min-width: 0; }
+.calm-main-grid { flex: 1 0 auto; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(250px, 1fr); gap: var(--space-4); min-width: 0; }
 .calm-card { min-width: 0; border-radius: var(--radius-2xl); padding: var(--space-3) var(--space-4); }
 .calm-card-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); margin-bottom: var(--space-1-5); }
 .calm-card-head h2 { margin: 0; font: 700 var(--text-xl)/1.2 var(--font-display); letter-spacing: -.015em; }
@@ -59,7 +59,8 @@
 .today-row.next { color: var(--accent-text); font-weight: 600; }
 .today-row.next > i { background: var(--accent-500); }
 .calm-side-stack { display: flex; flex-direction: column; gap: var(--space-3); min-width: 0; min-height: 0; }
-.calm-side-stack > .reminder-card, .calm-side-stack > .calm-note { flex: 1; min-height: 0; }
+.calm-side-stack > .reminder-card { flex: 1 0 auto; }
+.calm-side-stack > .calm-note { flex: 0 0 auto; }
 .reminder-card { padding-bottom: var(--space-2-5); }
 .reminder-state { background: var(--bg-hover); color: var(--fg-muted) !important; padding: var(--space-1) var(--space-2); border-radius: var(--radius-full); font-size: var(--text-2xs) !important; font-weight: 700; }
 .reminder-state.enabled { color: var(--accent-700) !important; background: var(--accent-100); }
