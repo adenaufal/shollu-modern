@@ -304,15 +304,20 @@
   --font-arabic: "Noto Naskh Arabic", "Amiri", serif;
   --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
 
-  /* Font sizes */
-  --text-hero: clamp(36px, 5vw, 56px); /* countdown hero */
-  --text-display: 32px; /* page titles */
-  --text-xl: 24px; /* section heads */
-  --text-lg: 20px; /* card titles, prayer names */
-  --text-md: 16px; /* body default */
-  --text-sm: 14px; /* secondary text */
-  --text-xs: 13px; /* labels, metadata */
-  --text-2xs: 11px; /* captions, badges */
+  /* Font sizes — the steps the v1 shell and pages use. Nothing renders below
+     --text-2xs (10px); half-pixel sizes from the handoff round up. */
+  --text-2xs: 10px; /* eyebrows, chips, key caps, day-arc labels */
+  --text-xs: 11px; /* buttons, secondary lines, mono metadata */
+  --text-sm: 12px; /* list rows, dense body */
+  --text-md: 13px; /* shell body default */
+  --text-lg: 14px; /* card titles */
+  --text-xl: 15px; /* top-bar identity, emphasized values */
+  --text-2xl: 18px; /* month title, inspector headings */
+  --text-3xl: 22px; /* page and result headings */
+  --text-4xl: 24px;
+  --text-5xl: 30px; /* converter day numeral */
+  --text-display: 38px; /* next prayer name (Tenang hero) */
+  --text-hero: 44px; /* countdown (Tenang hero) */
 
   /* Line heights */
   --leading-tight: 1.2;
@@ -347,18 +352,30 @@
   --window-min-width: 600px;
   --window-min-height: 480px;
 
-  /* Radii */
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
-  --radius-full: 9999px;
+  /* Radii — the steps the v1 UI uses (odd handoff values round down) */
+  --radius-2xs: 2px; /* ticks, wireframe bars */
+  --radius-xs: 4px; /* key caps, mono chips, task badges */
+  --radius-sm: 6px; /* segmented buttons, selects, small fields */
+  --radius-md: 8px; /* buttons, inputs, icon tiles, calendar cells */
+  --radius-lg: 10px; /* rail items, method cards, toasts */
+  --radius-xl: 12px; /* utility cards, qibla chip, result banners */
+  --radius-2xl: 14px; /* Tenang cards, command palette */
+  --radius-3xl: 16px; /* Tenang hero */
+  --radius-4xl: 20px; /* Drop Zone overlay */
+  --radius-full: 999px; /* pills, switches, tracks */
 
-  /* Spacing steps (4px base) */
+  /* Spacing — 2px half-steps up to 20px, then 4px. Odd handoff values round
+     down to the even step below; one-off layout offsets stay literal. */
+  --space-px: 1px;
+  --space-0-5: 2px;
   --space-1: 4px;
+  --space-1-5: 6px;
   --space-2: 8px;
+  --space-2-5: 10px;
   --space-3: 12px;
+  --space-3-5: 14px;
   --space-4: 16px;
+  --space-4-5: 18px;
   --space-5: 20px;
   --space-6: 24px;
   --space-8: 32px;
@@ -399,7 +416,7 @@
 }
 
 html {
-  font-size: 16px;
+  font-size: var(--text-xl);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -420,7 +437,7 @@ body {
 :focus-visible {
   outline: 2px solid var(--accent-500);
   outline-offset: 2px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-xs);
 }
 
 /* ───────────────────────────────────────────
@@ -435,7 +452,7 @@ body {
   padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-md);
   font-family: var(--font-body);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   font-weight: var(--weight-medium);
   line-height: 1;
   border: 1px solid transparent;
@@ -482,8 +499,8 @@ svg {
   border-radius: var(--radius-md, 8px);
   background: var(--surface);
   color: var(--fg);
-  padding: 10px 12px;
-  font-size: 12px;
+  padding: var(--space-2-5) var(--space-3);
+  font-size: var(--text-sm);
 }
 .status-banner.tone-success {
   border-color: color-mix(
