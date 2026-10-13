@@ -122,6 +122,7 @@
 .detail-prayer strong, .inspector-prayer b { font-size: var(--text-sm); font-weight: 600; }
 .detail-hint { margin-top: auto; padding-top: var(--space-3); color: var(--fg-muted); font-size: var(--text-2xs); line-height: 1.45; }
 .schedule-loading { color: var(--fg-muted); font-size: var(--text-xs); padding: var(--space-3) 0; }
+.prayer-page-schedule.ringkas .schedule-status { display: none; }
 .schedule-status { display: flex; justify-content: space-between; color: var(--fg-muted); font: var(--text-2xs) var(--font-mono); padding: 0 var(--space-0-5); }
 
 .ledger-layout { gap: 0; border: 1px solid var(--border); background: var(--surface); border-radius: var(--radius-xl); overflow: hidden; }
@@ -199,7 +200,7 @@ button.ledger-row { cursor: pointer; }
 .mini-switch:focus-visible { outline: 2px solid var(--accent-500); outline-offset: 2px; }
 
 /* Both overlays stay draggable except for the explicit dismiss control. */
-.prayer-overlay-bar { width: 100vw; height: 100vh; box-sizing: border-box; display: flex; align-items: center; gap: var(--space-3); padding: 0 var(--space-3); overflow: hidden; user-select: none; color: var(--fg); background: color-mix(in oklch, var(--surface) 96%, transparent); border: 1px solid var(--border); box-shadow: var(--shadow-lg); -webkit-app-region: drag; }
+.prayer-overlay-bar { width: 100vw; height: 100vh; box-sizing: border-box; display: flex; align-items: center; gap: var(--space-3); padding: 0 var(--space-3); overflow: hidden; user-select: none; color: var(--fg); background: color-mix(in oklch, var(--surface) 96%, transparent); border: 1px solid var(--border); box-shadow: none; -webkit-app-region: drag; }
 [data-tauri-drag-region] { -webkit-app-region: drag; }
 .overlay-status { min-width: 0; flex: 1; overflow: hidden; color: var(--fg-muted); font-size: var(--text-2xs); text-overflow: ellipsis; white-space: nowrap; }
 .prayer-overlay-bar.tenang { border-radius: var(--radius-full); }
@@ -224,7 +225,7 @@ button.ledger-row { cursor: pointer; }
 .zone-ring small { max-width: 38px; overflow: hidden; color: var(--fg); font: 700 var(--text-2xs) var(--font-display); text-overflow: ellipsis; white-space: nowrap; }
 .zone-countdown { color: var(--accent-500); font-size: var(--text-xl); letter-spacing: -.02em; }
 .zone-time-city { color: var(--fg-muted); font-size: var(--text-2xs); }
-.prayer-overlay-zone.ringkas { flex-direction: row; justify-content: flex-start; align-items: center; gap: var(--space-2); padding: 0 var(--space-2-5); border-radius: var(--radius-md); }
+.prayer-overlay-zone.ringkas { flex-direction: row; justify-content: flex-start; align-items: center; gap: var(--space-2); padding: 0 var(--space-6) 0 var(--space-2-5); border-radius: var(--radius-md); }
 .zone-ledger-stack { display: flex; flex-direction: column; gap: var(--space-px); min-width: 0; flex: 1; overflow: hidden; }
 .zone-ledger-stack b { color: var(--fg-muted); font: 700 var(--text-2xs) var(--font-mono); letter-spacing: .04em; }
 .zone-ledger-stack strong { color: var(--accent-500); font: 600 var(--text-md)/1.05 var(--font-mono); }
