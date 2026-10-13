@@ -193,7 +193,7 @@ button.ledger-row { cursor: pointer; }
 .main-inspector-task { display: flex; justify-content: space-between; align-items: center; min-height: 25px; gap: var(--space-2); border-top: 1px solid var(--prayer-hairline); font-size: var(--text-2xs); }
 .main-inspector-task > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mini-switch { position: relative; width: 28px; height: 16px; flex: 0 0 28px; padding: 0; border: 0; border-radius: var(--radius-full); background: var(--border-input); cursor: pointer; transition: background var(--motion-instant); }
-.mini-switch > i { position: absolute; top: 2px; left: 2px; width: 12px; height: 12px; border-radius: 50%; background: var(--surface); box-shadow: 0 1px 2px rgba(0,0,0,.15); transition: transform var(--motion-instant); }
+.mini-switch > i { position: absolute; top: 2px; left: 2px; width: 12px; height: 12px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.15); transition: transform var(--motion-instant); }
 .mini-switch.on { background: var(--accent-500); }
 .mini-switch.on > i { transform: translateX(12px); }
 .mini-switch:focus-visible { outline: 2px solid var(--accent-500); outline-offset: 2px; }

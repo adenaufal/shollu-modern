@@ -474,20 +474,6 @@ body {
   background: var(--bg-hover);
 }
 
-/* Task type badges (TasksPage renders badge-${type}) */
-.badge-multimedia {
-  background: oklch(0.95 0.05 145);
-  color: oklch(0.38 0.14 145);
-}
-.badge-info {
-  background: oklch(0.93 0.04 230);
-  color: oklch(0.38 0.12 230);
-}
-.badge-warning {
-  background: oklch(0.93 0.06 25);
-  color: oklch(0.4 0.18 25);
-}
-
 svg {
   overflow: visible;
 }
@@ -530,19 +516,6 @@ svg {
 .status-banner.tone-info {
   border-color: color-mix(in oklch, var(--accent-500) 35%, var(--border));
   background: color-mix(in oklch, var(--accent-500) 8%, var(--surface));
-}
-
-.badge-shutdown {
-  background: oklch(0.95 0.04 15);
-  color: oklch(0.42 0.16 20);
-}
-.badge-hibernate {
-  background: oklch(0.95 0.05 75);
-  color: oklch(0.42 0.12 65);
-}
-.badge-neutral {
-  background: var(--surface-subtle, var(--bg));
-  color: var(--fg-muted);
 }
 
 .skeleton-pulse {
