@@ -252,7 +252,7 @@ button.ledger-row { cursor: pointer; }
   .detail-prayer { padding: var(--space-1-5) 0; }
 }
 @media (max-width:650px) {
-  .arc-marker:nth-child(5) .arc-name, .arc-marker:nth-child(9) .arc-name { transform:translateY(12px); }
-  .arc-marker:nth-child(5) .arc-time, .arc-marker:nth-child(9) .arc-time { transform:translateY(12px); }
+  .arc-marker:nth-child(5) .arc-name, .arc-marker:nth-child(9) .arc-name { transform:translateY(14px); }
+  .arc-marker:nth-child(5) .arc-time, .arc-marker:nth-child(9) .arc-time { transform:translateY(14px); }
   .calm-qibla { min-width:110px; }
 }

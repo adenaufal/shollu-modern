@@ -429,6 +429,8 @@
   .task-page.layout-ringkas .tasks-layout { grid-template-columns:minmax(0,1fr) 220px; }
   .about-page.layout-ringkas .compact-about { grid-template-columns:minmax(0,1fr) 220px; }
   .tenang-location-layout { grid-template-columns:1fr; height:auto; }
+  .task-page.layout-ringkas .prayer-alarm-tile { flex-wrap:wrap; }
+  .task-page.layout-ringkas .prayer-alarm-tile>small { position:static; flex-basis:100%; text-align:right; }
   .settings-nav { position:static; flex-direction:row; }
   .settings-nav a { padding:var(--space-1-5) var(--space-2); }
 }
@@ -463,6 +465,7 @@
 
 @media (min-width:541px) and (max-width:740px) {
   .tenang-location-layout { grid-template-columns:1fr 1fr; gap:var(--space-2-5); padding:var(--space-2-5); }
+  .tenang-location-layout .u-field-grid { grid-template-columns:1fr; }
   .tenang-location-editor { gap:var(--space-2-5); }
   .location-page.layout-ringkas .compact-location-layout { grid-template-columns:minmax(0,1fr) 220px; padding-left:var(--space-2-5); }
   .compact-calculation-card .adjustment-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
