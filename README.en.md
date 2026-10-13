@@ -10,7 +10,7 @@ A desktop prayer reminder rebuilt from **[Shollu](https://github.com/ebta/shollu
 
 ## Interface
 
-**Tenang** uses an icon rail, countdown cards, and a day arc. **Ringkas** uses tabs, a monthly schedule ledger, an inspector, and a status bar. Both follow the `design_handoff_shollu_ui` handoff and share settings and schedules.
+**Tenang** uses an icon rail, countdown cards, and a day arc. **Ringkas** uses tabs, a monthly schedule ledger, an inspector, and a status bar. Both follow the [`design_handoff_shollu_ui`](docs/design-system/handoff/) handoff and share settings and schedules.
 
 ![Tenang mode](docs/screenshots/tenang-main.png)
 

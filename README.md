@@ -10,7 +10,7 @@ Aplikasi desktop pengingat waktu sholat yang dibangun ulang dari **[Shollu](http
 
 ## Tampilan
 
-Mode **Tenang** memakai rail ikon, kartu hitung mundur, dan day arc. Mode **Ringkas** memakai tab, tabel jadwal bulanan, inspector, dan status bar. Keduanya mengikuti handoff `design_handoff_shollu_ui` dan berbagi pengaturan serta jadwal.
+Mode **Tenang** memakai rail ikon, kartu hitung mundur, dan day arc. Mode **Ringkas** memakai tab, tabel jadwal bulanan, inspector, dan status bar. Keduanya mengikuti handoff [`design_handoff_shollu_ui`](docs/design-system/handoff/) dan berbagi pengaturan serta jadwal.
 
 ![Mode Tenang](docs/screenshots/tenang-main.png)
 
