@@ -352,12 +352,17 @@
   --window-min-width: 600px;
   --window-min-height: 480px;
 
-  /* Radii */
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
-  --radius-full: 9999px;
+  /* Radii — the steps the v1 UI uses (odd handoff values round down) */
+  --radius-2xs: 2px; /* ticks, wireframe bars */
+  --radius-xs: 4px; /* key caps, mono chips, task badges */
+  --radius-sm: 6px; /* segmented buttons, selects, small fields */
+  --radius-md: 8px; /* buttons, inputs, icon tiles, calendar cells */
+  --radius-lg: 10px; /* rail items, method cards, toasts */
+  --radius-xl: 12px; /* utility cards, qibla chip, result banners */
+  --radius-2xl: 14px; /* Tenang cards, command palette */
+  --radius-3xl: 16px; /* Tenang hero */
+  --radius-4xl: 20px; /* Drop Zone overlay */
+  --radius-full: 999px; /* pills, switches, tracks */
 
   /* Spacing steps (4px base) */
   --space-1: 4px;
@@ -425,7 +430,7 @@ body {
 :focus-visible {
   outline: 2px solid var(--accent-500);
   outline-offset: 2px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-xs);
 }
 
 /* ───────────────────────────────────────────

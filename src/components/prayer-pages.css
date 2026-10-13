@@ -14,7 +14,7 @@
   border: 1px solid var(--border);
   box-shadow: var(--shadow-sm);
 }
-.calm-hero { flex: 0 0 226px; border-radius: 16px; padding: 18px 22px 12px; }
+.calm-hero { flex: 0 0 226px; border-radius: var(--radius-3xl); padding: 18px 22px 12px; }
 .calm-hero-top { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .calm-hero-copy { min-width: 0; }
 .calm-eyebrow { color: var(--fg-muted); font-size: var(--text-2xs); font-weight: 700; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 2px; }
@@ -22,18 +22,18 @@
 .calm-next-line > span { font: 700 var(--text-display)/1.1 var(--font-display); letter-spacing: -.03em; }
 .calm-next-line > strong { color: var(--accent-500); font-size: var(--text-hero); font-weight: 700; letter-spacing: -.04em; }
 .calm-subline { color: var(--fg-muted); font-size: var(--text-sm); margin-top: 4px; }
-.calm-qibla { min-width: 132px; height: 64px; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 6px 9px; }
+.calm-qibla { min-width: 132px; height: 64px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center; gap: 8px; padding: 6px 9px; }
 .calm-qibla-info { display: flex; flex-direction: column; line-height: 1.15; }
 .calm-qibla-info > span { color: var(--fg-muted); font-size: var(--text-2xs); font-weight: 700; letter-spacing: .08em; }
 .calm-qibla-info > strong { color: var(--fg); font-size: var(--text-xl); font-variant-numeric: tabular-nums; }
 .calm-qibla-info > small { color: var(--fg-muted); font-size: var(--text-2xs); }
 .day-arc { height: 74px; margin: 9px 10px 0; position: relative; }
-.arc-track, .arc-progress { position: absolute; top: 34px; left: 0; height: 6px; border-radius: 999px; }
+.arc-track, .arc-progress { position: absolute; top: 34px; left: 0; height: 6px; border-radius: var(--radius-full); }
 .arc-track { right: 0; background: var(--bg-hover); }
 .arc-progress { background: linear-gradient(90deg, var(--accent-200), var(--accent-500)); }
 .arc-marker { position: absolute; top: 0; height: 74px; width: 60px; transform: translateX(-50%); display: flex; align-items: center; flex-direction: column; color: var(--fg); }
 .arc-name { font-size: var(--text-2xs); font-weight: 700; line-height: 13px; text-transform: uppercase; white-space: nowrap; }
-.arc-tick { display: block; width: 2px; height: 14px; margin-top: 17px; background: var(--fg-muted); border-radius: 3px; }
+.arc-tick { display: block; width: 2px; height: 14px; margin-top: 17px; background: var(--fg-muted); border-radius: var(--radius-2xs); }
 .arc-time { margin-top: 11px; font-size: var(--text-sm); font-weight: 600; white-space: nowrap; }
 .arc-marker.past { color: var(--fg-subtle); }
 .arc-marker.past .arc-tick { background: var(--fg-subtle); }
@@ -43,7 +43,7 @@
 .arc-now { position: absolute; z-index: 2; top: 24px; height:34px; width: 1px; background: var(--gold-500); }
 .arc-now > span { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); color: var(--gold-500); font-size: var(--text-2xs); font-weight: 800; white-space: nowrap; }
 .calm-main-grid { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(250px, 1fr); gap: 16px; min-width: 0; }
-.calm-card { min-width: 0; border-radius: 14px; padding: 13px 16px; }
+.calm-card { min-width: 0; border-radius: var(--radius-2xl); padding: 13px 16px; }
 .calm-card-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 7px; }
 .calm-card-head h2 { margin: 0; font: 700 var(--text-xl)/1.2 var(--font-display); letter-spacing: -.015em; }
 .calm-card-head p { margin: 3px 0 0; color: var(--fg-muted); font-size: var(--text-xs); }
@@ -61,21 +61,21 @@
 .calm-side-stack { display: flex; flex-direction: column; gap: 12px; min-width: 0; min-height: 0; }
 .calm-side-stack > .reminder-card, .calm-side-stack > .calm-note { flex: 1; min-height: 0; }
 .reminder-card { padding-bottom: 10px; }
-.reminder-state { background: var(--bg-hover); color: var(--fg-muted) !important; padding: 4px 8px; border-radius: 999px; font-size: var(--text-2xs) !important; font-weight: 700; }
+.reminder-state { background: var(--bg-hover); color: var(--fg-muted) !important; padding: 4px 8px; border-radius: var(--radius-full); font-size: var(--text-2xs) !important; font-weight: 700; }
 .reminder-state.enabled { color: var(--accent-700) !important; background: var(--accent-100); }
 .reminder-preview { display: flex; align-items: center; gap: 9px; padding: 8px 0 2px; border-top: 1px solid var(--prayer-hairline); }
-.reminder-icon { width: 27px; height: 27px; display: grid; place-items: center; border-radius: 8px; color: var(--accent-600); background: var(--accent-50); font-size: var(--text-xl); }
+.reminder-icon { width: 27px; height: 27px; display: grid; place-items: center; border-radius: var(--radius-md); color: var(--accent-600); background: var(--accent-50); font-size: var(--text-xl); }
 .reminder-preview > div { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
 .reminder-preview strong { font-size: var(--text-sm); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .reminder-preview small { color: var(--fg-muted); font-size: var(--text-2xs); }
 .reminder-empty { display: block; padding-top: 6px; color: var(--fg-muted); font-size: var(--text-2xs); }
-.calm-note { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 13px; background: var(--hero-bg); border: 1px solid color-mix(in oklch, var(--accent-200) 65%, var(--border)); }
+.calm-note { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: var(--radius-xl); background: var(--hero-bg); border: 1px solid color-mix(in oklch, var(--accent-200) 65%, var(--border)); }
 .note-spark { color: var(--accent-text); font-size: var(--text-2xl); }
 .calm-note strong { font: 600 var(--text-xs) var(--font-display); }
 .calm-note p { margin: 4px 0 0; color: var(--fg-muted); font-size: var(--text-2xs); line-height: 1.45; }
 .calm-meta-strip { display: flex; justify-content: space-between; gap: 8px; color: var(--fg-muted); font-size: var(--text-2xs); padding: 0 3px; }
 .prayer-skeleton { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-.prayer-skeleton > div { height: 188px; border-radius: 14px; background: color-mix(in oklch, var(--fg-muted) 10%, var(--surface)); }
+.prayer-skeleton > div { height: 188px; border-radius: var(--radius-2xl); background: color-mix(in oklch, var(--fg-muted) 10%, var(--surface)); }
 
 /* Month calendar and the compact ledger share the same month controls. */
 .prayer-page-schedule { height: 100%; min-height: 0; display: flex; flex-direction: column; gap: 12px; }
@@ -86,18 +86,18 @@
 .schedule-header-portal { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; }
 .shell-topbar:has(.schedule-header-portal) .calm-top-identity { display: none; }
 .shell-topbar:has(.schedule-header-portal) .shell-page-actions { flex: 1; }
-.schedule-icon-btn { display: grid; place-items: center; width: 25px; height: 25px; border: 1px solid var(--border); border-radius: 7px; color: var(--fg-muted); background: var(--surface); cursor: pointer; }
+.schedule-icon-btn { display: grid; place-items: center; width: 25px; height: 25px; border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--fg-muted); background: var(--surface); cursor: pointer; }
 .schedule-icon-btn:hover { background: var(--bg-hover); color: var(--fg); }
 .schedule-exports { display: flex; gap: 6px; }
 .schedule-exports .btn { min-height: 27px; padding: 4px 9px; font-size: var(--text-2xs); }
 .calendar-layout, .ledger-layout { flex: 1; min-height: 0; display: flex; gap: 16px; }
-.calendar-card { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; padding: 9px; border-radius: 14px; }
+.calendar-card { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; padding: 9px; border-radius: var(--radius-2xl); }
 .calendar-weekdays, .calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
 .calendar-weekdays { padding: 0 0 7px; }
 .calendar-weekdays span { text-align: center; color: var(--fg-muted); font-size: var(--text-2xs); font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
 .calendar-weekdays .friday { color: var(--accent-text); }
 .calendar-grid { flex: 1; min-height: 0; grid-template-rows: repeat(6, minmax(0, 1fr)); }
-.calendar-cell { min-width: 0; border: 1px solid var(--prayer-hairline); border-radius: 9px; padding: 5px 6px; background: var(--surface); color: var(--fg); display: flex; flex-direction: column; align-items: stretch; justify-content: space-between; text-align: left; cursor: pointer; transition: background var(--motion-instant), border-color var(--motion-instant); }
+.calendar-cell { min-width: 0; border: 1px solid var(--prayer-hairline); border-radius: var(--radius-md); padding: 5px 6px; background: var(--surface); color: var(--fg); display: flex; flex-direction: column; align-items: stretch; justify-content: space-between; text-align: left; cursor: pointer; transition: background var(--motion-instant), border-color var(--motion-instant); }
 .calendar-cell:hover { background: var(--bg-hover); }
 .calendar-cell-top { display: flex; align-items: baseline; justify-content: space-between; }
 .calendar-cell-top strong { font-size: var(--text-sm); font-weight: 600; }
@@ -111,7 +111,7 @@
 .calendar-cell.today .calendar-maghrib { color: var(--accent-700); }
 .calendar-cell.selected { outline: 2px solid var(--accent-500); outline-offset: -2px; }
 .calendar-grid.is-loading .calendar-cell { opacity: .58; }
-.calendar-detail { width: 236px; flex: 0 0 236px; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; min-height: 0; }
+.calendar-detail { width: 236px; flex: 0 0 236px; border-radius: var(--radius-2xl); padding: 16px; display: flex; flex-direction: column; min-height: 0; }
 .detail-date-kicker, .inspector-kicker { color: var(--accent-text); font-size: var(--text-2xs); font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 .calendar-detail h2 { margin: 5px 0 0; font: 700 var(--text-xl)/1.2 var(--font-display); }
 .detail-hijri { margin: 5px 0 14px; color: var(--fg-muted); font-size: var(--text-xs); }
@@ -123,7 +123,7 @@
 .schedule-loading { color: var(--fg-muted); font-size: var(--text-xs); padding: 12px 0; }
 .schedule-status { display: flex; justify-content: space-between; color: var(--fg-muted); font: var(--text-2xs) var(--font-mono); padding: 0 2px; }
 
-.ledger-layout { gap: 0; border: 1px solid var(--border); background: var(--surface); border-radius: 12px; overflow: hidden; }
+.ledger-layout { gap: 0; border: 1px solid var(--border); background: var(--surface); border-radius: var(--radius-xl); overflow: hidden; }
 .ledger-pane { flex: 1; min-width: 0; overflow: auto; }
 .ledger-table { min-width: 620px; }
 .ledger-row { display: grid; grid-template-columns: 104px repeat(6, minmax(60px, 1fr)); align-items: center; width: 100%; height: 29px; padding: 0 12px; border: 0; border-bottom: 1px solid var(--prayer-hairline); background: transparent; color: var(--fg); text-align: left; font: var(--text-xs) var(--font-mono); }
@@ -147,9 +147,9 @@ button.ledger-row { cursor: pointer; }
 .inspector-qibla b { display: block; font: var(--text-lg) var(--font-mono); }
 .inspector-qibla small { color: var(--fg-muted); font-size: var(--text-2xs); }
 .inspector-foot { margin-top: auto; padding-top: 10px; border-top: 1px solid var(--prayer-hairline); color: var(--fg-muted); font-size: var(--text-2xs); line-height: 1.4; }
-.compact-main-layout { flex: 1; min-height: 0; display: flex; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); overflow: hidden; }
+.compact-main-layout { flex: 1; min-height: 0; display: flex; border: 1px solid var(--border); border-radius: var(--radius-xl); background: var(--surface); overflow: hidden; }
 .compact-main-skeleton { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 284px; gap: 12px; }
-.compact-main-skeleton > div { border-radius: 11px; background: color-mix(in oklch, var(--fg-muted) 10%, var(--surface)); }
+.compact-main-skeleton > div { border-radius: var(--radius-lg); background: color-mix(in oklch, var(--fg-muted) 10%, var(--surface)); }
 .compact-main-pane { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
 .compact-main-toolbar { min-height: 35px; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 9px; border-bottom: 1px solid var(--border); background: var(--surface); }
 .compact-main-month { display: flex; align-items: center; gap: 7px; }
@@ -177,7 +177,7 @@ button.ledger-row { cursor: pointer; }
 .main-inspector-params > div { display: flex; justify-content: space-between; padding: 3px 0; color: var(--fg-muted); font-size: var(--text-2xs); }
 .main-inspector-params > .adjustment-quick { padding-top: 2px; }
 .main-inspector-params b { color: var(--fg); font: var(--text-2xs) var(--font-mono); }
-.main-inspector-params .inspector-chip { padding: 2px 6px; border: 1px solid var(--border); border-radius: 5px; background: var(--surface); color: var(--fg); font: var(--text-2xs) var(--font-mono); cursor: pointer; }
+.main-inspector-params .inspector-chip { padding: 2px 6px; border: 1px solid var(--border); border-radius: var(--radius-xs); background: var(--surface); color: var(--fg); font: var(--text-2xs) var(--font-mono); cursor: pointer; }
 .main-inspector-params .inspector-chip:hover { border-color: var(--accent-500); color: var(--accent-text-strong); }
 .compact-selected-date { display: block; margin: 5px 0 3px; padding-top: 6px; border-top: 1px solid var(--prayer-hairline); font-size: var(--text-2xs); font-weight: 600; }
 .compact-selected-times { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px 6px; }
@@ -191,7 +191,7 @@ button.ledger-row { cursor: pointer; }
 .main-inspector-tasks > small { color: var(--fg-muted); font-size: var(--text-2xs); }
 .main-inspector-task { display: flex; justify-content: space-between; align-items: center; min-height: 25px; gap: 8px; border-top: 1px solid var(--prayer-hairline); font-size: var(--text-2xs); }
 .main-inspector-task > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.mini-switch { position: relative; width: 28px; height: 16px; flex: 0 0 28px; padding: 0; border: 0; border-radius: 999px; background: var(--border-input); cursor: pointer; transition: background var(--motion-instant); }
+.mini-switch { position: relative; width: 28px; height: 16px; flex: 0 0 28px; padding: 0; border: 0; border-radius: var(--radius-full); background: var(--border-input); cursor: pointer; transition: background var(--motion-instant); }
 .mini-switch > i { position: absolute; top: 2px; left: 2px; width: 12px; height: 12px; border-radius: 50%; background: var(--surface); box-shadow: 0 1px 2px rgba(0,0,0,.15); transition: transform var(--motion-instant); }
 .mini-switch.on { background: var(--accent-500); }
 .mini-switch.on > i { transform: translateX(12px); }
@@ -201,12 +201,12 @@ button.ledger-row { cursor: pointer; }
 .prayer-overlay-bar { width: 100vw; height: 100vh; box-sizing: border-box; display: flex; align-items: center; gap: 12px; padding: 0 12px; overflow: hidden; user-select: none; color: var(--fg); background: color-mix(in oklch, var(--surface) 96%, transparent); border: 1px solid var(--border); box-shadow: var(--shadow-lg); -webkit-app-region: drag; }
 [data-tauri-drag-region] { -webkit-app-region: drag; }
 .overlay-status { min-width: 0; flex: 1; overflow: hidden; color: var(--fg-muted); font-size: var(--text-2xs); text-overflow: ellipsis; white-space: nowrap; }
-.prayer-overlay-bar.tenang { border-radius: 23px; }
-.prayer-overlay-bar.ringkas { border-radius: 8px; gap: 0; padding: 0 10px; }
+.prayer-overlay-bar.tenang { border-radius: var(--radius-full); }
+.prayer-overlay-bar.ringkas { border-radius: var(--radius-md); gap: 0; padding: 0 10px; }
 .overlay-accent-dot { width: 7px; height: 7px; flex: 0 0 7px; border-radius: 50%; background: var(--accent-500); }
 .overlay-prayer-name { font: 700 var(--text-lg) var(--font-display); white-space: nowrap; }
 .overlay-countdown { color: var(--accent-500); font-size: var(--text-xl); white-space: nowrap; }
-.overlay-mini-arc { position: relative; height: 6px; flex: 1; min-width: 40px; border-radius: 999px; background: var(--bg-hover); }
+.overlay-mini-arc { position: relative; height: 6px; flex: 1; min-width: 40px; border-radius: var(--radius-full); background: var(--bg-hover); }
 .overlay-mini-arc > span { display: block; height: 100%; border-radius: inherit; background: var(--accent-500); }
 .overlay-mini-arc > i { position: absolute; top: -3px; width: 1px; height: 12px; background: var(--gold-500); }
 .overlay-target { color: var(--fg-muted); font-size: var(--text-xs); white-space: nowrap; }
@@ -217,18 +217,18 @@ button.ledger-row { cursor: pointer; }
 .overlay-close, .zone-overlay-close { display: grid; place-items: center; flex: 0 0 26px; width: 26px; height: 26px; border: 0; border-radius: 50%; color: var(--fg-muted); background: transparent; font-size: var(--text-2xl); cursor: pointer; -webkit-app-region: no-drag; }
 .overlay-close:hover, .zone-overlay-close:hover { background: var(--bg-hover); color: var(--color-danger); }
 .prayer-overlay-zone { position: relative; box-sizing: border-box; width: 100vw; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 5px; overflow: hidden; border: 1px solid var(--border); background: color-mix(in oklch, var(--surface) 96%, transparent); color: var(--fg); user-select: none; -webkit-app-region: drag; }
-.prayer-overlay-zone.tenang { border-radius: 20px; }
+.prayer-overlay-zone.tenang { border-radius: var(--radius-4xl); }
 .zone-ring { width: 56px; height: 56px; display: grid; place-items: center; border-radius: 50%; }
 .zone-ring > div { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; background: var(--surface); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
 .zone-ring small { max-width: 38px; overflow: hidden; color: var(--fg); font: 700 var(--text-2xs) var(--font-display); text-overflow: ellipsis; white-space: nowrap; }
 .zone-countdown { color: var(--accent-500); font-size: var(--text-xl); letter-spacing: -.02em; }
 .zone-time-city { color: var(--fg-muted); font-size: var(--text-2xs); }
-.prayer-overlay-zone.ringkas { flex-direction: row; justify-content: flex-start; align-items: center; gap: 8px; padding: 0 10px; border-radius: 8px; }
+.prayer-overlay-zone.ringkas { flex-direction: row; justify-content: flex-start; align-items: center; gap: 8px; padding: 0 10px; border-radius: var(--radius-md); }
 .zone-ledger-stack { display: flex; flex-direction: column; gap: 1px; min-width: 0; flex: 1; overflow: hidden; }
 .zone-ledger-stack b { color: var(--fg-muted); font: 700 var(--text-2xs) var(--font-mono); letter-spacing: .04em; }
 .zone-ledger-stack strong { color: var(--accent-500); font: 600 var(--text-md)/1.05 var(--font-mono); }
 .zone-ledger-stack span { overflow: hidden; color: var(--fg-muted); font: var(--text-2xs) var(--font-mono); text-overflow: ellipsis; white-space: nowrap; }
-.zone-progress { width: 4px; height: 30px; overflow: hidden; display: flex; align-items: flex-end; border-radius: 999px; background: var(--bg-hover); }
+.zone-progress { width: 4px; height: 30px; overflow: hidden; display: flex; align-items: flex-end; border-radius: var(--radius-full); background: var(--bg-hover); }
 .zone-progress span { width: 100%; border-radius: inherit; background: var(--accent-500); }
 .zone-overlay-close { position: absolute; top: 3px; right: 3px; width: 18px; height: 18px; font-size: var(--text-lg); }
 
