@@ -37,7 +37,7 @@
 .arc-time { margin-top: 11px; font-size: 11.5px; font-weight: 600; white-space: nowrap; }
 .arc-marker.past { color: var(--fg-subtle); }
 .arc-marker.past .arc-tick { background: var(--fg-subtle); }
-.arc-marker.next { color: var(--accent-600); }
+.arc-marker.next { color: var(--accent-text); }
 .arc-marker.next .arc-tick { width: 10px; height: 10px; margin-top: 19px; border: 2px solid var(--accent-500); border-radius: 50%; background: var(--surface); box-shadow: 0 0 0 2px var(--surface); }
 .arc-marker.next .arc-time { margin-top:13px; font-size: 12.5px; font-weight: 700; }
 .arc-now { position: absolute; z-index: 2; top: 24px; height:34px; width: 1px; background: var(--gold-500); }
@@ -56,7 +56,7 @@
 .today-row.passed { color: var(--fg-subtle); }
 .today-row.current { color: color-mix(in oklch, var(--gold-500) 70%, var(--fg)); background: color-mix(in oklch, var(--gold-500) 8%, var(--surface)); }
 .today-row.current > i { background: var(--gold-500); }
-.today-row.next { color: var(--accent-600); font-weight: 600; }
+.today-row.next { color: var(--accent-text); font-weight: 600; }
 .today-row.next > i { background: var(--accent-500); }
 .calm-side-stack { display: flex; flex-direction: column; gap: 12px; min-width: 0; min-height: 0; }
 .calm-side-stack > .reminder-card, .calm-side-stack > .calm-note { flex: 1; min-height: 0; }
@@ -70,7 +70,7 @@
 .reminder-preview small { color: var(--fg-muted); font-size: 9.5px; }
 .reminder-empty { display: block; padding-top: 6px; color: var(--fg-muted); font-size: 9px; }
 .calm-note { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 13px; background: var(--hero-bg); border: 1px solid color-mix(in oklch, var(--accent-200) 65%, var(--border)); }
-.note-spark { color: var(--accent-600); font-size: 17px; }
+.note-spark { color: var(--accent-text); font-size: 17px; }
 .calm-note strong { font: 600 11px var(--font-display); }
 .calm-note p { margin: 4px 0 0; color: var(--fg-muted); font-size: 10px; line-height: 1.45; }
 .calm-meta-strip { display: flex; justify-content: space-between; gap: 8px; color: var(--fg-muted); font-size: 9px; padding: 0 3px; }
@@ -95,7 +95,7 @@
 .calendar-weekdays, .calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
 .calendar-weekdays { padding: 0 0 7px; }
 .calendar-weekdays span { text-align: center; color: var(--fg-muted); font-size: 9px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
-.calendar-weekdays .friday { color: var(--accent-600); }
+.calendar-weekdays .friday { color: var(--accent-text); }
 .calendar-grid { flex: 1; min-height: 0; grid-template-rows: repeat(6, minmax(0, 1fr)); }
 .calendar-cell { min-width: 0; border: 1px solid var(--prayer-hairline); border-radius: 9px; padding: 5px 6px; background: var(--surface); color: var(--fg); display: flex; flex-direction: column; align-items: stretch; justify-content: space-between; text-align: left; cursor: pointer; transition: background var(--motion-instant), border-color var(--motion-instant); }
 .calendar-cell:hover { background: var(--bg-hover); }
@@ -112,7 +112,7 @@
 .calendar-cell.selected { outline: 2px solid var(--accent-500); outline-offset: -2px; }
 .calendar-grid.is-loading .calendar-cell { opacity: .58; }
 .calendar-detail { width: 236px; flex: 0 0 236px; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; min-height: 0; }
-.detail-date-kicker, .inspector-kicker { color: var(--accent-600); font-size: 9px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.detail-date-kicker, .inspector-kicker { color: var(--accent-text); font-size: 9px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 .calendar-detail h2 { margin: 5px 0 0; font: 700 16px/1.2 var(--font-display); }
 .detail-hijri { margin: 5px 0 14px; color: var(--fg-muted); font-size: 10.5px; }
 .detail-prayers { display: flex; flex-direction: column; }
@@ -178,7 +178,7 @@ button.ledger-row { cursor: pointer; }
 .main-inspector-params > .adjustment-quick { padding-top: 2px; }
 .main-inspector-params b { color: var(--fg); font: 10px var(--font-mono); }
 .main-inspector-params .inspector-chip { padding: 2px 6px; border: 1px solid var(--border); border-radius: 5px; background: var(--surface); color: var(--fg); font: 9px var(--font-mono); cursor: pointer; }
-.main-inspector-params .inspector-chip:hover { border-color: var(--accent-500); color: var(--accent-700); }
+.main-inspector-params .inspector-chip:hover { border-color: var(--accent-500); color: var(--accent-text-strong); }
 .compact-selected-date { display: block; margin: 5px 0 3px; padding-top: 6px; border-top: 1px solid var(--prayer-hairline); font-size: 9px; font-weight: 600; }
 .compact-selected-times { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px 6px; }
 .main-inspector-params > .compact-selected-times { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px 6px; }
@@ -187,7 +187,7 @@ button.ledger-row { cursor: pointer; }
 .compact-selected-times b { color: var(--fg); font-weight: 500; }
 .main-inspector-tasks { padding-top: 7px; border-top: 1px solid var(--prayer-hairline); }
 .main-inspector-tasks-head { display: flex; justify-content: space-between; align-items: center; }
-.main-inspector-tasks-head button, .reminder-add { border: 0; padding: 2px 0; background: none; color: var(--accent-600); font-size: 9px; font-weight: 700; cursor: pointer; }
+.main-inspector-tasks-head button, .reminder-add { border: 0; padding: 2px 0; background: none; color: var(--accent-text); font-size: 9px; font-weight: 700; cursor: pointer; }
 .main-inspector-tasks > small { color: var(--fg-muted); font-size: 9px; }
 .main-inspector-task { display: flex; justify-content: space-between; align-items: center; min-height: 25px; gap: 8px; border-top: 1px solid var(--prayer-hairline); font-size: 10px; }
 .main-inspector-task > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

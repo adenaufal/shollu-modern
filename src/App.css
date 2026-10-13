@@ -28,17 +28,18 @@
    ─────────────────────────────────────────── */
 
 :root {
-  /* Shollu Teal — brand primary, hue 208 */
+  /* Shollu Teal — brand primary, hue 208.
+     500 is darkened for 4.5:1 white text; 600–900 step down from it. */
   --shollu-50: oklch(0.98 0.01 208);
   --shollu-100: oklch(0.95 0.025 208);
   --shollu-200: oklch(0.89 0.055 208);
   --shollu-300: oklch(0.81 0.09 208);
   --shollu-400: oklch(0.72 0.13 208);
   --shollu-500: oklch(0.51 0.150 208);
-  --shollu-600: oklch(0.52 0.14 208);
-  --shollu-700: oklch(0.43 0.115 208);
-  --shollu-800: oklch(0.33 0.085 208);
-  --shollu-900: oklch(0.25 0.06 208);
+  --shollu-600: oklch(0.45 0.13 208);
+  --shollu-700: oklch(0.38 0.11 208);
+  --shollu-800: oklch(0.3 0.085 208);
+  --shollu-900: oklch(0.23 0.06 208);
   --shollu-950: oklch(0.16 0.035 208);
 
   /* Shollu Gold — brand secondary, hue 84 */
@@ -77,7 +78,7 @@
   /* Accent scales — Emerald */
   --emerald-400: oklch(0.72 0.17 155);
   --emerald-500: oklch(0.50 0.18 155);
-  --emerald-600: oklch(0.52 0.16 155);
+  --emerald-600: oklch(0.44 0.15 155);
   --emerald-50: oklch(0.97 0.02 155);
   --emerald-100: oklch(0.93 0.05 155);
 
@@ -134,6 +135,11 @@
   --shadow-md: 0 2px 8px oklch(0 0 0 / 0.08), 0 1px 2px oklch(0 0 0 / 0.04);
   --shadow-lg: 0 8px 24px oklch(0 0 0 / 0.12), 0 2px 6px oklch(0 0 0 / 0.06);
 
+  /* Accent-coloured text on surfaces (links, next prayer, kickers).
+     Chips on a fixed --accent-50/100 tint keep the raw 600/700 steps. */
+  --accent-text: var(--accent-600);
+  --accent-text-strong: var(--accent-700);
+
   /* Prayer status */
   --prayer-done: var(--slate-400);
   --prayer-next: var(--accent-500);
@@ -170,6 +176,9 @@
   --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.25);
   --shadow-md: 0 2px 8px oklch(0 0 0 / 0.35), 0 1px 2px oklch(0 0 0 / 0.15);
   --shadow-lg: 0 8px 24px oklch(0 0 0 / 0.5), 0 2px 6px oklch(0 0 0 / 0.25);
+
+  --accent-text: var(--accent-400);
+  --accent-text-strong: var(--accent-400);
 
   --prayer-done: var(--slate-600);
   --prayer-next: var(--accent-400);
@@ -253,8 +262,8 @@
   --accent-400: var(--emerald-400);
   --accent-500: var(--emerald-500);
   --accent-600: var(--emerald-600);
-  --accent-700: oklch(0.42 0.14 155);
-  --accent-800: oklch(0.32 0.1 155);
+  --accent-700: oklch(0.37 0.13 155);
+  --accent-800: oklch(0.3 0.1 155);
   --accent-900: oklch(0.22 0.07 155);
   --accent-fg: #ffffff;
 }
