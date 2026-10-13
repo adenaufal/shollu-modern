@@ -35,6 +35,9 @@ function Shell(props: { page: PageId; navigate: (page: PageId) => void }) {
   const app = useAppState();
   const id = () => app.lang() === "Indonesia";
   const label = (page: PageId) => pages.find((item) => item.id === page)!.label[id() ? 0 : 1];
+  // Ringkas folds the month schedule into Main (handoff 1b), so it has no separate Schedule tab.
+  const currentPage = (): PageId => app.layoutMode() === "ringkas" && props.page === "schedule" ? "main" : props.page;
+  const shellPages = () => app.layoutMode() === "ringkas" ? pages.filter((item) => item.id !== "schedule") : pages;
   const [paletteOpen, setPaletteOpen] = createSignal(false);
   const [query, setQuery] = createSignal("");
   const [cities, setCities] = createSignal<City[]>([]);
@@ -42,7 +45,7 @@ function Shell(props: { page: PageId; navigate: (page: PageId) => void }) {
   const [cityError, setCityError] = createSignal("");
   const [activeCommand, setActiveCommand] = createSignal(0);
   createEffect(() => {
-    props.page;
+    currentPage();
     queueMicrotask(() => document.getElementById("main-content")?.scrollTo(0, 0));
   });
   let input: HTMLInputElement | undefined;
@@ -62,14 +65,15 @@ function Shell(props: { page: PageId; navigate: (page: PageId) => void }) {
     queueMicrotask(() => previousFocus?.focus());
   };
   const exportSchedule = () => {
-    if (props.page === "schedule" || (props.page === "main" && app.layoutMode() === "ringkas")) window.dispatchEvent(new CustomEvent("shollu-export"));
+    const target: PageId = app.layoutMode() === "ringkas" ? "main" : "schedule";
+    if (currentPage() === target) window.dispatchEvent(new CustomEvent("shollu-export"));
     else {
-      props.navigate("schedule");
+      props.navigate(target);
       queueMicrotask(() => window.dispatchEvent(new CustomEvent("shollu-export")));
     }
   };
   const commands = createMemo<Command[]>(() => {
-    const all: Command[] = pages.map((page) => ({ id: page.id,
+    const all: Command[] = shellPages().map((page) => ({ id: page.id,
       label: page.label[id() ? 0 : 1], detail: id() ? "Buka halaman" : "Open page",
       run: () => props.navigate(page.id) }));
     all.push(
@@ -143,29 +147,29 @@ function Shell(props: { page: PageId; navigate: (page: PageId) => void }) {
     <Show when={app.layoutMode() === "tenang"}>
       <aside class="calm-rail" aria-label={id() ? "Navigasi utama" : "Main navigation"}>
         <button class="rail-logo" onClick={() => props.navigate("main")} aria-label="Shollu Modern"><img src="/icon-32.png" width="30" height="30" alt=""/></button>
-        <nav class="rail-nav"><For each={pages.filter((item) => item.id !== "settings" && item.id !== "about")}>{(item) => <button class="rail-item" classList={{ active: props.page === item.id }} title={label(item.id)} aria-label={label(item.id)} aria-current={props.page === item.id ? "page" : undefined} onClick={() => props.navigate(item.id)}><item.Icon size={18}/></button>}</For></nav>
-        <div class="rail-bottom"><For each={pages.filter((item) => item.id === "settings" || item.id === "about")}>{(item) => <button class="rail-item" classList={{ active: props.page === item.id }} title={label(item.id)} aria-label={label(item.id)} aria-current={props.page === item.id ? "page" : undefined} onClick={() => props.navigate(item.id)}><item.Icon size={18}/></button>}</For><button class="rail-item" onClick={openPalette} title={`${id() ? "Cari perintah" : "Search commands"} (${modifier}+K)`} aria-label={id() ? "Cari perintah" : "Search commands"}><SearchIcon size={17}/></button></div>
+        <nav class="rail-nav"><For each={pages.filter((item) => item.id !== "settings" && item.id !== "about")}>{(item) => <button class="rail-item" classList={{ active: currentPage() === item.id }} title={label(item.id)} aria-label={label(item.id)} aria-current={currentPage() === item.id ? "page" : undefined} onClick={() => props.navigate(item.id)}><item.Icon size={18}/></button>}</For></nav>
+        <div class="rail-bottom"><For each={pages.filter((item) => item.id === "settings" || item.id === "about")}>{(item) => <button class="rail-item" classList={{ active: currentPage() === item.id }} title={label(item.id)} aria-label={label(item.id)} aria-current={currentPage() === item.id ? "page" : undefined} onClick={() => props.navigate(item.id)}><item.Icon size={18}/></button>}</For><button class="rail-item" onClick={openPalette} title={`${id() ? "Cari perintah" : "Search commands"} (${modifier}+K)`} aria-label={id() ? "Cari perintah" : "Search commands"}><SearchIcon size={17}/></button></div>
       </aside>
     </Show>
     <div class="shell-content">
       <header class="shell-topbar"><Show when={app.layoutMode() === "tenang"} fallback={<>
-        <div class="compact-identity"><img src="/icon-32.png" width="20" height="20" alt=""/><span>{app.settings()?.location.name ?? "Shollu Modern"}<i>/</i>{label(props.page)}</span></div>
+        <div class="compact-identity"><img src="/icon-32.png" width="20" height="20" alt=""/><span>{app.settings()?.location.name ?? "Shollu Modern"}<i>/</i>{label(currentPage())}</span></div>
         <button class="palette-trigger" onClick={openPalette}><SearchIcon size={13}/><span>{id() ? "Cari perintah" : "Search commands"}</span><kbd>{modifier} K</kbd></button>
       </>}>
-        <div class="calm-top-identity"><strong>{props.page === "main" ? app.settings()?.location.name ?? "Shollu Modern" : label(props.page)}</strong><Show when={props.page === "main"}><span class="shell-coordinates">{coordinate()}</span><span class="method-pill">{getMethodName(app.settings()?.method ?? 2)}</span></Show></div>
+        <div class="calm-top-identity"><strong>{currentPage() === "main" ? app.settings()?.location.name ?? "Shollu Modern" : label(currentPage())}</strong><Show when={currentPage() === "main"}><span class="shell-coordinates">{coordinate()}</span><span class="method-pill">{getMethodName(app.settings()?.method ?? 2)}</span></Show></div>
         <div class="shell-dates"><span>{dateLabel()}</span><small>{hijriLabel()}</small></div>
       </Show><div id="page-actions" class="shell-page-actions"/></header>
-      <Show when={app.layoutMode() === "ringkas"}><nav class="compact-tabs" aria-label={id() ? "Navigasi utama" : "Main navigation"}><For each={pages}>{(item) => <button classList={{ active: props.page === item.id }} aria-current={props.page === item.id ? "page" : undefined} onClick={() => props.navigate(item.id)}>{label(item.id)}</button>}</For></nav></Show>
+      <Show when={app.layoutMode() === "ringkas"}><nav class="compact-tabs" aria-label={id() ? "Navigasi utama" : "Main navigation"}><For each={shellPages()}>{(item) => <button classList={{ active: currentPage() === item.id }} aria-current={currentPage() === item.id ? "page" : undefined} onClick={() => props.navigate(item.id)}>{label(item.id)}</button>}</For></nav></Show>
       <main class="shell-main" id="main-content">
-        <Show when={app.error() && props.page !== "main"}><div class="shell-error status-banner tone-error" role="alert">{app.error()}<button class="btn btn-secondary" onClick={() => void app.refresh()}>{id() ? "Coba lagi" : "Retry"}</button></div></Show>
+        <Show when={app.error() && currentPage() !== "main"}><div class="shell-error status-banner tone-error" role="alert">{app.error()}<button class="btn btn-secondary" onClick={() => void app.refresh()}>{id() ? "Coba lagi" : "Retry"}</button></div></Show>
         <Switch>
-          <Match when={props.page === "main"}><MainPage lang={app.lang()}/></Match>
-          <Match when={props.page === "schedule"}><SchedulePage lang={app.lang()}/></Match>
-          <Match when={props.page === "location"}><LocationPage lang={app.lang()}/></Match>
-          <Match when={props.page === "tasks"}><TasksPage lang={app.lang()}/></Match>
-          <Match when={props.page === "convert"}><ConvertPage lang={app.lang()}/></Match>
-          <Match when={props.page === "settings"}><SettingsPage lang={app.lang()}/></Match>
-          <Match when={props.page === "about"}><AboutPage lang={app.lang()}/></Match>
+          <Match when={currentPage() === "main"}><MainPage lang={app.lang()}/></Match>
+          <Match when={currentPage() === "schedule"}><SchedulePage lang={app.lang()}/></Match>
+          <Match when={currentPage() === "location"}><LocationPage lang={app.lang()}/></Match>
+          <Match when={currentPage() === "tasks"}><TasksPage lang={app.lang()}/></Match>
+          <Match when={currentPage() === "convert"}><ConvertPage lang={app.lang()}/></Match>
+          <Match when={currentPage() === "settings"}><SettingsPage lang={app.lang()}/></Match>
+          <Match when={currentPage() === "about"}><AboutPage lang={app.lang()}/></Match>
         </Switch>
       </main>
       <Show when={app.layoutMode() === "ringkas"}><footer class="compact-status" role="status"><span>{app.settings()?.location.name ?? "—"} · {getMethodName(app.settings()?.method ?? 2)} · UTC{(app.settings()?.location.timezone ?? 0) >= 0 ? "+" : ""}{app.settings()?.location.timezone ?? "—"}</span><span>{app.saving() ? (id() ? "Menyimpan…" : "Saving…") : app.dirtyCount() ? `${app.dirtyCount()} ${id() ? "perubahan belum disimpan" : "unsaved changes"}` : id() ? "Tersimpan" : "Saved"}<i>v1.0.0</i></span></footer></Show>

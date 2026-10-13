@@ -140,7 +140,8 @@ try {
   await expect(page.locator('.compact-selected-date')).toHaveText(retainedDay);
   await page.getByRole('button', { name: 'Next month', exact: true }).click();
   note('Selected month and day survive switching display modes');
-  for (const name of ['Schedule', 'Location', 'Reminders', 'Convert', 'Settings', 'About']) {
+  assert.equal(await page.locator('.compact-tabs button', { hasText: 'Schedule' }).count(), 0, 'Ringkas folds Schedule into Main');
+  for (const name of ['Location', 'Reminders', 'Convert', 'Settings', 'About']) {
     await navigate(name);
     await expect(page.locator('#main-content')).not.toBeEmpty();
     if (['Location', 'Settings'].includes(name)) {
@@ -151,7 +152,7 @@ try {
     }
     await page.screenshot({ path: path.join(artifacts, `ringkas-${name.toLowerCase()}.png`) });
   }
-  note('All seven Ringkas pages render through real backend');
+  note('All six Ringkas pages render through real backend');
 
   await page.keyboard.press('Control+k');
   await expect(page.getByRole('dialog')).toBeVisible();
@@ -284,7 +285,7 @@ try {
   for (const mode of ['tenang', 'ringkas']) {
     await invoke('save_settings', { settings: { ...(await invoke('get_settings')), layout_mode: mode } });
     await expect(page.locator('.shollu-shell')).toHaveClass(new RegExp(mode));
-    for (const name of ['Main', 'Schedule', 'Reminders', 'Convert', 'Location', 'Settings', 'About']) {
+    for (const name of ['Main', 'Schedule', 'Reminders', 'Convert', 'Location', 'Settings', 'About'].filter(name => mode === 'tenang' || name !== 'Schedule')) {
       await navigate(name);
       await expect(page.locator('#main-content')).not.toBeEmpty();
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${mode} ${name} must fit the minimum window width`);
